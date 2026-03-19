@@ -1,4 +1,4 @@
 pub mod app_settings;
+pub mod license;
 pub mod logs;
-pub mod recent_files;
-pub mod templates;
+pub mod profiles;

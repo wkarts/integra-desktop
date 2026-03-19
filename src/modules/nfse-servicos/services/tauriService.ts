@@ -1,9 +1,13 @@
 import { invoke } from '@tauri-apps/api/core';
 import type {
+  AppMeta,
   ConversionProfile,
+  LicenseCheckResult,
+  LicenseSettings,
   NfseDocument,
   ProcessBatchInputItem,
   ProcessBatchResult,
+  ProfileBundle,
   UploadInputItem,
 } from '../../../shared/types';
 
@@ -31,10 +35,38 @@ export async function loadProfile(): Promise<ConversionProfile | null> {
   return invoke<ConversionProfile | null>('load_conversion_profile');
 }
 
+export async function saveProfileBundle(bundle: ProfileBundle): Promise<void> {
+  return invoke('save_profile_bundle', { bundle });
+}
+
+export async function loadProfileBundle(): Promise<ProfileBundle | null> {
+  return invoke<ProfileBundle | null>('load_profile_bundle');
+}
+
 export async function appendLog(message: string): Promise<void> {
   return invoke('append_runtime_log', { message });
 }
 
 export async function listLogs(): Promise<string[]> {
   return invoke<string[]>('list_runtime_logs');
+}
+
+export async function loadLicenseSettings(): Promise<LicenseSettings | null> {
+  return invoke<LicenseSettings | null>('load_license_settings');
+}
+
+export async function saveLicenseSettings(settings: LicenseSettings): Promise<LicenseSettings> {
+  return invoke<LicenseSettings>('save_license_settings', { settings });
+}
+
+export async function checkLicenseStatus(settings: LicenseSettings): Promise<LicenseCheckResult> {
+  return invoke<LicenseCheckResult>('check_license_status', { settings });
+}
+
+export async function getMachineFingerprint(): Promise<string> {
+  return invoke<string>('get_machine_fingerprint');
+}
+
+export async function getAppMeta(): Promise<AppMeta> {
+  return invoke<AppMeta>('get_app_meta');
 }

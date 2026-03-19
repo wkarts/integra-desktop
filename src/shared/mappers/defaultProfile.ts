@@ -1,9 +1,14 @@
-import type { ConversionProfile } from '../types';
+import type { ConversionProfile, ProfileBundle } from '../types';
 
 const source = { action: 'source' as const };
 
 export const defaultProfile: ConversionProfile = {
-  profile_name: 'Padrão BA Prestados',
+  profile_id: 'empresa-padrao',
+  profile_name: 'Empresa padrão',
+  profile_company_name: 'Empresa padrão',
+  profile_company_document: '',
+  user_company_name: '',
+  user_company_document: '',
   output_layout: 'ba_prestados',
   cod_prosoft: '0001',
   especie_documento: 'NFSE',
@@ -48,4 +53,9 @@ export const defaultProfile: ConversionProfile = {
     natureza_operacao: source,
     campos_complementares: source,
   },
+};
+
+export const defaultProfileBundle: ProfileBundle = {
+  selected_profile_id: defaultProfile.profile_id,
+  profiles: [defaultProfile],
 };
