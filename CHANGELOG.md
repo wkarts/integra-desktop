@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/wkarts/integra-desktop/compare/v1.0.0...v1.0.1) (2026-03-19)
+
+
+### Bug Fixes
+
+* **release:** gerar ícones multiplataforma e habilitar bundles all ([69a5880](https://github.com/wkarts/integra-desktop/commit/69a588091c2fd187ce09f2f21719d3e9e9d6908c))
+
 # 1.0.0 (2026-03-19)
 
 
