@@ -2,19 +2,62 @@ use std::{fs, path::Path};
 
 const ICON_PNG_BASE64: &str = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==";
 
-fn ensure_icon() {
-    let icon_path = Path::new("icons/icon.png");
-    if icon_path.exists() {
+fn ensure_icons() {
+    let png_bytes = match decode_base64(ICON_PNG_BASE64) {
+        Ok(bytes) => bytes,
+        Err(_) => return,
+    };
+
+    let icon_dir = Path::new("icons");
+    let _ = fs::create_dir_all(icon_dir);
+
+    write_if_missing(icon_dir.join("icon.png"), &png_bytes);
+    write_if_missing(icon_dir.join("32x32.png"), &png_bytes);
+    write_if_missing(icon_dir.join("128x128.png"), &png_bytes);
+    write_if_missing(icon_dir.join("128x128@2x.png"), &png_bytes);
+
+    let ico = build_ico(&png_bytes);
+    write_if_missing(icon_dir.join("icon.ico"), &ico);
+
+    let icns = build_icns(&png_bytes);
+    write_if_missing(icon_dir.join("icon.icns"), &icns);
+}
+
+fn write_if_missing(path: impl AsRef<Path>, bytes: &[u8]) {
+    let path = path.as_ref();
+    if path.exists() {
         return;
     }
+    let _ = fs::write(path, bytes);
+}
 
-    if let Some(parent) = icon_path.parent() {
-        let _ = fs::create_dir_all(parent);
-    }
+fn build_ico(png: &[u8]) -> Vec<u8> {
+    let mut ico = Vec::new();
+    ico.extend_from_slice(&0u16.to_le_bytes()); // reserved
+    ico.extend_from_slice(&1u16.to_le_bytes()); // type: icon
+    ico.extend_from_slice(&1u16.to_le_bytes()); // count
 
-    if let Ok(bytes) = decode_base64(ICON_PNG_BASE64) {
-        let _ = fs::write(icon_path, bytes);
-    }
+    ico.push(1); // width
+    ico.push(1); // height
+    ico.push(0); // colors
+    ico.push(0); // reserved
+    ico.extend_from_slice(&1u16.to_le_bytes()); // color planes
+    ico.extend_from_slice(&32u16.to_le_bytes()); // bits per pixel
+    ico.extend_from_slice(&(png.len() as u32).to_le_bytes()); // size
+    ico.extend_from_slice(&(22u32).to_le_bytes()); // data offset
+    ico.extend_from_slice(png);
+    ico
+}
+
+fn build_icns(png: &[u8]) -> Vec<u8> {
+    let total_len = 8 + 8 + png.len();
+    let mut icns = Vec::new();
+    icns.extend_from_slice(b"icns");
+    icns.extend_from_slice(&(total_len as u32).to_be_bytes());
+    icns.extend_from_slice(b"ic07");
+    icns.extend_from_slice(&((8 + png.len()) as u32).to_be_bytes());
+    icns.extend_from_slice(png);
+    icns
 }
 
 fn decode_base64(input: &str) -> Result<Vec<u8>, String> {
@@ -49,6 +92,6 @@ fn decode_base64(input: &str) -> Result<Vec<u8>, String> {
 }
 
 fn main() {
-    ensure_icon();
+    ensure_icons();
     tauri_build::build()
 }
