@@ -206,7 +206,7 @@ fn find_i64(value: &Value, keys: &[&str]) -> Option<i64> {
                     Value::String(text) => text.parse::<i64>().ok(),
                     _ => None,
                 })
-        }
+        },
         _ => None,
     }
 }
