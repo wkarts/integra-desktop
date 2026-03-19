@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CompNfse xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <Nfse versao="2.02">
+    <InfNfse Id="NFSe202600000000771_30289207000199">
+      <Numero>202600000000771</Numero>
+      <CodigoVerificacao>LY3B-PZRJ</CodigoVerificacao>
+      <DataEmissao>2026-02-27T12:00:31.15</DataEmissao>
+      <OutrasInformacoes>Chave de Acesso da NFS-e Nacional: 29287031230289207000199260000000077126020059214089\s\nOptante do Simples Nacional.\s\nTrib. aprox. R$ 19,37 Federal e R$ 3,02 Municipal. Fonte: IBPT [47C8DA]\s\n</OutrasInformacoes>
+      <ValoresNfse>
+        <BaseCalculo>144</BaseCalculo>
+        <Aliquota>4.1</Aliquota>
+        <ValorIss>5.9</ValorIss>
+        <ValorLiquidoNfse>144</ValorLiquidoNfse>
+      </ValoresNfse>
+      <PrestadorServico>
+        <IdentificacaoPrestador>
+          <CpfCnpj>
+            <Cnpj>30289207000199</Cnpj>
+          </CpfCnpj>
+          <InscricaoMunicipal>1590000797</InscricaoMunicipal>
+        </IdentificacaoPrestador>
+        <RazaoSocial>LABORATORIO DE ANALISES CLINICAS POPLAB LTDA</RazaoSocial>
+        <NomeFantasia>LABORATORIO DE ANALISES CLINICAS POPLAB</NomeFantasia>
+        <Endereco>
+          <Endereco>Avenida Barros e Almeida</Endereco>
+          <Numero>442</Numero>
+          <Complemento>CASA TERREO</Complemento>
+          <Bairro>Centro</Bairro>
+          <CodigoMunicipio>2928703</CodigoMunicipio>
+          <Uf>BA</Uf>
+          <Cep>44430108</Cep>
+        </Endereco>
+        <Contato>
+          <Telefone>7536317045</Telefone>
+          <Email>EXATACONTABIL01@HOTMAIL.COM</Email>
+        </Contato>
+      </PrestadorServico>
+      <OrgaoGerador>
+        <CodigoMunicipio>2928703</CodigoMunicipio>
+        <Uf>BA</Uf>
+      </OrgaoGerador>
+      <DeclaracaoPrestacaoServico>
+        <InfDeclaracaoPrestacaoServico>
+          <Rps Id="RpsA_4386_30289207000199">
+            <IdentificacaoRps>
+              <Numero>4386</Numero>
+              <Serie>A</Serie>
+              <Tipo>1</Tipo>
+            </IdentificacaoRps>
+            <DataEmissao>2026-02-27</DataEmissao>
+            <Status>1</Status>
+          </Rps>
+          <Competencia>2026-02-01</Competencia>
+          <Servico>
+            <Valores>
+              <ValorServicos>144</ValorServicos>
+            </Valores>
+            <IssRetido>2</IssRetido>
+            <ItemListaServico>0402</ItemListaServico>
+            <CodigoCnae>8640202</CodigoCnae>
+            <CodigoTributacaoMunicipio>0402</CodigoTributacaoMunicipio>
+            <Discriminacao>Analises clinicas, patologia, eletricidade medica, radioterapia, quimioterapia, ultra-sonografia, ressonancia magnetica, radiologia, tomografia e congeneres 
+Atendimento Numero #12791</Discriminacao>
+            <CodigoMunicipio>2928703</CodigoMunicipio>
+            <ExigibilidadeISS>1</ExigibilidadeISS>
+            <MunicipioIncidencia>2928703</MunicipioIncidencia>
+          </Servico>
+          <Prestador>
+            <CpfCnpj>
+              <Cnpj>30289207000199</Cnpj>
+            </CpfCnpj>
+            <InscricaoMunicipal>1590000797</InscricaoMunicipal>
+          </Prestador>
+          <Tomador>
+            <IdentificacaoTomador>
+              <CpfCnpj>
+                <Cpf>99935090515</Cpf>
+              </CpfCnpj>
+            </IdentificacaoTomador>
+            <RazaoSocial>CELIDALVA BORGES DE SANTANA</RazaoSocial>
+            <Endereco>
+              <Endereco>Rua Deputado Helio Correia</Endereco>
+              <Numero>241</Numero>
+              <Bairro>Calabar</Bairro>
+              <CodigoMunicipio>2928703</CodigoMunicipio>
+              <Uf>BA</Uf>
+              <CodigoPais>1058</CodigoPais>
+              <Cep>44444000</Cep>
+            </Endereco>
+          </Tomador>
+          <RegimeEspecialTributacao>6</RegimeEspecialTributacao>
+          <OptanteSimplesNacional>1</OptanteSimplesNacional>
+          <IncentivoFiscal>2</IncentivoFiscal>
+        </InfDeclaracaoPrestacaoServico>
+      </DeclaracaoPrestacaoServico>
+      <ChaveAcesso>29287031230289207000199260000000077126020059214089</ChaveAcesso>
+    </InfNfse>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI="#NFSe202600000000771_30289207000199"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>o18BWEAZVgCbs5XuuqgjWN/+q0M=</DigestValue></Reference></SignedInfo><SignatureValue>u03vjLRzyG8R+t0OSS4tglMB5j9imt6oqOTf94FfchUj4jiTBwvsxODyMyTY2jgh3TKWsnWNOFwX9bOOgK1mAiP5/g7wW65o/B/yy13Dgyu6l6rqyq20mUdMvJRLmktcHWgaHDo9wmrvYhPl6kxo63zgqzFcu9BQHOSj3q8mjUC8RxMLCMRC4yhwOFgdXfH1sIFv2qtgKYgWgbInUdsqCgPYuCo6g2WzpTDOelJ+r1zeJg5jS7prgbGPbKYilq82SGz0m2LnxkGX7ZStBw0lan1wTDBakH27iuAtDQ/2Fsl56lCTMYJSdjkODfI0wuUujWewuTGaYJeZ85FkJMzFig==</SignatureValue><KeyInfo><X509Data><X509Certificate>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</X509Certificate></X509Data></KeyInfo></Signature></Nfse>
+</CompNfse>

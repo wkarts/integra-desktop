@@ -1,0 +1,3074 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0ea5a4" />
+  <meta name="color-scheme" content="light" />
+  <title>Integra</title>
+
+  <!-- Favicon Base64 (SVG) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMTZhMzRhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTRiOGE2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjExMiIgaGVpZ2h0PSIxMTIiIHJ4PSIyNCIgZmlsbD0idXJsKCNnKSIvPgo8cGF0aCBkPSJNNDUuOTk5IDQwaDM2djEwSDcwdjM4aDEydjEwSDQ2di0xMGgxMlY1MEg0NnoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==" />
+
+  <style>
+    :root{
+      --bg0:#eef6ff;
+      --bg1:#f7fbff;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e2e8f0;
+      --shadow: 0 8px 18px rgba(2, 6, 23, .06), 0 1px 2px rgba(2, 6, 23, .05);
+      --radius:14px;
+      --radius-sm:12px;
+
+      --brand0:#16a34a;
+      --brand1:#14b8a6;
+      --brand:#0ea5a4;
+
+      --danger:#e11d48;
+
+      --bottom-h: 42px;
+      --top-h: 56px;
+
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color-scheme: light;
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+
+    body{
+      margin:0;
+      font-size: 14px;
+      line-height: 1.28;
+      background: radial-gradient(1200px 600px at 20% 0%, var(--bg0), transparent 60%),
+                  radial-gradient(900px 500px at 80% 10%, #eafff6, transparent 55%),
+                  linear-gradient(180deg, var(--bg1), #ffffff 60%);
+      color: var(--text);
+      overflow-x: hidden;
+      padding-bottom: calc(var(--bottom-h) + 16px + env(safe-area-inset-bottom));
+    }
+
+    /* Acessibilidade: foco visível e consistente */
+    :focus-visible{
+      outline: 3px solid rgba(14,165,164,.25);
+      outline-offset: 2px;
+    }
+
+    /* ---------- Topbar ---------- */
+    .topbar-wrap{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.74);
+      border-bottom: 1px solid rgba(226,232,240,.92);
+    }
+    .topbar{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 8px 12px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: var(--top-h);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand img{
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(2,6,23,.10);
+      flex: 0 0 auto;
+    }
+    .brand .titles{
+      min-width: 0;
+      display:flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .brand .titles .name{
+      font-weight: 900;
+      letter-spacing: .2px;
+      line-height: 1.05;
+      font-size: 14px;
+    }
+    .brand .titles .sub{
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: min(62vw, 520px);
+    }
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.88);
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .dot{
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 3px rgba(14,165,164,.12);
+    }
+    @media (max-width: 420px){
+      .top-actions .pill{ display:none; }
+      .brand .titles .sub{ max-width: 56vw; }
+    }
+
+    /* ---------- Buttons / Inputs ---------- */
+    .btn{
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .06s ease, box-shadow .12s ease, background .12s ease;
+      box-shadow: 0 1px 1px rgba(2,6,23,.05);
+      user-select: none;
+    }
+    .btn:hover{ box-shadow: 0 10px 18px rgba(2,6,23,.10); }
+    .btn:active{ transform: translateY(1px); }
+    .btn:disabled{ opacity: .55; cursor: not-allowed; box-shadow: none; }
+
+    .btn-primary{
+      border: 0;
+      color: #fff;
+      background: linear-gradient(135deg, var(--brand0), var(--brand1));
+    }
+    .btn-danger{
+      border: 0;
+      color:#fff;
+      background: linear-gradient(135deg, var(--danger), #fb7185);
+    }
+    .btn-ghost{
+      background: rgba(255,255,255,.72);
+    }
+    .btn-warning{
+      background: #fb923c;
+      color:#0f172a;
+      border-color: rgba(0,0,0,.06);
+    }
+    .btn-warning:hover{ filter: brightness(.98); }
+    .btn-warning:disabled{ opacity: .6; cursor:not-allowed; }
+
+    .field{
+      display:flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    label{
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    input[type="text"], input[type="number"], select, textarea{
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+      font-size: 13px;
+    }
+    input[readonly]{
+      background: #f8fafc;
+      color: #334155;
+    }
+    textarea{
+      resize: vertical;
+      min-height: 76px;
+      line-height: 1.3;
+    }
+
+    .muted{ color: var(--muted); font-size: 12px; }
+    .small{ font-size: 12px; color: var(--muted); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* ---------- Layout ---------- */
+    .container{
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px;
+      padding-bottom: calc(var(--bottom-h) + 16px);
+    }
+
+    .section{
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .layout-top{
+      display:grid;
+      grid-template-columns: 1.35fr .95fr;
+      gap: 10px;
+      align-items: start;
+    }
+    @media (max-width: 1024px){
+      .layout-top{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid rgba(226,232,240,.92);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      min-width: 0;
+    }
+
+    .card-tight{ padding: 10px; }
+
+    .card-head{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .card-title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: .2px;
+    }
+    .badge{
+      width: 9px;
+      height: 9px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--brand0), var(--brand1));
+      box-shadow: 0 0 0 4px rgba(20,184,166,.10);
+    }
+
+    /* Config panel sticky no desktop */
+    @media (min-width: 1025px){
+      #cfgCard{
+        position: sticky;
+        top: calc(var(--top-h) + 10px);
+        max-height: calc(100vh - var(--top-h) - var(--bottom-h) - 36px);
+        overflow: auto;
+      }
+      #cfgCard::-webkit-scrollbar{ height: 10px; width: 10px; }
+      #cfgCard::-webkit-scrollbar-thumb{ background: rgba(100,116,139,.28); border-radius: 999px; }
+      #cfgCard::-webkit-scrollbar-track{ background: transparent; }
+    }
+
+    /* ---------- Dropzone ---------- */
+    .drop{
+      border: 2px dashed #cbd5e1;
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      background: linear-gradient(180deg, #ffffff, #fbfdff);
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .drop.dragover{
+      border-color: var(--brand);
+      background: linear-gradient(180deg, #f0fdfa, #ffffff);
+    }
+    .drop-left{
+      display:flex;
+      flex-direction: column;
+      align-items:flex-start;
+      gap: 6px;
+      min-width: 220px;
+      flex: 1 1 340px;
+    }
+    .drop-right{
+      display:flex;
+      flex-direction: column;
+      align-items:flex-end;
+      gap: 8px;
+      flex: 0 0 auto;
+      min-width: 260px;
+    }
+    @media (max-width: 720px){
+      .drop-right{ align-items: stretch; min-width: 100%; }
+    }
+
+    .chips{ display:flex; gap: 6px; flex-wrap: wrap; justify-content: flex-start; }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 11px;
+      color: #334155;
+      font-weight: 900;
+    }
+
+    .counts{
+      display:flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .countpill{
+      display:inline-flex;
+      gap: 6px;
+      align-items:center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 11px;
+      color: #334155;
+      font-weight: 900;
+    }
+
+    .row-actions{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: flex-end;
+    }
+
+    progress{
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #f1f5f9;
+    }
+    progress::-webkit-progress-bar{ background: #f1f5f9; }
+    progress::-webkit-progress-value{
+      background: linear-gradient(90deg, var(--brand0), var(--brand1));
+    }
+
+    .entrada-meta{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 10px;
+      align-items: start;
+      margin-top: 8px;
+    }
+    @media (max-width: 920px){
+      .entrada-meta{ grid-template-columns: 1fr; }
+    }
+    .quick-tip{
+      padding: 8px 10px;
+      border: 1px solid rgba(226,232,240,.95);
+      border-radius: 12px;
+      background:#fbfdff;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    /* ---------- Saída (Opções) ---------- */
+    .grid-2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items:end;
+    }
+    @media (max-width: 900px){
+      .grid-2{ grid-template-columns: 1fr; }
+    }
+
+    .options{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    @media (min-width: 1100px){
+      .options{
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+      }
+    }
+    .check{
+      display:flex;
+      gap: 8px;
+      align-items:flex-start;
+      font-size: 12.5px;
+      color: #334155;
+      line-height: 1.25;
+    }
+    .check input{ margin-top: 2px; }
+
+    details.box{
+      border: 1px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: #fbfdff;
+      margin-top: 8px;
+    }
+    details.box summary{
+      cursor: pointer;
+      font-weight: 900;
+      color: #0f172a;
+      list-style: none;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    details.box summary::-webkit-details-marker{ display:none; }
+    details.box[open] summary{ margin-bottom: 8px; }
+
+    .details-meta{
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .details-actions{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      margin-top: 8px;
+    }
+
+    .input-xs{
+      padding: 7px 10px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      height: 34px;
+    }
+    .select-xs{
+      padding: 7px 10px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      height: 34px;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 10px;
+    }
+    @media (max-width: 900px){
+      .grid-3{ grid-template-columns: 1fr; }
+    }
+
+    /* ---------- Tabela ---------- */
+    .table-wrap{
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(226,232,240,.95);
+      background: #fff;
+      max-height: clamp(280px, 70vh, 860px);
+    }
+    table{
+      border-collapse: collapse;
+      width: max(100%, 980px);
+      background: #fff;
+    }
+    thead th{
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      border-bottom: 1px solid rgba(226,232,240,.95);
+      font-size: 11.5px;
+      padding: 7px 9px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .28px;
+      color: #0f172a;
+    }
+    tbody td{
+      border-top: 1px solid #f1f5f9;
+      padding: 6px 9px;
+      font-size: 11.5px;
+      white-space: nowrap;
+      color: #0f172a;
+    }
+    tbody tr:hover{ background: #f8fafc; }
+    td[contenteditable="true"]{ outline: none; border-radius: 8px; }
+    td[contenteditable="true"]:focus{
+      box-shadow: 0 0 0 3px rgba(14,165,164,.14);
+      background: #ecfeff;
+    }
+
+    .table-top{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .stats{
+      display:flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items:center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .stat-pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      font-weight: 900;
+      color: #0f172a;
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .table-tools{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .table-tools input{ flex: 1 1 340px; }
+
+    /* ---------- Menu (Selecionar Entrada) ---------- */
+    .menu{ position: relative; display: inline-block; }
+    .menu-panel{
+      position: absolute;
+      left: 0;
+      top: 40px;
+      min-width: 260px;
+      z-index: 60;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px;
+      box-shadow: 0 18px 40px rgba(2,6,23,.14);
+      display: none;
+    }
+    .menu-panel.show{ display:block; }
+    .menu-panel button{
+      width: 100%;
+      text-align: left;
+      margin: 4px 0;
+      border-radius: 10px;
+    }
+
+    /* ---------- Modal Manual ---------- */
+    dialog.modal{
+      width: min(860px, calc(100vw - 18px));
+      border: 1px solid rgba(226,232,240,.95);
+      border-radius: 16px;
+      padding: 0;
+      box-shadow: 0 30px 70px rgba(2,6,23,.22);
+    }
+    dialog::backdrop{
+      background: rgba(2,6,23,.55);
+      backdrop-filter: blur(2px);
+    }
+    .modal-head{
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(226,232,240,.95);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      background: linear-gradient(180deg, #ffffff, #fbfdff);
+    }
+    .modal-title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .modal-body{
+      padding: 12px;
+      color: #0f172a;
+      max-height: calc(82vh - 120px);
+      overflow: auto;
+    }
+
+    .manual h1{ font-size: 15px; margin: 0 0 10px; }
+    .manual h2{ font-size: 13.5px; margin: 14px 0 8px; }
+    .manual h3{ font-size: 12.5px; margin: 12px 0 6px; }
+    .manual p, .manual li{ font-size: 12.5px; color:#0f172a; line-height: 1.45; }
+    .manual .muted{ color: #64748b; }
+    .manual hr{ border:0; border-top:1px solid rgba(226,232,240,.95); margin: 10px 0; }
+    .manual code, .manual .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .manual blockquote{
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-left: 4px solid rgba(20,184,166,.55);
+      background: #fbfdff;
+      border-radius: 12px;
+      color:#0f172a;
+    }
+    .manual ul{ margin: 6px 0 6px 18px; }
+    .manual ol{ margin: 6px 0 6px 18px; }
+
+    .modal-foot{
+      padding: 10px 12px;
+      border-top: 1px solid rgba(226,232,240,.95);
+      display:flex;
+      justify-content: flex-end;
+      background: #fff;
+    }
+
+    /* v15: log */
+    .log-list{ max-height: 220px; overflow:auto; border:1px solid rgba(226,232,240,.95); border-radius: 12px; padding:10px; background:#fbfdff; }
+    .log-item{ display:flex; gap:10px; align-items:flex-start; padding:8px 8px; border-bottom:1px dashed rgba(226,232,240,.95); }
+    .log-item:last-child{ border-bottom:none; }
+    .log-level{ font-weight:900; width:70px; }
+    .log-level.err{ color:#b91c1c; }
+    .log-level.warn{ color:#7a4b00; }
+    .log-level.info{ color:#065f46; }
+    .log-msg{ flex:1; }
+    .log-meta{ color: var(--muted); font-size: 12px; margin-top:2px; }
+
+    /* Compact extra para notebooks baixos */
+    @media (max-height: 780px){
+      .topbar{ min-height: 52px; }
+      :root{ --top-h: 52px; --bottom-h: 40px; }
+      .table-wrap{ max-height: clamp(260px, 72vh, 860px); }
+    }
+
+    /* ============================
+       PATCH v15.x — Rodapé Stack
+       - Evita corte de texto
+       - Altura ajustada via JS
+       ============================ */
+    :root{
+      --footer-bg: rgba(12, 106, 123, 0.96);
+      --footer-border: rgba(255,255,255,0.16);
+      --footer-text: #F8FAFC;
+      --footer-link: #BAE6FD;
+      --footer-stack-h: 96px;
+    }
+
+    body{
+      padding-bottom: calc(var(--footer-stack-h) + env(safe-area-inset-bottom)) !important;
+    }
+    .container{
+      padding-bottom: calc(var(--footer-stack-h) + 16px) !important;
+    }
+
+    .footer-stack{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .footer-stack .bottom-bar{
+      position: relative !important;
+      left: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      display: block !important;
+      width: 100%;
+      background: var(--footer-bg) !important;
+      color: var(--footer-text) !important;
+      border-top: 1px solid var(--footer-border) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .footer-stack .bottom-inner{
+      max-width: 1280px !important;
+      margin: 0 auto !important;
+      padding: 8px 12px !important;
+      font-size: 12.5px !important;
+      line-height: 1.25 !important;
+      color: var(--footer-text) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      overflow: visible !important;
+      flex-wrap: wrap !important;
+      text-align: center !important;
+    }
+
+    .footer-stack .bottom-bar-app .bottom-inner{
+      justify-content: space-between !important;
+      text-align: left !important;
+    }
+
+    .footer-stack .bottom-bar-contact .bottom-inner{
+      justify-content: center !important;
+    }
+
+    .footer-stack .bottom-inner a{
+      color: var(--footer-link) !important;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 680px){
+      .footer-stack .bottom-inner{
+        justify-content: center !important;
+        text-align: center !important;
+      }
+      .footer-stack .bottom-inner .sep{
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar-wrap">
+    <div class="topbar">
+      <div class="brand">
+        <img
+          id="appLogo"
+          alt="Integra"
+          src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMTZhMzRhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTRiOGE2Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjExMiIgaGVpZ2h0PSIxMTIiIHJ4PSIyNCIgZmlsbD0idXJsKCNnKSIvPgo8cGF0aCBkPSJNNDUuOTk5IDQwaDM2djEwSDcwdjM4aDEydjEwSDQ2di0xMGgxMlY1MEg0NnoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg=="
+        />
+        <div class="titles">
+          <div class="name">Integra</div>
+          <div class="sub">Duplicatas (XML/SPED/ZIP) → TXT Prosoft</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button id="btnManual" class="btn btn-ghost" type="button">Manual</button>
+        <span class="pill"><span class="dot"></span> Local, rápido e sem envio de dados</span>
+      </div>
+    </div>
+  </div>
+
+  <main class="container section">
+
+    <!-- TOP: Entrada + Config (em colunas no desktop) -->
+    <div class="layout-top">
+
+      <!-- ENTRADA -->
+      <section class="card" aria-label="Entrada">
+        <div class="card-head">
+          <div class="card-title"><span class="badge"></span> Entrada</div>
+        </div>
+
+        <div id="dropZone" class="drop">
+          <div class="drop-left">
+            <div style="font-weight:900;">Arraste os arquivos aqui</div>
+            <div class="muted">Aceita:</div>
+            <div class="chips">
+              <span class="chip">XML</span>
+              <span class="chip">SPED</span>
+              <span class="chip">ZIP</span>
+              <span class="chip">pasta</span>
+            </div>
+
+            <div class="menu" style="margin-top:6px;">
+              <button id="btnSelect" class="btn btn-primary" type="button" aria-haspopup="true" aria-expanded="false">Selecionar Entrada</button>
+              <div id="selectMenu" class="menu-panel" role="menu" aria-label="Selecionar entrada">
+                <button id="btnPickFiles" class="btn" type="button">Arquivos (XML / SPED / ZIP)</button>
+                <button id="btnPickDir" class="btn" type="button">Pasta (com subpastas)</button>
+                <button id="btnPickCancel" class="btn" type="button">Cancelar</button>
+                <div class="small muted" style="margin:6px 8px 0;">
+                  Você pode selecionar tudo de uma vez e processar em lote.
+                </div>
+              </div>
+            </div>
+
+            <input id="fileInput" type="file" accept=".xml,.zip,.txt,.sped,application/zip,application/x-zip-compressed,text/plain,text/xml,application/xml" multiple style="display:none" />
+            <input id="dirInput" type="file" webkitdirectory directory multiple style="display:none" />
+          </div>
+
+          <div class="drop-right">
+            <div class="counts">
+              <span class="countpill">XML: <span id="cntXml">0</span></span>
+              <span class="countpill">SPED: <span id="cntSped">0</span></span>
+              <span class="countpill">ZIP: <span id="cntZip">0</span></span>
+            </div>
+
+            <div class="row-actions">
+              <button id="btnProcessar" class="btn btn-primary" disabled type="button">Processar</button>
+              <button id="btnCancelar" class="btn btn-warning" disabled type="button" title="Cancelar o processamento em andamento">Cancelar</button>
+              <button id="btnLimpar" class="btn btn-danger" disabled type="button">Limpar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="entrada-meta">
+          <div class="field">
+            <label>Progresso</label>
+            <progress id="progress" value="0" max="100"></progress>
+            <div id="status" class="small" style="margin-top:6px;" role="status" aria-live="polite">Aguardando arquivos…</div>
+          </div>
+
+          <div class="quick-tip">
+            Fluxo rápido: <b>Selecionar Entrada</b> → <b>Processar</b> → revisar na tabela → <b>Exportar</b>.
+          </div>
+        </div>
+
+        <details class="box" id="logBox">
+          <summary>
+            <span>Log de processamento</span>
+            <span id="logMeta" class="details-meta">0 evento(s)</span>
+          </summary>
+
+          <div class="details-actions">
+            <button id="btnCopyLog" class="btn" type="button" title="Copiar o log para a área de transferência">Copiar log</button>
+            <button id="btnClearLog" class="btn btn-danger" type="button" title="Limpar log">Limpar log</button>
+            <span class="small muted">Dica: abra o log quando algum arquivo não for reconhecido.</span>
+          </div>
+
+          <div id="logList" class="log-list" aria-label="Log de processamento"></div>
+        </details>
+      </section>
+
+      <!-- CONFIGURAÇÕES / SAÍDA -->
+      <section class="card card-tight" id="cfgCard" aria-label="Configurações e Saída">
+        <div class="card-head">
+          <div class="card-title"><span class="badge"></span> Configurações e Saída (Prosoft)</div>
+          <button id="btnToggleCfg" class="btn btn-ghost" type="button">Recolher tudo</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Código Prosoft</label>
+            <input id="codProsoft" class="input-xs" type="text" placeholder="Ex: 0001" />
+          </div>
+          <div class="field">
+            <label>Arquivo de saída</label>
+            <input id="destino" class="input-xs" type="text" readonly />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:8px;">
+          <label>Validação</label>
+          <div id="validacao" class="small"></div>
+        </div>
+
+        <details class="box" open>
+          <summary>
+            <span>Exportação</span>
+            <span class="details-meta">TXT/CSV</span>
+          </summary>
+
+          <div class="details-actions">
+            <button id="btnExportTxt" class="btn btn-primary" disabled type="button">Exportar TXT</button>
+            <button id="btnExportCsv" class="btn" disabled type="button">Exportar CSV</button>
+
+            <span class="small muted" style="padding:6px 9px; border: 1px solid rgba(226,232,240,.95); border-radius: 999px; background:#fbfdff;">
+              TXT compatível com Prosoft.
+            </span>
+          </div>
+        </details>
+
+        <details class="box">
+          <summary>
+            <span>Opções</span>
+            <span class="details-meta">regras / filtros</span>
+          </summary>
+
+          <div class="options" style="margin-top:8px;">
+            <label class="check"><input id="chkAppendD" type="checkbox" /> Anexar “D” no código (ex: 0001D)</label>
+            <label class="check"><input id="chkForcarDuasLinhas" type="checkbox" /> Forçar 2 linhas por registro (0 e 1)</label>
+            <label class="check"><input id="chkUsarSped" type="checkbox" checked /> Usar SPED para complementar escrituração e parcelas</label>
+
+            <!-- NOVO: IE via SPED 0150 -->
+            <label class="check">
+              <input id="chkIeSpedPadrao" type="checkbox" />
+              Considerar IE do SPED como padrão (registro 0150)
+              <span class="small muted">— se desmarcado, só substitui em caso de IE vazio ou divergência de dígitos.</span>
+            </label>
+
+            <label class="check"><input id="chkSomenteComSped" type="checkbox" checked /> Exportar somente quando houver SPED correspondente (padrão)</label>
+            <label class="check"><input id="chkIncluirSemDup" type="checkbox" /> Incluir notas sem parcelamento (gera 1 linha)</label>
+            <label class="check"><input id="chkVenc30" type="checkbox" checked /> Vencimento padrão: <b>+30 dias</b></label>
+          </div>
+        </details>
+
+        <details class="box">
+          <summary>
+            <span>Consolidar parcelas por CNPJ/CPF</span>
+            <span class="details-meta">opcional</span>
+          </summary>
+
+          <label class="check" style="margin-top:8px;">
+            <input id="chkConsolidarCnpj" type="checkbox" />
+            Se o CNPJ/CPF estiver na lista e houver mais de uma parcela, somar e exportar uma única linha.
+          </label>
+
+          <div class="field" style="margin-top:8px;">
+            <label>Lista de CNPJs/CPFs</label>
+            <textarea id="txtCnpjsConsolidar" rows="5" placeholder="Cole um por linha ou separados por vírgula."></textarea>
+            <div class="small muted">Pode colar com pontuação — o sistema remove automaticamente.</div>
+          </div>
+        </details>
+
+        <details class="box">
+          <summary>
+            <span>Parâmetros do registro</span>
+            <span class="details-meta">origem / tipo / série / contexto</span>
+          </summary>
+
+          <div class="grid-3" style="margin-top:8px;">
+            <div class="field">
+              <label>Origem</label>
+              <input id="origem" class="input-xs" type="text" value="0" maxlength="1" />
+            </div>
+
+            <div class="field">
+              <label>Tipo</label>
+              <input id="tipo" class="input-xs" type="text" value="1" maxlength="1" />
+            </div>
+
+            <div class="field">
+              <label>Série (zeros à esquerda)</label>
+              <select id="serieDigits" class="select-xs">
+                <option value="0" selected>Manter</option>
+                <option value="1">1 dígito</option>
+                <option value="2">2 dígitos</option>
+                <option value="3">3 dígitos</option>
+                <option value="4">4 dígitos</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:8px;">
+            <label>Contexto da Nota</label>
+            <select id="ctxNota" class="select-xs">
+              <option value="entrada" selected>Compra / Entrada</option>
+              <option value="saida">Venda / Saída</option>
+            </select>
+            <div class="small muted">Selecione conforme o tipo de operação para considerar corretamente o terceiro.</div>
+          </div>
+        </details>
+      </section>
+    </div>
+
+    <!-- TABELA -->
+    <section class="card" id="tableCard" aria-label="Tabela de parcelas">
+      <div class="card-head">
+        <div class="card-title"><span class="badge"></span> Tabela de parcelas</div>
+      </div>
+
+      <div class="table-top">
+        <div class="stats">
+          <span class="small">Registros:</span> <span id="count" class="stat-pill">0</span>
+          <span class="small">Somatório:</span> <span id="sum" class="stat-pill">0,00</span>
+          <span class="small">Com SPED:</span> <span id="spedMatch" class="stat-pill">0</span>
+          <span class="small">Sem SPED:</span> <span id="spedMiss" class="stat-pill">0</span>
+          <span class="hint">Clique para editar. Datas no formato <b>dd/mm/aaaa</b>.</span>
+        </div>
+
+        <div class="table-tools">
+          <input id="gridFilter" class="input-xs" type="text" placeholder="Filtrar (chave, CNPJ/CPF, número, fonte…) — atalho: Ctrl+K" />
+          <label class="check" title="Se marcado, exporta apenas o que estiver visível após o filtro.">
+            <input id="chkExportarFiltrados" type="checkbox" />
+            Exportar somente filtrados
+          </label>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="grid">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>CHAVE</th>
+              <th>DESDOB</th>
+              <th>CNPJFILIAL</th>
+              <th>CNPJCPF</th>
+              <th>UF</th>
+              <th>IE</th>
+              <th>NFSERIE</th>
+              <th>NFNUMERO</th>
+              <th>DATAEMISSAO</th>
+              <th>DATAENTRADA</th>
+              <th>NUMFATURA</th>
+              <th>DATAVENCIMENTO</th>
+              <th>VALORBRUTOFAT</th>
+              <th>FONTE</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Rodapé único (1 barra no desktop / 2 linhas no mobile) -->
+  <div class="footer-stack" aria-label="Rodapé fixo">
+    <footer class="bottom-bar bottom-bar-all" aria-label="Informações e contato">
+      <div class="bottom-inner">
+        <div class="footer-left">
+          <span>Integra — processamento 100% local no navegador</span>
+          <span class="sep">•</span>
+          <span>Developed By ARGWS - SISTEMAS</span>
+        </div>
+
+        <div class="footer-right">
+          <span><strong>Analista:</strong> Wallace Kleiton</span>
+          <span class="sep">•</span>
+          <a href="mailto:wkarts@gmail.com">wkarts@gmail.com</a>
+          <span class="sep">•</span>
+          <a href="https://wa.me/5575988449231" target="_blank" rel="noopener">
+            WhatsApp: (75) 98844-9231
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- Manual (Modal) -->
+  <dialog id="manualDialog" class="modal">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="badge"></span>
+        Manual completo — Integra (XML/SPED/ZIP → Duplicatas → TXT Prosoft)
+      </div>
+      <button id="btnManualCloseX" class="btn" type="button">Fechar</button>
+    </div>
+
+    <div class="modal-body">
+      <article class="manual">
+        <h1></h1>
+
+        <blockquote>
+          Este HTML é um <b>gerador local (no seu navegador)</b> que lê <b>XML de NFe</b>, cruza com
+          <b>SPED (registro C100)</b> e gera um <b>TXT em layout fixo</b> (padrão Prosoft) — com grid editável
+          e exportação em <b>TXT</b> e <b>CSV</b>.
+        </blockquote>
+        <p class="muted"></p>
+
+        <hr/>
+
+        <!-- (manual mantido como você enviou — sem mudanças funcionais) -->
+
+        <h2>1) O que o sistema faz (visão geral)</h2>
+        <p>Você entrega para a ferramenta:</p>
+        <ul>
+          <li><b>XML(s) da NFe</b> (um ou vários)</li>
+          <li><b>SPED</b> (arquivo texto com <code>|C100|...|</code> contendo <b>DT_E_S</b> e <b>IND_PGTO</b>)</li>
+          <li>opcionalmente tudo compactado em <b>ZIP</b> ou em <b>uma pasta com subpastas</b></li>
+        </ul>
+
+        <p>Ela:</p>
+        <ol>
+          <li><b>Extrai as duplicatas</b> do XML (tag <code>cobr/dup</code>) e monta registros de “faturas/duplicatas”.</li>
+          <li><b>Associa cada NFe ao SPED</b> pela <b>chave 44 dígitos</b> (<code>chNFe</code> do XML ↔ campo “CHV_NFE” do <code>C100</code>).</li>
+          <li>
+            Quando acha no SPED:
+            <ul>
+              <li>troca a <b>DATAENTRADA (escrituração)</b> pela <b>DT_E_S</b> do SPED</li>
+              <li>define <b>DESDOB</b> (0/1) conforme <b>IND_PGTO</b> do SPED</li>
+            </ul>
+          </li>
+          <li>Exibe tudo numa <b>grid editável</b>.</li>
+          <li>Exporta: <b>TXT</b> (layout fixo) e <b>CSV</b> (auditoria/conferência).</li>
+        </ol>
+
+        <hr/>
+
+        <h2>2) Conceitos importantes (pra não errar)</h2>
+        <h3>2.1 XML “com duplicata” (cobr/dup)</h3>
+        <ul>
+          <li>O padrão da ferramenta é <b>considerar apenas XML que tenham duplicatas</b> (<code>&lt;cobr&gt;&lt;dup&gt;...&lt;/dup&gt;&lt;/cobr&gt;</code>).</li>
+          <li>Se o XML <b>não tiver duplicata</b>, ele <b>não entra</b> na grid e <b>não sai</b> no TXT, <b>a menos</b> que você marque:
+            <ul>
+              <li><b>“Incluir notas sem cobr/dup (gera 1 linha)”</b></li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>2.2 SPED (C100) é quem “manda” na escrituração</h3>
+        <p>O SPED (registro <code>C100</code>) é usado para:</p>
+        <ul>
+          <li><b>DT_E_S</b> (Data de Entrada/Saída) → aqui tratada como <b>data de escrituração</b></li>
+          <li><b>IND_PGTO (0/1)</b> → usado como <b>desdobramento</b> (DESDOB):
+            <ul>
+              <li><code>0</code> = sem desdobro (1 linha)</li>
+              <li><code>1</code> = com desdobro (pode gerar 2 linhas: item 0 e item 1)</li>
+            </ul>
+          </li>
+        </ul>
+
+        <blockquote>
+          Na prática: o <b>XML</b> dá as duplicatas/valores e dados base; o <b>SPED</b> dá a data correta de escrituração e o indicador 0/1.
+        </blockquote>
+
+        <h3>2.3 Por que usar XML + SPED juntos (e por que ZIP ajuda)</h3>
+        <ul>
+          <li><b>XML sozinho</b> pode ter vencimentos variados, incompletos, divergentes do que foi escriturado, ou faltar informação de “desdobro”.</li>
+          <li><b>SPED</b> é a base contábil/fiscal do período:
+            <ul>
+              <li>garante data de escrituração consistente (<b>DT_E_S</b>)</li>
+              <li>traz o indicador <b>IND_PGTO</b> (0/1)</li>
+            </ul>
+          </li>
+          <li><b>ZIP</b> é a forma mais prática:
+            <ul>
+              <li>junta XML + SPED do mesmo período</li>
+              <li>processa tudo em lote</li>
+              <li>reduz risco de esquecer arquivo e evita misturar períodos</li>
+            </ul>
+          </li>
+        </ul>
+
+        <hr/>
+
+        <h2>3) Estrutura da tela (o que cada bloco significa)</h2>
+        <h3>3.1 Entrada (XML / SPED / ZIP / Pasta)</h3>
+        <ul>
+          <li><b>Selecionar Entrada</b>:
+            <ul>
+              <li><b>Arquivos</b>: seleciona XML/SPED/ZIP</li>
+              <li><b>Pasta</b>: pega uma pasta inteira (com subpastas)</li>
+            </ul>
+          </li>
+          <li>Contadores: <b>XML</b>, <b>SPED</b>, <b>ZIP</b></li>
+          <li>Botões:
+            <ul>
+              <li><b>Processar</b>: lê tudo e monta a grid</li>
+              <li><b>Limpar Dados</b>: zera seleção + grid</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>3.2 Saída (TXT Prosoft)</h3>
+        <ul>
+          <li><b>COD PROSOFT</b>: usado para montar o nome do arquivo de saída.</li>
+          <li><b>Destino</b>: nome final do arquivo (preenchido automaticamente).</li>
+        </ul>
+
+        <h3>3.3 Grid (duplicata)</h3>
+        <ul>
+          <li>dataset final: permite editar dados antes de exportar</li>
+          <li>mostra fonte, status de SPED e somatórios</li>
+        </ul>
+
+        <hr/>
+
+        <h2>4) Passo a passo de uso (fluxo recomendado)</h2>
+        <h3>Passo 1 — Defina o “Contexto da Nota”</h3>
+        <p>Antes de processar, selecione:</p>
+        <ul>
+          <li><b>Compra / Entrada (Terceiro = Emitente)</b>: terceiro (fornecedor) sai do <b>emitente</b> do XML.</li>
+          <li><b>Venda / Saída (Terceiro = Destinatário)</b>: terceiro sai do <b>destinatário</b> do XML.</li>
+        </ul>
+        <blockquote>Isso muda de onde vêm <b>CNPJ/UF/IE do terceiro</b>.</blockquote>
+
+        <h3>Passo 2 — Selecione arquivos</h3>
+        <p>Clique em <b>Selecionar Entrada</b> e escolha XMLs, SPED, ZIP… ou a pasta do período.</p>
+
+        <h3>Passo 3 — Clique em Processar</h3>
+        <ol>
+          <li>Expandir ZIP (se houver) e classificar conteúdos</li>
+          <li>Indexar SPED (<code>C100</code>) por chave 44</li>
+          <li>Ler XML e montar duplicatas</li>
+          <li>Aplicar SPED (se marcado)</li>
+          <li>Normalizar dados e renderizar a grid</li>
+        </ol>
+
+        <h3>Passo 4 — Confira validações e a grid</h3>
+        <ul>
+          <li>Veja os pills de validação (CNPJ/UF/Chave)</li>
+          <li>Se estiver usando SPED, confira <b>SPED match</b> e <b>SPED missing</b></li>
+          <li>Ajuste manualmente qualquer campo na grid</li>
+        </ul>
+
+        <h3>Passo 5 — Configure exportação e exporte</h3>
+        <ul>
+          <li>Preencha <b>COD PROSOFT</b></li>
+          <li>Ajuste opções</li>
+          <li>Clique em <b>Exportar / TXT</b> (ou CSV)</li>
+        </ul>
+
+        <hr/>
+
+        <h2>5) Como a associação com SPED funciona (detalhe técnico prático)</h2>
+        <p>A ferramenta varre o SPED procurando linhas que começam com <code>|C100|</code>.</p>
+        <p>Ela lê:</p>
+        <ul>
+          <li><b>CHV_NFE</b>: chave (44 dígitos)</li>
+          <li><b>DT_E_S</b>: data de escrituração (8 dígitos <code>ddmmaaaa</code>)</li>
+          <li><b>IND_PGTO</b>: <code>0</code> ou <code>1</code> → vira <b>DESDOB</b></li>
+        </ul>
+
+        <h3>Regras de casamento</h3>
+        <ul>
+          <li>por <b>chave 44 dígitos</b></li>
+          <li>se repetir a chave no SPED, usa a <b>primeira ocorrência</b></li>
+        </ul>
+
+        <h3>Efeito quando encontra SPED</h3>
+        <ul>
+          <li><b>DATAENTRADA</b> vira DT_E_S em <code>dd/mm/aaaa</code></li>
+          <li><b>DESDOB</b>: <code>0</code> se IND_PGTO != 1, <code>1</code> se IND_PGTO == 1</li>
+          <li>marca <code>__spedMatched = true</code></li>
+        </ul>
+
+        <h3>Efeito quando NÃO encontra SPED</h3>
+        <ul>
+          <li>registro fica como <b>SPED missing</b></li>
+          <li>se “Somente com SPED” estiver marcado, <b>não exporta</b> por padrão</li>
+        </ul>
+
+        <hr/>
+
+        <h2>6) Explicação de todas as opções (comportamento real)</h2>
+        <h3>6.1 “Anexar D no código (ex: 0001D)”</h3>
+        <ul>
+          <li>altera o nome do arquivo “Destino”</li>
+          <li>útil quando sua convenção exige sufixo <code>D</code></li>
+        </ul>
+
+        <h3>6.2 “Forçar 2 linhas por registro (0 e 1)”</h3>
+        <ul>
+          <li>sempre gera item <code>0</code> e item <code>1</code></li>
+          <li>ignora DESDOB que veio do SPED ou da grid</li>
+        </ul>
+
+        <h3>6.3 “Usar SPED (C100) para data de escrituração e desdobramento”</h3>
+        <ul>
+          <li>habilita cruzamento por chave</li>
+          <li>substitui DATAENTRADA</li>
+          <li>define DESDOB via IND_PGTO</li>
+        </ul>
+
+        <h3>6.4 “Exportar somente se existir no SPED (padrão)”</h3>
+        <ul>
+          <li>só atua se “Usar SPED” estiver ligado</li>
+          <li>se marcado, registros “SPED missing” não saem no TXT/CSV</li>
+        </ul>
+
+        <h3>6.5 “Incluir notas sem cobr/dup”</h3>
+        <ul>
+          <li>se XML não tiver <code>&lt;cobr&gt;&lt;dup&gt;</code>, por padrão é ignorado</li>
+          <li>se marcar, gera 1 linha fallback usando <code>&lt;fat&gt;</code> ou <code>vNF</code></li>
+        </ul>
+
+        <h3>6.6 “Vencimento = +30 dias a partir da escrituração (DT_E_S) — padrão”</h3>
+        <ul>
+          <li>ao exportar, o vencimento vira <b>DATAENTRADA + 30 dias</b></li>
+          <li>se SPED aplicado, DATAENTRADA = DT_E_S (perfeito)</li>
+          <li>se desmarcar, usa <code>dVenc</code> do XML (se existir) ou fica em branco</li>
+        </ul>
+        <blockquote>
+          Importante: o cálculo acontece no <b>momento da exportação</b>; mesmo editando na grid, se estiver marcado ele recalcula.
+        </blockquote>
+
+        <h3>6.7 “Consolidar faturas por terceiro (lista dinâmica de CNPJ/CPF)”</h3>
+        <ul>
+          <li>você cola lista de CNPJ/CPF (um por linha ou por vírgula)</li>
+          <li>se terceiro estiver na lista e a NF tiver mais de uma duplicata:
+            <ul>
+              <li>soma os valores</li>
+              <li>exporta apenas 1 linha</li>
+              <li>mantém o menor vencimento</li>
+            </ul>
+          </li>
+          <li>aplica somente na exportação (grid não muda)</li>
+        </ul>
+
+        <hr/>
+
+        <h2>7) Como editar corretamente na grid (sem quebrar export)</h2>
+        <p>Campos sensíveis:</p>
+        <ul>
+          <li><b>CHAVE</b>: 44 dígitos</li>
+          <li><b>CNPJCPF / CNPJFILIAL</b>: 11 ou 14 dígitos</li>
+          <li><b>UF</b>: 2 letras</li>
+          <li><b>DATAS</b>: edite em <code>dd/mm/aaaa</code> (export converte para <code>ddmmaaaa</code>)</li>
+          <li><b>VALORBRUTOFAT</b>: normaliza para 2 casas</li>
+        </ul>
+        <p class="muted">Depois de editar, a validação inferior mostra alertas (pills).</p>
+
+        <hr/>
+
+        <h2>8) Exportação (TXT e CSV) — regras que pegam</h2>
+        <h3>8.1 Exportar TXT</h3>
+        <ul>
+          <li>linhas com tamanho fixo (pad/align)</li>
+          <li>respeita filtros SPED, regra 2 linhas, vencimento +30 e consolidação</li>
+          <li>nome usa “Destino” (montado por COD PROSOFT e opção do “D”)</li>
+        </ul>
+
+        <h3>8.2 Exportar CSV</h3>
+        <ul>
+          <li>auditoria / abrir no Excel</li>
+          <li>separador <code>;</code></li>
+          <li>aplica filtro “somente com SPED”, consolidação e vencimento +30 (se marcados)</li>
+        </ul>
+
+        <hr/>
+
+        <h2>9) Boas práticas (para operação “sem dor”)</h2>
+        <ol>
+          <li><b>Sempre trabalhe por período</b> (pasta/zip por mês, ex: <code>2026-01</code>)</li>
+          <li>No ZIP, organize:
+            <ul>
+              <li><code>XML/</code> com as NFes</li>
+              <li><code>SPED/</code> com o(s) arquivo(s) do período</li>
+            </ul>
+          </li>
+          <li>Antes de exportar em lote:
+            <ul>
+              <li>confira <b>SPED missing</b></li>
+              <li>se tiver missing, corrija seleção/SPED ou desmarque “somente com SPED”</li>
+            </ul>
+          </li>
+          <li>Se usa “vencimento +30” (padrão), garanta SPED correto do período junto.</li>
+        </ol>
+
+        <hr/>
+
+        <h2>10) Solução de problemas (rápida e objetiva)</h2>
+
+        <h3>“Exportar” dá vazio / não sai nada</h3>
+        <ul>
+          <li>Você está com “Usar SPED” + “Somente com SPED” ligados e tudo está como SPED missing.</li>
+          <li>Solução: selecione o SPED correto (com C100/chaves) ou desmarque “Somente com SPED”.</li>
+        </ul>
+
+        <h3>ZIP não abre / dá erro de descompactação</h3>
+        <ul>
+          <li>Precisa de suporte a <code>DecompressionStream</code>. Use Chrome/Edge atualizados.</li>
+        </ul>
+
+        <h3>“SPED missing” para notas que você tem certeza que estão no SPED</h3>
+        <ul>
+          <li>SPED não é do mesmo período/empresa</li>
+          <li>chave no SPED está diferente (com lixo/espaços) — a ferramenta limpa, mas precisa ter a chave correta</li>
+          <li>o arquivo selecionado não tem <code>|C100|</code> (não é o SPED certo)</li>
+        </ul>
+
+        <h3>Vencimento “mudou” e você queria o do XML</h3>
+        <ul>
+          <li>A opção “Vencimento +30” está marcada (padrão). Desmarque para usar <code>dVenc</code> do XML.</li>
+        </ul>
+
+        <h3>Quero “juntar” duplicatas só para alguns terceiros</h3>
+        <ul>
+          <li>Marque “Consolidar por terceiro”, cole a lista de CNPJ/CPF e exporte (só consolida no export).</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="modal-foot">
+      <button id="btnManualClose" class="btn btn-primary" type="button">Entendi</button>
+    </div>
+  </dialog>
+
+<script>
+(() => {
+  const els = {
+    dropZone: document.getElementById('dropZone'),
+    fileInput: document.getElementById('fileInput'),
+    dirInput: document.getElementById('dirInput'),
+    btnSelect: document.getElementById('btnSelect'),
+    selectMenu: document.getElementById('selectMenu'),
+    btnPickFiles: document.getElementById('btnPickFiles'),
+    btnPickDir: document.getElementById('btnPickDir'),
+    btnPickCancel: document.getElementById('btnPickCancel'),
+
+    cntXml: document.getElementById('cntXml'),
+    cntSped: document.getElementById('cntSped'),
+    cntZip: document.getElementById('cntZip'),
+
+    btnProcessar: document.getElementById('btnProcessar'),
+    btnCancelar: document.getElementById('btnCancelar'),
+    btnLimpar: document.getElementById('btnLimpar'),
+    progress: document.getElementById('progress'),
+    status: document.getElementById('status'),
+
+    logBox: document.getElementById('logBox'),
+    logMeta: document.getElementById('logMeta'),
+    logList: document.getElementById('logList'),
+    btnCopyLog: document.getElementById('btnCopyLog'),
+    btnClearLog: document.getElementById('btnClearLog'),
+
+    codProsoft: document.getElementById('codProsoft'),
+    destino: document.getElementById('destino'),
+
+    chkAppendD: document.getElementById('chkAppendD'),
+    chkForcarDuasLinhas: document.getElementById('chkForcarDuasLinhas'),
+    chkUsarSped: document.getElementById('chkUsarSped'),
+    chkIeSpedPadrao: document.getElementById('chkIeSpedPadrao'), // NOVO
+    chkSomenteComSped: document.getElementById('chkSomenteComSped'),
+    chkIncluirSemDup: document.getElementById('chkIncluirSemDup'),
+    chkVenc30: document.getElementById('chkVenc30'),
+
+    chkConsolidarCnpj: document.getElementById('chkConsolidarCnpj'),
+    txtCnpjsConsolidar: document.getElementById('txtCnpjsConsolidar'),
+
+    origem: document.getElementById('origem'),
+    tipo: document.getElementById('tipo'),
+    serieDigits: document.getElementById('serieDigits'),
+    ctxNota: document.getElementById('ctxNota'),
+
+    btnExportTxt: document.getElementById('btnExportTxt'),
+    btnExportCsv: document.getElementById('btnExportCsv'),
+    validacao: document.getElementById('validacao'),
+
+    gridBody: document.getElementById('gridBody'),
+    count: document.getElementById('count'),
+    sum: document.getElementById('sum'),
+    spedMatch: document.getElementById('spedMatch'),
+    spedMiss: document.getElementById('spedMiss'),
+
+    gridFilter: document.getElementById('gridFilter'),
+    chkExportarFiltrados: document.getElementById('chkExportarFiltrados'),
+
+    // Manual / UX
+    btnManual: document.getElementById('btnManual'),
+    manualDialog: document.getElementById('manualDialog'),
+    btnManualCloseX: document.getElementById('btnManualCloseX'),
+    btnManualClose: document.getElementById('btnManualClose'),
+    btnToggleCfg: document.getElementById('btnToggleCfg'),
+    cfgCard: document.getElementById('cfgCard'),
+  };
+
+  const state = {
+    entries: [],
+    rows: [],
+    spedByChave: new Map(), // chave44 -> {dtEscr:'ddmmaaaa', desdob:0|1, source, line}
+    sped0150ByDoc: new Map(), // doc (CNPJ/CPF digits) -> IE normalizado (0150)  // NOVO
+    counts: { xml: 0, sped: 0, zip: 0 },
+
+    logs: [],
+    cancelRequested: false,
+    isProcessing: false,
+    filterText: '',
+
+    // evita duplicar entradas por engano (melhoria sem quebrar fluxo)
+    entrySig: new Set(),
+
+    // UI cfg
+    cfgCollapsed: false,
+  };
+
+  // -------------------------
+  // Toast simples
+  // -------------------------
+  function toast(msg, isWarn=false) {
+    const t = (msg ?? '').toString();
+    if (els.status) els.status.textContent = t;
+    if (!els.validacao) return;
+
+    const pill = `<span class="pill" style="border-color:${isWarn?'#fed7aa':'#bbf7d0'}; color:${isWarn?'#7a4b00':'#065f46'}; background:${isWarn?'#fff7ed':'#ecfdf5'}">${escapeHtml(t)}</span>`;
+    els.validacao.innerHTML = pill;
+  }
+  function escapeHtml(s) {
+    return (s ?? '').toString().replace(/[&<>"']/g, (m) => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[m]));
+  }
+
+  // -------------------------
+  // v15: Log
+  // -------------------------
+  function pushLog(level, msg, meta) {
+    const item = {
+      ts: new Date().toISOString(),
+      level: (level || 'info'),
+      msg: (msg ?? '').toString(),
+      meta: meta ? (meta ?? '') : ''
+    };
+    state.logs.unshift(item);
+    if (state.logs.length > 300) state.logs.length = 300;
+    renderLog();
+  }
+
+  function renderLog() {
+    if (!els.logList) return;
+
+    const n = state.logs.length;
+    if (els.logMeta) els.logMeta.textContent = `${n} evento(s)`;
+
+    if (!n) {
+      els.logList.innerHTML = '<div class="small muted">Sem eventos. O log aparece quando houver arquivos ignorados, erros de leitura ou avisos de validação.</div>';
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    for (const it of state.logs) {
+      const div = document.createElement('div');
+      div.className = 'log-item';
+
+      const lvl = document.createElement('div');
+      lvl.className = 'log-level ' + (it.level === 'error' ? 'err' : (it.level === 'warn' ? 'warn' : 'info'));
+      lvl.textContent = it.level.toUpperCase();
+
+      const msg = document.createElement('div');
+      msg.className = 'log-msg';
+      msg.innerHTML = `<div>${escapeHtml(it.msg)}</div>` + (it.meta ? `<div class="log-meta">${escapeHtml(it.meta)}</div>` : '');
+
+      div.appendChild(lvl);
+      div.appendChild(msg);
+      frag.appendChild(div);
+    }
+    els.logList.innerHTML = '';
+    els.logList.appendChild(frag);
+  }
+
+  function clearLog() {
+    state.logs = [];
+    renderLog();
+  }
+
+  async function copyLog() {
+    const lines = state.logs.slice().reverse().map(it => `[${it.ts}] ${it.level.toUpperCase()} - ${it.msg}` + (it.meta ? ` | ${it.meta}` : ''));
+    const text = lines.join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Log copiado para a área de transferência.');
+    } catch (err) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast('Log copiado (fallback).');
+    }
+  }
+
+  // -------------------------
+  // v15: Persistência (localStorage)
+  // -------------------------
+  const STORAGE_KEY = 'integra_settings_v15';
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+
+      if (els.codProsoft && typeof s.codProsoft === 'string') els.codProsoft.value = s.codProsoft;
+      if (els.chkAppendD) els.chkAppendD.checked = !!s.chkAppendD;
+      if (els.chkForcarDuasLinhas) els.chkForcarDuasLinhas.checked = !!s.chkForcarDuasLinhas;
+      if (els.chkUsarSped) els.chkUsarSped.checked = !!s.chkUsarSped;
+      if (els.chkIeSpedPadrao) els.chkIeSpedPadrao.checked = !!s.chkIeSpedPadrao; // NOVO
+      if (els.chkSomenteComSped) els.chkSomenteComSped.checked = !!s.chkSomenteComSped;
+      if (els.chkIncluirSemDup) els.chkIncluirSemDup.checked = !!s.chkIncluirSemDup;
+      if (els.chkVenc30) els.chkVenc30.checked = !!s.chkVenc30;
+      if (els.chkConsolidarCnpj) els.chkConsolidarCnpj.checked = !!s.chkConsolidarCnpj;
+
+      if (els.txtCnpjsConsolidar && typeof s.txtCnpjsConsolidar === 'string') els.txtCnpjsConsolidar.value = s.txtCnpjsConsolidar;
+
+      if (els.origem && typeof s.origem === 'string') els.origem.value = s.origem;
+      if (els.tipo && typeof s.tipo === 'string') els.tipo.value = s.tipo;
+      if (els.serieDigits && typeof s.serieDigits === 'string') els.serieDigits.value = s.serieDigits;
+      if (els.ctxNota && typeof s.ctxNota === 'string') els.ctxNota.value = s.ctxNota;
+
+      if (els.gridFilter && typeof s.gridFilter === 'string') els.gridFilter.value = s.gridFilter;
+      if (els.chkExportarFiltrados) els.chkExportarFiltrados.checked = !!s.chkExportarFiltrados;
+
+      if (typeof s.cfgCollapsed === 'boolean') state.cfgCollapsed = s.cfgCollapsed;
+    } catch (e) {
+      // ignora
+    }
+  }
+
+  let _saveT = null;
+  function saveSettingsDebounced() {
+    if (_saveT) clearTimeout(_saveT);
+    _saveT = setTimeout(saveSettings, 200);
+  }
+
+  function saveSettings() {
+    try {
+      const s = {
+        codProsoft: (els.codProsoft && els.codProsoft.value) ? els.codProsoft.value : '',
+        chkAppendD: !!(els.chkAppendD && els.chkAppendD.checked),
+        chkForcarDuasLinhas: !!(els.chkForcarDuasLinhas && els.chkForcarDuasLinhas.checked),
+        chkUsarSped: !!(els.chkUsarSped && els.chkUsarSped.checked),
+        chkIeSpedPadrao: !!(els.chkIeSpedPadrao && els.chkIeSpedPadrao.checked), // NOVO
+        chkSomenteComSped: !!(els.chkSomenteComSped && els.chkSomenteComSped.checked),
+        chkIncluirSemDup: !!(els.chkIncluirSemDup && els.chkIncluirSemDup.checked),
+        chkVenc30: !!(els.chkVenc30 && els.chkVenc30.checked),
+        chkConsolidarCnpj: !!(els.chkConsolidarCnpj && els.chkConsolidarCnpj.checked),
+        txtCnpjsConsolidar: (els.txtCnpjsConsolidar && els.txtCnpjsConsolidar.value) ? els.txtCnpjsConsolidar.value : '',
+        origem: (els.origem && els.origem.value) ? els.origem.value : '0',
+        tipo: (els.tipo && els.tipo.value) ? els.tipo.value : '1',
+        serieDigits: (els.serieDigits && els.serieDigits.value) ? els.serieDigits.value : '0',
+        ctxNota: (els.ctxNota && els.ctxNota.value) ? els.ctxNota.value : 'entrada',
+        gridFilter: (els.gridFilter && els.gridFilter.value) ? els.gridFilter.value : '',
+        chkExportarFiltrados: !!(els.chkExportarFiltrados && els.chkExportarFiltrados.checked),
+        cfgCollapsed: !!state.cfgCollapsed,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    } catch (e) {
+      // ignora
+    }
+  }
+
+  function nextTick() {
+    return new Promise((resolve) => setTimeout(resolve, 0));
+  }
+
+  function setProcessing(isProcessing) {
+    state.isProcessing = !!isProcessing;
+    if (els.btnCancelar) els.btnCancelar.disabled = !state.isProcessing;
+    if (els.btnProcessar) els.btnProcessar.disabled = state.isProcessing || !state.entries.length;
+    if (els.btnLimpar) els.btnLimpar.disabled = state.isProcessing ? true : !(state.entries.length || state.rows.length);
+    if (els.btnExportTxt) els.btnExportTxt.disabled = state.isProcessing || !state.rows.length;
+    if (els.btnExportCsv) els.btnExportCsv.disabled = state.isProcessing || !state.rows.length;
+  }
+
+  function cancelProcessing() {
+    if (!state.isProcessing) return;
+    state.cancelRequested = true;
+    pushLog('warn', 'Cancelamento solicitado pelo usuário.');
+    toast('Cancelando… aguarde finalizar o arquivo atual.');
+  }
+
+  // -------------------------
+  // Utils
+  // -------------------------
+  function onlyDigits(s) { return (s ?? '').toString().replace(/\D+/g, ''); }
+  function onlyAlphaNumUpper(s) { return (s ?? '').toString().toUpperCase().replace(/[^0-9A-Z]+/g, ''); }
+
+  function parseCnpjSet(raw) {
+    const set = new Set();
+    const txt = (raw ?? '').toString().trim();
+    if (!txt) return set;
+    const parts = txt.split(/[\s,;]+/g);
+    for (const p of parts) {
+      const d = onlyDigits(p);
+      if (d.length === 11 || d.length === 14) set.add(d);
+    }
+    return set;
+  }
+
+  function brDateToTime(br) {
+    const d = onlyDigits(br);
+    if (d.length !== 8) return null;
+    const day = Number(d.slice(0,2));
+    const mon = Number(d.slice(2,4));
+    const yr  = Number(d.slice(4,8));
+    if (!day || !mon || !yr) return null;
+    const dt = new Date(yr, mon - 1, day);
+    if (Number.isNaN(dt.getTime())) return null;
+    return dt.getTime();
+  }
+
+  // Consolidar por terceiro: aplica na EXPORTAÇÃO (não altera grid)
+  function applyConsolidacaoPorTerceiro(rows) {
+    if (!els.chkConsolidarCnpj || !els.chkConsolidarCnpj.checked) return rows;
+
+    const set = parseCnpjSet(els.txtCnpjsConsolidar ? els.txtCnpjsConsolidar.value : '');
+    if (!set.size) return rows;
+
+    // Agrupa por CHAVE + CNPJ/CPF do terceiro
+    const groups = new Map();
+    rows.forEach((r, idx) => {
+      const chave = onlyDigits(r.CHAVE || '');
+      const cnpj = onlyDigits(r.CNPJCPF || '');
+      const key = `${chave}|${cnpj}`;
+      if (!groups.has(key)) groups.set(key, { firstIdx: idx, rows: [] });
+      groups.get(key).rows.push(r);
+    });
+
+    const ordered = Array.from(groups.values()).sort((a,b) => a.firstIdx - b.firstIdx);
+    const out = [];
+
+    for (const g of ordered) {
+      const arr = g.rows;
+      const cnpj = onlyDigits(arr[0]?.CNPJCPF || '');
+
+      if (set.has(cnpj) && arr.length > 1) {
+        const base = { ...arr[0] };
+
+        let total = 0;
+        let minTime = null;
+        let minBR = base.DATAVENCIMENTO || '';
+
+        for (const r of arr) {
+          total += Number(toMoney2(r.VALORBRUTOFAT || '0')) || 0;
+
+          const t = brDateToTime(r.DATAVENCIMENTO);
+          if (t !== null && (minTime === null || t < minTime)) {
+            minTime = t;
+            minBR = r.DATAVENCIMENTO || minBR;
+          }
+        }
+
+        base.VALORBRUTOFAT = toMoney2(total);
+        base.DATAVENCIMENTO = minBR || base.DATAVENCIMENTO || '';
+        base.DESDOB = 0;
+        base.__consolidated = true;
+
+        out.push(base);
+      } else {
+        out.push(...arr);
+      }
+    }
+
+    return out;
+  }
+
+  function formatStrSize(source, ch, size, leftAlign) {
+    source = (source ?? '').toString();
+    ch = (ch ?? ' ').toString().slice(0,1);
+    size = Number(size) || 0;
+
+    if (leftAlign) {
+      return (source + ch.repeat(size)).slice(0, size);
+    }
+    const pad = ch.repeat(size) + source;
+    return pad.slice(pad.length - size);
+  }
+
+  function ddmmyyyyToDigits(s) {
+    s = (s ?? '').toString().trim();
+    if (!s) return '';
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return `${iso[3]}${iso[2]}${iso[1]}`;
+    const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (br) return `${br[1]}${br[2]}${br[3]}`;
+    const dig = onlyDigits(s);
+    if (dig.length >= 8) return dig.slice(0,8);
+    return dig;
+  }
+
+  function digitsToBRDate(dig8) {
+    const d = onlyDigits(dig8);
+    if (d.length !== 8) return '';
+    return `${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4,8)}`;
+  }
+
+  function addDaysToDigDate(dig8, days) {
+    const d = onlyDigits(dig8);
+    days = Number(days) || 0;
+    if (d.length !== 8) return '';
+    const day = Number(d.slice(0,2));
+    const mon = Number(d.slice(2,4));
+    const yr  = Number(d.slice(4,8));
+    if (!day || !mon || !yr) return '';
+    const dt = new Date(yr, mon - 1, day);
+    if (Number.isNaN(dt.getTime())) return '';
+    dt.setDate(dt.getDate() + days);
+    const dd = String(dt.getDate()).padStart(2,'0');
+    const mm = String(dt.getMonth() + 1).padStart(2,'0');
+    const yyyy = String(dt.getFullYear()).padStart(4,'0');
+    return `${dd}${mm}${yyyy}`;
+  }
+
+  function toMoney2(v) {
+    const s = (v ?? '').toString().trim();
+    if (!s) return '0.00';
+    let n = 0;
+    if (s.includes(',') && (s.includes('.') || s.match(/\d+,\d{2}$/))) {
+      const norm = s.replace(/\./g,'').replace(',', '.');
+      n = Number(norm);
+    } else {
+      n = Number(s);
+    }
+    if (!Number.isFinite(n)) n = 0;
+    return n.toFixed(2);
+  }
+
+  function moneyToTxt(v) {
+    return toMoney2(v); // já volta com ponto
+  }
+
+  function padSerieWithZeros(serieRaw) {
+    const digOpt = Number(els.serieDigits.value || 0) || 0;
+    const s = onlyDigits(serieRaw);
+    if (!s) return '';
+    if (digOpt <= 0) return s;
+    return s.padStart(digOpt, '0');
+  }
+
+  function encodeWin1252(str) {
+    const out = new Uint8Array(str.length);
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      out[i] = (c <= 0xFF) ? c : 0x3F; // '?' fallback
+    }
+    return out;
+  }
+
+  function downloadBytes(filename, bytes, mime='application/octet-stream') {
+    const blob = new Blob([bytes], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'export.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  // -------------------------
+  // ZIP (unzip minimal)
+  // -------------------------
+  function readU16LE(view, off) { return view.getUint16(off, true); }
+  function readU32LE(view, off) { return view.getUint32(off, true); }
+
+  function msDosDateTimeToJsDate(dosDate, dosTime) {
+    const day = dosDate & 0x1F;
+    const month = (dosDate >> 5) & 0x0F;
+    const year = ((dosDate >> 9) & 0x7F) + 1980;
+    const sec = (dosTime & 0x1F) * 2;
+    const min = (dosTime >> 5) & 0x3F;
+    const hour = (dosTime >> 11) & 0x1F;
+    return new Date(year, month - 1, day, hour, min, sec);
+  }
+
+  async function inflateRaw(buf) {
+    if (typeof DecompressionStream === 'undefined') {
+      throw new Error('Seu navegador não suporta descompactar ZIP. Use Chrome/Edge recente.');
+    }
+    const ds = new DecompressionStream('deflate-raw');
+    const stream = new Response(new Blob([buf]).stream().pipeThrough(ds));
+    const ab = await stream.arrayBuffer();
+    return new Uint8Array(ab);
+  }
+
+  async function unzipEntriesFromZipBuffer(buf) {
+    const u8 = new Uint8Array(buf);
+    const view = new DataView(buf);
+
+    let eocd = -1;
+    for (let i = u8.length - 22; i >= 0; i--) {
+      if (u8[i] === 0x50 && u8[i+1] === 0x4b && u8[i+2] === 0x05 && u8[i+3] === 0x06) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error('ZIP inválido (EOCD não encontrado).');
+
+    const cdSize = readU32LE(view, eocd + 12);
+    const cdOffset = readU32LE(view, eocd + 16);
+
+    let ptr = cdOffset;
+    const cdEnd = cdOffset + cdSize;
+    const entries = [];
+
+    while (ptr < cdEnd) {
+      const sig = readU32LE(view, ptr);
+      if (sig !== 0x02014b50) break;
+
+      const compMethod = readU16LE(view, ptr + 10);
+      const modTime = readU16LE(view, ptr + 12);
+      const modDate = readU16LE(view, ptr + 14);
+      const crc32 = readU32LE(view, ptr + 16);
+      const compSize = readU32LE(view, ptr + 20);
+      const uncompSize = readU32LE(view, ptr + 24);
+      const fileNameLen = readU16LE(view, ptr + 28);
+      const extraLen = readU16LE(view, ptr + 30);
+      const commentLen = readU16LE(view, ptr + 32);
+      const lho = readU32LE(view, ptr + 42);
+
+      const nameBytes = u8.slice(ptr + 46, ptr + 46 + fileNameLen);
+      const name = new TextDecoder('utf-8').decode(nameBytes);
+      const isDir = name.endsWith('/');
+
+      ptr = ptr + 46 + fileNameLen + extraLen + commentLen;
+
+      if (isDir) continue;
+
+      const lSig = readU32LE(view, lho);
+      if (lSig !== 0x04034b50) continue;
+
+      const lfNameLen = readU16LE(view, lho + 26);
+      const lfExtraLen = readU16LE(view, lho + 28);
+      const dataOff = lho + 30 + lfNameLen + lfExtraLen;
+
+      const compData = u8.slice(dataOff, dataOff + compSize);
+
+      let fileDataU8;
+      if (compMethod === 0) {
+        fileDataU8 = compData;
+      } else if (compMethod === 8) {
+        fileDataU8 = await inflateRaw(compData);
+      } else {
+        pushLog('warn', 'ZIP: método de compactação não suportado (ignorado)', `${name} (método ${compMethod})`);
+        continue;
+      }
+
+      let text = '';
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(fileDataU8);
+      } catch {
+        text = new TextDecoder('latin1').decode(fileDataU8);
+      }
+
+      entries.push({
+        name,
+        text,
+        modifiedAt: msDosDateTimeToJsDate(modDate, modTime),
+        compMethod,
+        crc32,
+        compSize,
+        uncompSize
+      });
+    }
+
+    return entries;
+  }
+
+  // -------------------------
+  // XML helpers
+  // -------------------------
+  function q1(node, tagName) {
+    if (!node) return null;
+    const all = node.getElementsByTagName('*');
+    tagName = tagName.toLowerCase();
+    for (const el of all) {
+      if (((el.localName || el.tagName) || '').toLowerCase() === tagName) return el;
+    }
+    return null;
+  }
+
+  function qAll(node, tagName) {
+    if (!node) return [];
+    const all = node.getElementsByTagName('*');
+    tagName = tagName.toLowerCase();
+    const out = [];
+    for (const el of all) {
+      if (((el.localName || el.tagName) || '').toLowerCase() === tagName) out.push(el);
+    }
+    return out;
+  }
+
+  function textOf(node, tagName) {
+    const el = q1(node, tagName);
+    return el ? (el.textContent || '').trim() : '';
+  }
+
+  function findChaveNFe(doc) {
+    const all = doc.getElementsByTagName('*');
+    for (const el of all) {
+      const ln = (el.localName || el.tagName || '').toLowerCase();
+      if (ln === 'chnfe') {
+        const d = onlyDigits(el.textContent || '');
+        if (d.length === 44) return d;
+      }
+    }
+    for (const el of all) {
+      const ln = (el.localName || el.tagName || '').toLowerCase();
+      if (ln === 'infnfe') {
+        const id = el.getAttribute('Id') || el.getAttribute('id') || '';
+        const d = onlyDigits(id);
+        if (d.length >= 44) return d.slice(d.length - 44);
+      }
+    }
+    return '';
+  }
+
+  function parseNFeLike(xmlText, fileName) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText, 'application/xml');
+    const perr = doc.getElementsByTagName('parsererror');
+    if (perr && perr.length) throw new Error(`XML inválido: ${fileName}`);
+
+    let nfe = doc.getElementsByTagName('NFe')[0];
+    if (!nfe) {
+      const all = doc.getElementsByTagName('*');
+      for (const el of all) {
+        if ((el.localName || el.tagName) === 'NFe') { nfe = el; break; }
+      }
+    }
+    if (!nfe) throw new Error(`Não encontrei tag <NFe> em ${fileName}`);
+
+    const infNFe = q1(nfe, 'infNFe') || nfe;
+    const ide = q1(infNFe, 'ide');
+    const emit = q1(infNFe, 'emit');
+    const dest = q1(infNFe, 'dest');
+    const cobr = q1(infNFe, 'cobr');
+    const total = q1(infNFe, 'total');
+    const icmsTot = total ? q1(total, 'ICMSTot') : null;
+
+    const chave = findChaveNFe(doc) || '';
+    const ctx = (els.ctxNota.value || 'entrada').toLowerCase();
+
+    const terceiroNode = (ctx === 'saida') ? dest : emit;
+    const filialNode = (ctx === 'saida') ? emit : dest;
+
+    const cnpjFilial = onlyDigits(textOf(filialNode, 'CNPJ') || textOf(filialNode, 'CPF'));
+    const cnpjCpfTerceiro = onlyDigits(textOf(terceiroNode, 'CNPJ') || textOf(terceiroNode, 'CPF'));
+
+    const enderTerceiro =
+      q1(terceiroNode, (ctx === 'saida') ? 'enderDest' : 'enderEmit') ||
+      q1(terceiroNode, 'enderDest') ||
+      q1(terceiroNode, 'enderEmit');
+
+    const uf = (textOf(enderTerceiro, 'UF') || '').toUpperCase();
+    const ie = onlyAlphaNumUpper(textOf(terceiroNode, 'IE'));
+
+    const serie = onlyDigits(textOf(ide, 'serie'));
+    const nfNumero = onlyDigits(textOf(ide, 'nNF'));
+
+    const dhEmi = textOf(ide, 'dhEmi') || textOf(ide, 'dEmi');
+    const dhSaiEnt = textOf(ide, 'dhSaiEnt') || textOf(ide, 'dSaiEnt') || dhEmi;
+
+    const dataEmissaoBR = digitsToBRDate(ddmmyyyyToDigits(dhEmi));
+    const dataEntradaBR = digitsToBRDate(ddmmyyyyToDigits(dhSaiEnt));
+
+    const vNF = icmsTot ? (textOf(icmsTot, 'vNF') || '0') : '0';
+
+    const fat = cobr ? q1(cobr, 'fat') : null;
+    const nFat = fat ? textOf(fat, 'nFat') : '';
+    const vOrig = fat ? textOf(fat, 'vOrig') : '';
+    const vLiq = fat ? textOf(fat, 'vLiq') : '';
+
+    const dups = cobr ? qAll(cobr, 'dup') : [];
+    const rows = [];
+
+    if (dups.length) {
+      for (const dup of dups) {
+        const nDup = textOf(dup, 'nDup') || nFat || `${nfNumero}/${serie}`;
+        const dVenc = textOf(dup, 'dVenc');
+        const vDup = textOf(dup, 'vDup');
+
+        rows.push({
+          CHAVE: chave,
+          DESDOB: 0,
+          CNPJFILIAL: cnpjFilial,
+          CNPJCPF: cnpjCpfTerceiro,
+          UF: uf,
+          IE: ie,
+          NFSERIE: serie,
+          NFNUMERO: nfNumero,
+          DATAEMISSAO: dataEmissaoBR,
+          DATAENTRADA: dataEntradaBR,
+          NUMFATURA: nDup,
+          DATAVENCIMENTO: digitsToBRDate(ddmmyyyyToDigits(dVenc)),
+          VALORBRUTOFAT: toMoney2(vDup || vOrig || vLiq || vNF),
+          __source: fileName
+        });
+      }
+    } else {
+      if (!els.chkIncluirSemDup.checked) return [];
+
+      rows.push({
+        CHAVE: chave,
+        DESDOB: 0,
+        CNPJFILIAL: cnpjFilial,
+        CNPJCPF: cnpjCpfTerceiro,
+        UF: uf,
+        IE: ie,
+        NFSERIE: serie,
+        NFNUMERO: nfNumero,
+        DATAEMISSAO: dataEmissaoBR,
+        DATAENTRADA: dataEntradaBR,
+        NUMFATURA: nFat || `${nfNumero}/${serie}`,
+        DATAVENCIMENTO: '',
+        VALORBRUTOFAT: toMoney2(vOrig || vLiq || vNF),
+        __source: fileName
+      });
+    }
+
+    return rows;
+  }
+
+  // -------------------------
+  // SPED helpers (C100)
+  // -------------------------
+  function parseSpedC100(spedText, sourceName) {
+    const map = new Map();
+    const lines = (spedText || '').split(/\r?\n/);
+
+    for (let ln = 0; ln < lines.length; ln++) {
+      const raw = lines[ln].trim();
+      if (!raw) continue;
+      if (!raw.startsWith('|C100|')) continue;
+
+      const line = raw.replace(/^\|/, '').replace(/\|$/, '');
+      const f = line.split('|');
+      if (!f.length || f[0] !== 'C100') continue;
+
+      const chave = onlyDigits(f[8] || '');
+      if (chave.length !== 44) continue;
+
+      const dtEs = onlyDigits(f[10] || '');
+      const indPgto = (f[12] || '').trim();
+      const desdob = (indPgto === '1') ? 1 : 0;
+
+      if (dtEs.length !== 8) continue;
+
+      if (!map.has(chave)) {
+        map.set(chave, { dtEscr: dtEs, desdob, source: sourceName, line: ln + 1 });
+      }
+    }
+
+    return map;
+  }
+
+  // -------------------------
+  // SPED helpers (0150 - Participantes)  [NOVO]
+  // -------------------------
+  function parseSped0150(spedText, sourceName) {
+    const map = new Map();
+    const lines = (spedText || '').split(/\r?\n/);
+
+    for (let ln = 0; ln < lines.length; ln++) {
+      const raw0 = lines[ln];
+      if (!raw0) continue;
+      const raw = raw0.trim();
+      if (!raw) continue;
+      if (!raw.startsWith('|0150|')) continue;
+
+      const line = raw.replace(/^\|/, '').replace(/\|$/, '');
+      const f = line.split('|');
+      if (!f.length || f[0] !== '0150') continue;
+
+      // Layout (resumo): REG|COD_PART|NOME|COD_PAIS|CNPJ|CPF|IE|COD_MUN|...
+      const doc = onlyDigits(f[4] || f[5] || '');
+      if (!(doc.length === 11 || doc.length === 14)) continue;
+
+      const ie = onlyAlphaNumUpper(f[6] || '');
+      if (!ie) continue;
+
+      // Mantém o último IE válido visto para o mesmo DOC (é mais robusto em arquivos com repetições)
+      map.set(doc, ie);
+    }
+
+    return map;
+  }
+
+  // -------------------------
+  // Aplicação do IE via SPED 0150  [NOVO]
+  // -------------------------
+  function applyIeFromSped0150(row) {
+    if (!row) return;
+
+    const doc = onlyDigits(row.CNPJCPF || '');
+    if (!(doc.length === 11 || doc.length === 14)) return;
+
+    const ieSped = onlyAlphaNumUpper(state.sped0150ByDoc.get(doc) || '');
+    if (!ieSped) return;
+
+    const ieXml = onlyAlphaNumUpper(row.IE || '');
+
+    const forced = !!(els.chkIeSpedPadrao && els.chkIeSpedPadrao.checked);
+
+    // Regra conservadora (desmarcado):
+    // - substitui se XML vazio, OU
+    // - se quantidade de dígitos do IE do XML != quantidade de dígitos do IE do SPED
+    let shouldReplace = false;
+    if (forced) {
+      shouldReplace = true;
+    } else {
+      if (!ieXml) shouldReplace = true;
+      else {
+        const dXml = onlyDigits(ieXml);
+        const dSpd = onlyDigits(ieSped);
+        if (dXml.length !== dSpd.length) shouldReplace = true;
+      }
+    }
+
+    if (shouldReplace && ieXml !== ieSped) {
+      row.IE = ieSped;
+
+      // Log solicitado: chave / NF / CNPJ e IE antigo/novo
+      pushLog(
+        'info',
+        'IE ajustada via SPED 0150',
+        `chave ${row.CHAVE || ''} | NF ${row.NFNUMERO || ''} | CNPJ ${doc} | IE xml ${ieXml || '(vazio)'} -> IE sped ${ieSped}`
+      );
+    }
+  }
+
+  // -------------------------
+  // TXT layout
+  // -------------------------
+  function buildTxtLine(row, itemDesdob3) {
+    const origem = (els.origem.value || '0').toString().slice(0,1);
+    const tipo = (els.tipo.value || '1').toString().slice(0,1);
+
+    const cnpjcpf = onlyDigits(row.CNPJCPF);
+    const uf = (row.UF || '').toUpperCase();
+    const ie = onlyAlphaNumUpper(row.IE);
+
+    const serieFmt = padSerieWithZeros(row.NFSERIE);
+    const nfnumero = (row.NFNUMERO ?? '').toString();
+
+    const dataEscr = ddmmyyyyToDigits(row.DATAENTRADA || row.DATAEMISSAO);
+
+    const numFatura = (row.NFNUMERO ?? '') + '/' + (row.NUMFATURA ?? '');
+
+    let dataVenc = ddmmyyyyToDigits(row.DATAVENCIMENTO);
+    if (els.chkVenc30 && els.chkVenc30.checked) {
+      const base = ddmmyyyyToDigits(row.DATAENTRADA || row.DATAEMISSAO);
+      if (base.length === 8) {
+        const calc = addDaysToDigDate(base, 30);
+        if (calc) dataVenc = calc;
+      }
+    }
+
+    const valor = moneyToTxt(row.VALORBRUTOFAT);
+
+    return (
+      formatStrSize(origem, ' ', 1, false) +
+      formatStrSize(tipo, ' ', 1, false) +
+      formatStrSize(cnpjcpf, '0', 14, false) +
+      formatStrSize(uf, ' ', 2, false) +
+      formatStrSize(ie, ' ', 20, false) +
+      formatStrSize(serieFmt, ' ', 6, false) +
+      formatStrSize(' ', ' ', 6, false) +
+      formatStrSize(nfnumero, '0', 10, false) +
+      formatStrSize(itemDesdob3, ' ', 3, false) +
+      formatStrSize(dataEscr, ' ', 8, true) +
+      formatStrSize(numFatura, ' ', 20, false) +
+      formatStrSize(dataVenc, ' ', 8, false) +
+      formatStrSize(valor, ' ', 14, false) +
+      formatStrSize(' ', ' ', 14, false) +
+      formatStrSize(' ', ' ', 14, false) +
+      formatStrSize(' ', ' ', 14, false) +
+      formatStrSize(' ', ' ', 14, false) +
+      formatStrSize(valor, ' ', 14, false) +
+      formatStrSize(' ', ' ', 8, false) +
+      formatStrSize(' ', ' ', 11, false) +
+      formatStrSize(' ', ' ', 8, false) +
+      formatStrSize(' ', ' ', 8, false) +
+      formatStrSize(' ', ' ', 14, false) +
+      formatStrSize(' ', ' ', 11, false) +
+      formatStrSize(' ', ' ', 14, false) +
+      formatStrSize(' ', ' ', 11, false) +
+      formatStrSize(' ', ' ', 14, false) +
+      formatStrSize(' ', ' ', 11, false) +
+      formatStrSize(' ', ' ', 6, false) +
+      formatStrSize('N', ' ', 1, false) +
+      formatStrSize(' ', ' ', 14, true) +
+      formatStrSize('2', ' ', 1, false) +
+      formatStrSize(' ', ' ', 30, false) +
+      formatStrSize('9', ' ', 1, false) +
+      formatStrSize('03', ' ', 2, false) +
+      formatStrSize(' ', ' ', 40, false) +
+      formatStrSize(' ', ' ', 3, false)
+    );
+  }
+
+  function computeExportRowsBase() {
+    // Exporta filtrados?
+    const useFiltered = !!(els.chkExportarFiltrados && els.chkExportarFiltrados.checked);
+    const base = useFiltered ? getViewRows() : state.rows.slice();
+
+    // Somente com SPED?
+    const onlyWithSped = !!(els.chkUsarSped && els.chkUsarSped.checked && els.chkSomenteComSped && els.chkSomenteComSped.checked);
+    const filtered = onlyWithSped ? base.filter(r => !!r.__spedMatched) : base;
+
+    // Consolidação (somente no export)
+    const consolidated = applyConsolidacaoPorTerceiro(filtered);
+
+    return consolidated;
+  }
+
+  function computeExportLines(rows) {
+    const lines = [];
+    const forceTwo = !!(els.chkForcarDuasLinhas && els.chkForcarDuasLinhas.checked);
+
+    for (const r of rows) {
+      const d = (onlyDigits(r.DESDOB).slice(0,1) === '1') ? 1 : 0;
+
+      if (forceTwo) {
+        lines.push({ row: r, item3: '000' });
+        lines.push({ row: r, item3: '001' });
+      } else {
+        // Se DESDOB=1 -> 2 linhas (0 e 1). Se DESDOB=0 -> 1 linha (0).
+        lines.push({ row: r, item3: '000' });
+        if (d === 1) lines.push({ row: r, item3: '001' });
+      }
+    }
+    return lines;
+  }
+
+  function exportTxt() {
+    const filename = (els.destino && els.destino.value) ? els.destino.value : 'Faturas.txt';
+    const rows = computeExportRowsBase();
+    if (!rows.length) {
+      toast('Nada para exportar (verifique SPED / filtros).', true);
+      pushLog('warn', 'Exportação TXT: nada para exportar (lista vazia após filtros)');
+      return;
+    }
+
+    const lines = computeExportLines(rows).map(x => buildTxtLine(x.row, x.item3));
+    const content = lines.join('\r\n') + '\r\n';
+    const bytes = encodeWin1252(content);
+    downloadBytes(filename, bytes, 'text/plain');
+
+    pushLog('info', 'TXT exportado', `${filename} | linhas: ${lines.length} | registros base: ${rows.length}`);
+    toast(`TXT exportado: ${filename}`);
+  }
+
+  function csvEscape(v) {
+    const s = (v ?? '').toString();
+    if (s.includes('"') || s.includes(';') || s.includes('\n') || s.includes('\r')) {
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+    return s;
+  }
+
+  function exportCsv() {
+    const raw = (els.destino && els.destino.value) ? els.destino.value : 'Faturas.txt';
+    const filename = raw.replace(/\.txt$/i, '.csv');
+
+    const rows = computeExportRowsBase();
+    if (!rows.length) {
+      toast('Nada para exportar (verifique SPED / filtros).', true);
+      pushLog('warn', 'Exportação CSV: nada para exportar (lista vazia após filtros)');
+      return;
+    }
+
+    const lines = computeExportLines(rows).map(({ row, item3 }) => {
+      // CSV é auditoria do que vai pro TXT (linha por linha)
+      return {
+        ITEM: item3,
+        CHAVE: row.CHAVE,
+        DESDOB: row.DESDOB,
+        CNPJFILIAL: row.CNPJFILIAL,
+        CNPJCPF: row.CNPJCPF,
+        UF: row.UF,
+        IE: row.IE,
+        NFSERIE: row.NFSERIE,
+        NFNUMERO: row.NFNUMERO,
+        DATAEMISSAO: row.DATAEMISSAO,
+        DATAENTRADA: row.DATAENTRADA,
+        NUMFATURA: row.NUMFATURA,
+        DATAVENCIMENTO: row.DATAVENCIMENTO,
+        VALORBRUTOFAT: toMoney2(row.VALORBRUTOFAT),
+        FONTE: row.__source,
+        SPED: row.__spedMatched ? 'MATCH' : 'MISSING',
+      };
+    });
+
+    const header = Object.keys(lines[0]);
+    const body = [
+      header.join(';'),
+      ...lines.map(r => header.map(k => csvEscape(r[k])).join(';'))
+    ].join('\r\n') + '\r\n';
+
+    downloadBytes(filename, encodeWin1252(body), 'text/csv');
+
+    pushLog('info', 'CSV exportado', `${filename} | linhas: ${lines.length} | registros base: ${rows.length}`);
+    toast(`CSV exportado: ${filename}`);
+  }
+
+  // -------------------------
+  // UI / Grid
+  // -------------------------
+  function refreshCounters() {
+    els.cntXml.textContent = String(state.counts.xml || 0);
+    els.cntSped.textContent = String(state.counts.sped || 0);
+    els.cntZip.textContent = String(state.counts.zip || 0);
+  }
+
+  function setDestino() {
+    const raw = (els.codProsoft.value || '').trim();
+    if (!raw) { els.destino.value = ''; return; }
+
+    const digits = onlyDigits(raw);
+    const hasD = raw.toUpperCase().endsWith('D');
+    const wantD = els.chkAppendD.checked || hasD;
+
+    let code = digits || raw;
+    if (wantD && !code.toUpperCase().endsWith('D')) code = code + 'D';
+    if (!wantD && code.toUpperCase().endsWith('D')) code = code.slice(0, -1);
+
+    els.destino.value = `Faturas${code}.txt`;
+  }
+
+  // v15: filtro da tabela
+  function getViewRowsWithIndex() {
+    const q = (state.filterText || '').trim().toLowerCase();
+    const all = state.rows.map((r, i) => ({ r, i }));
+    if (!q) return all;
+    return all.filter(({ r }) => {
+      const hay = [
+        r.CHAVE, r.CNPJCPF, r.CNPJFILIAL, r.NFNUMERO, r.NFSERIE, r.NUMFATURA, r.UF, r.IE, r.__source
+      ].map(v => (v ?? '').toString().toLowerCase()).join(' | ');
+      return hay.includes(q);
+    });
+  }
+
+  function getViewRows() {
+    return getViewRowsWithIndex().map(o => o.r);
+  }
+
+  function renderGrid() {
+    els.gridBody.innerHTML = '';
+
+    state.filterText = (els.gridFilter && typeof els.gridFilter.value === 'string') ? els.gridFilter.value : (state.filterText || '');
+    const hasFilter = !!(state.filterText && state.filterText.trim());
+
+    const view = getViewRowsWithIndex();
+
+    const frag = document.createDocumentFragment();
+    let sum = 0;
+
+    let match = 0;
+    let miss = 0;
+
+    view.forEach(({ r, i }, viewIdx) => {
+      sum += Number(toMoney2(r.VALORBRUTOFAT));
+      if (r.__spedMatched) match++; else miss++;
+
+      const tr = document.createElement('tr');
+      const cells = [
+        { key: '__idx', val: String(viewIdx + 1), editable: false },
+        { key: 'CHAVE', val: r.CHAVE ?? '', editable: true },
+        { key: 'DESDOB', val: String(r.DESDOB ?? 0), editable: true },
+        { key: 'CNPJFILIAL', val: r.CNPJFILIAL ?? '', editable: true },
+        { key: 'CNPJCPF', val: r.CNPJCPF ?? '', editable: true },
+        { key: 'UF', val: r.UF ?? '', editable: true },
+        { key: 'IE', val: r.IE ?? '', editable: true },
+        { key: 'NFSERIE', val: r.NFSERIE ?? '', editable: true },
+        { key: 'NFNUMERO', val: r.NFNUMERO ?? '', editable: true },
+        { key: 'DATAEMISSAO', val: r.DATAEMISSAO ?? '', editable: true },
+        { key: 'DATAENTRADA', val: r.DATAENTRADA ?? '', editable: true },
+        { key: 'NUMFATURA', val: r.NUMFATURA ?? '', editable: true },
+        { key: 'DATAVENCIMENTO', val: r.DATAVENCIMENTO ?? '', editable: true },
+        { key: 'VALORBRUTOFAT', val: r.VALORBRUTOFAT ?? '', editable: true },
+        { key: '__source', val: r.__source ?? '', editable: false },
+      ];
+
+      for (const c of cells) {
+        const td = document.createElement('td');
+        td.textContent = c.val;
+        if (c.editable) {
+          td.setAttribute('contenteditable', 'true');
+          td.dataset.idx = String(i);
+          td.dataset.key = c.key;
+          td.addEventListener('blur', onCellEdit);
+        }
+        tr.appendChild(td);
+      }
+
+      frag.appendChild(tr);
+    });
+
+    els.gridBody.appendChild(frag);
+
+    const total = state.rows.length;
+    const viewCount = view.length;
+
+    els.count.textContent = hasFilter ? `${viewCount} / ${total}` : String(total);
+    els.sum.textContent = sum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    els.spedMatch.textContent = String(match);
+    els.spedMiss.textContent = String(miss);
+
+    validateRows();
+  }
+
+  function onCellEdit(e) {
+    const td = e.currentTarget;
+    const idx = Number(td.dataset.idx);
+    const key = td.dataset.key;
+    if (!Number.isFinite(idx) || !key) return;
+    if (!state.rows[idx]) return;
+
+    let val = td.textContent ?? '';
+    if (key === 'CNPJFILIAL' || key === 'CNPJCPF') val = onlyDigits(val);
+    if (key === 'UF') val = val.toUpperCase().slice(0,2);
+    if (key === 'IE') val = onlyAlphaNumUpper(val);
+    if (key === 'VALORBRUTOFAT') val = toMoney2(val);
+    if (key === 'DESDOB') val = (onlyDigits(val).slice(0,1) === '1') ? '1' : '0';
+    if (key === 'CHAVE') val = onlyDigits(val).slice(-44);
+
+    td.textContent = val;
+    state.rows[idx][key] = val;
+
+    renderFooterOnly();
+    validateRows();
+  }
+
+  function renderFooterOnly() {
+    let sum = 0;
+    let match = 0;
+    let miss = 0;
+
+    for (const r of state.rows) {
+      sum += Number(toMoney2(r.VALORBRUTOFAT));
+      if (r.__spedMatched) match++; else miss++;
+    }
+
+    els.count.textContent = String(state.rows.length);
+    els.sum.textContent = sum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    els.spedMatch.textContent = String(match);
+    els.spedMiss.textContent = String(miss);
+  }
+
+  function validateRows() {
+    const issues = [];
+    let badCnpj = 0;
+    let badUf = 0;
+    let badChave = 0;
+
+    let match = 0;
+    let miss = 0;
+
+    for (const r of state.rows) {
+      const c = onlyDigits(r.CNPJCPF);
+      if (c && c.length !== 11 && c.length !== 14) badCnpj++;
+      const uf = (r.UF || '').toUpperCase();
+      if (uf && uf.length !== 2) badUf++;
+      const ch = onlyDigits(r.CHAVE);
+      if (ch && ch.length !== 44) badChave++;
+      if (r.__spedMatched) match++; else miss++;
+    }
+
+    if (!state.rows.length) { els.validacao.innerHTML = ''; return; }
+
+    if (badCnpj) issues.push(`<span class="pill" style="border-color:#fed7aa;background:#fff7ed;color:#7a4b00;">CNPJ/CPF inválido: ${badCnpj}</span>`);
+    if (badUf) issues.push(`<span class="pill" style="border-color:#fed7aa;background:#fff7ed;color:#7a4b00;">UF inválida: ${badUf}</span>`);
+    if (badChave) issues.push(`<span class="pill" style="border-color:#fed7aa;background:#fff7ed;color:#7a4b00;">Chave inválida (≠44 dígitos): ${badChave}</span>`);
+    if (!badCnpj && !badUf && !badChave) issues.push(`<span class="pill" style="border-color:#bbf7d0;background:#ecfdf5;color:#065f46;">Validação básica OK</span>`);
+
+    if (els.chkUsarSped && els.chkUsarSped.checked) {
+      if (!state.spedByChave.size) {
+        issues.push(`<span class="pill" style="border-color:#fed7aa;background:#fff7ed;color:#7a4b00;">SPED (C100) não carregado / não encontrado</span>`);
+      } else {
+        issues.push(`<span class="pill" style="border-color:#bbf7d0;background:#ecfdf5;color:#065f46;">SPED: MATCH ${match} • MISSING ${miss}</span>`);
+      }
+    }
+
+    if (state.sped0150ByDoc && state.sped0150ByDoc.size) {
+      const mode = (els.chkIeSpedPadrao && els.chkIeSpedPadrao.checked) ? 'padrão SPED' : 'conservador';
+      issues.push(`<span class="pill" style="border-color:#bbf7d0;background:#ecfdf5;color:#065f46;">IE (0150) ativo • modo: ${mode}</span>`);
+    }
+
+    els.validacao.innerHTML = issues.join(' ');
+  }
+
+  // -------------------------
+  // Processamento (Entrada -> SPED -> XML -> Aplicação)
+  // -------------------------
+  function resetProcessState() {
+    state.rows = [];
+    state.spedByChave = new Map();
+    state.sped0150ByDoc = new Map();
+    if (els.progress) els.progress.value = 0;
+  }
+
+  function looksLikeXml(text) {
+    const t = (text || '').slice(0, 9000).toLowerCase();
+    return t.includes('<nfe') || t.includes('<infnfe') || t.includes('<nfeproc');
+  }
+
+  function looksLikeSped(text) {
+    const t = (text || '').slice(0, 20000);
+    return t.includes('|C100|') || t.includes('|0150|') || t.includes('|0000|');
+  }
+
+  function classifyEntryByName(name) {
+    const n = (name || '').toLowerCase();
+    if (n.endsWith('.xml')) return 'xml';
+    if (n.endsWith('.zip')) return 'zip';
+    if (n.endsWith('.sped') || n.endsWith('.txt')) return 'sped';
+    return 'unknown';
+  }
+
+  function mergeMapFirstWins(target, src) {
+    for (const [k, v] of src.entries()) {
+      if (!target.has(k)) target.set(k, v);
+    }
+  }
+
+  function mergeMapLastWins(target, src) {
+    for (const [k, v] of src.entries()) {
+      target.set(k, v);
+    }
+  }
+
+  function applySpedC100ToRows() {
+    if (!(els.chkUsarSped && els.chkUsarSped.checked)) {
+      for (const r of state.rows) r.__spedMatched = false;
+      return;
+    }
+
+    for (const r of state.rows) {
+      const chave = onlyDigits(r.CHAVE || '');
+      const it = chave ? state.spedByChave.get(chave) : null;
+      if (it) {
+        r.DATAENTRADA = digitsToBRDate(it.dtEscr);
+        r.DESDOB = it.desdob;
+        r.__spedMatched = true;
+      } else {
+        r.__spedMatched = false;
+      }
+    }
+  }
+
+  function applySped0150IeToRows() {
+    if (!(state.sped0150ByDoc && state.sped0150ByDoc.size)) return;
+    for (const r of state.rows) {
+      applyIeFromSped0150(r);
+    }
+  }
+
+  async function processAll() {
+    if (state.isProcessing) return;
+    if (!state.entries.length) return;
+
+    state.cancelRequested = false;
+    setProcessing(true);
+    resetProcessState();
+
+    const allVirtual = [];
+    let step = 0;
+
+    try {
+      toast('Preparando arquivos…');
+      await nextTick();
+
+      // 1) Expandir ZIPs em "entries virtuais"
+      for (const ent of state.entries) {
+        if (state.cancelRequested) break;
+
+        if (ent.kind === 'zip') {
+          toast(`Abrindo ZIP: ${ent.name}`);
+          try {
+            const buf = await ent.file.arrayBuffer();
+            const zEntries = await unzipEntriesFromZipBuffer(buf);
+
+            for (const ze of zEntries) {
+              allVirtual.push({
+                name: `${ent.name}::${ze.name}`,
+                text: ze.text,
+                kind: classifyEntryByName(ze.name),
+                source: ent.name,
+                fromZip: true,
+              });
+            }
+
+            pushLog('info', 'ZIP processado', `${ent.name} | arquivos: ${zEntries.length}`);
+          } catch (e) {
+            pushLog('error', 'Falha ao abrir ZIP', `${ent.name} | ${(e && e.message) ? e.message : e}`);
+          }
+        } else {
+          // arquivo normal
+          allVirtual.push({
+            name: ent.name,
+            file: ent.file,
+            kind: ent.kind,
+            fromZip: false,
+          });
+        }
+      }
+
+      if (state.cancelRequested) {
+        toast('Processamento cancelado.', true);
+        setProcessing(false);
+        return;
+      }
+
+      // 2) Ler textos dos arquivos não-zip (File API)
+      toast('Lendo arquivos…');
+      await nextTick();
+
+      const virtualText = [];
+      for (const v of allVirtual) {
+        if (state.cancelRequested) break;
+
+        if (v.text != null) {
+          virtualText.push(v);
+          continue;
+        }
+
+        try {
+          const txt = await v.file.text();
+          v.text = txt;
+          virtualText.push(v);
+        } catch (e) {
+          pushLog('error', 'Falha ao ler arquivo', `${v.name} | ${(e && e.message) ? e.message : e}`);
+        }
+      }
+
+      if (state.cancelRequested) {
+        toast('Processamento cancelado.', true);
+        setProcessing(false);
+        return;
+      }
+
+      // 3) Classificar por conteúdo (refina "unknown")
+      const xmlList = [];
+      const spedList = [];
+      const unknownList = [];
+
+      for (const v of virtualText) {
+        const kindGuess = v.kind || classifyEntryByName(v.name);
+        let kind = kindGuess;
+
+        if (kind === 'unknown') {
+          if (looksLikeXml(v.text)) kind = 'xml';
+          else if (looksLikeSped(v.text)) kind = 'sped';
+        }
+
+        if (kind === 'xml') xmlList.push(v);
+        else if (kind === 'sped') spedList.push(v);
+        else unknownList.push(v);
+      }
+
+      for (const u of unknownList) {
+        pushLog('warn', 'Arquivo ignorado (tipo não reconhecido)', u.name);
+      }
+
+      // 4) Indexar SPED (C100 + 0150)
+      toast('Indexando SPED…');
+      await nextTick();
+
+      const totalSped = spedList.length || 1;
+      for (let i = 0; i < spedList.length; i++) {
+        if (state.cancelRequested) break;
+
+        const s = spedList[i];
+        const srcName = s.name;
+
+        // C100
+        const mC100 = parseSpedC100(s.text, srcName);
+        if (mC100 && mC100.size) mergeMapFirstWins(state.spedByChave, mC100);
+
+        // 0150
+        const m0150 = parseSped0150(s.text, srcName);
+        if (m0150 && m0150.size) mergeMapLastWins(state.sped0150ByDoc, m0150);
+
+        if (els.progress) els.progress.value = Math.min(25, Math.round(((i + 1) / totalSped) * 25));
+      }
+
+      if (state.spedByChave.size) pushLog('info', 'SPED (C100) indexado', `chaves: ${state.spedByChave.size}`);
+      if (state.sped0150ByDoc.size) pushLog('info', 'SPED (0150) indexado', `docs: ${state.sped0150ByDoc.size}`);
+
+      if (state.cancelRequested) {
+        toast('Processamento cancelado.', true);
+        setProcessing(false);
+        return;
+      }
+
+      // 5) Ler XML e montar rows
+      toast('Lendo XML e montando duplicatas…');
+      await nextTick();
+
+      const totalXml = xmlList.length || 1;
+      for (let i = 0; i < xmlList.length; i++) {
+        if (state.cancelRequested) break;
+
+        const x = xmlList[i];
+        try {
+          const rows = parseNFeLike(x.text, x.name);
+          if (rows && rows.length) state.rows.push(...rows);
+          else pushLog('warn', 'XML sem duplicatas (ignorado, a menos que opção esteja marcada)', x.name);
+        } catch (e) {
+          pushLog('error', 'Erro ao processar XML', `${x.name} | ${(e && e.message) ? e.message : e}`);
+        }
+
+        if (els.progress) els.progress.value = 25 + Math.min(55, Math.round(((i + 1) / totalXml) * 55));
+      }
+
+      // 6) Aplicar SPED C100 (data/desdob) e IE via 0150
+      toast('Aplicando SPED…');
+      await nextTick();
+
+      applySpedC100ToRows();
+      applySped0150IeToRows(); // NOVO (IE 0150)
+
+      if (els.progress) els.progress.value = 95;
+
+      // 7) Finalizar UI
+      if (!state.rows.length) {
+        toast('Nenhum registro gerado. Verifique XML/Opções.', true);
+        pushLog('warn', 'Processamento concluído: nenhum registro gerado');
+      } else {
+        toast(`Processado. Registros: ${state.rows.length}`);
+        pushLog('info', 'Processamento concluído', `registros: ${state.rows.length} | SPED chaves: ${state.spedByChave.size} | 0150 docs: ${state.sped0150ByDoc.size}`);
+      }
+
+      renderGrid();
+      setDestino();
+      setProcessing(false);
+      if (els.progress) els.progress.value = 100;
+
+    } catch (e) {
+      pushLog('error', 'Falha inesperada no processamento', (e && e.message) ? e.message : String(e));
+      toast('Erro no processamento. Veja o log.', true);
+      setProcessing(false);
+    }
+  }
+
+  // -------------------------
+  // Entrada: seleção / drag & drop
+  // -------------------------
+  function clearAll() {
+    state.entries = [];
+    state.entrySig = new Set();
+    state.counts = { xml: 0, sped: 0, zip: 0 };
+    refreshCounters();
+
+    resetProcessState();
+    state.rows = [];
+    renderGrid();
+    renderFooterOnly();
+
+    setDestino();
+    setProcessing(false);
+
+    toast('Aguardando arquivos…');
+    pushLog('info', 'Limpeza concluída', 'entradas e grid foram resetadas');
+  }
+
+  function addFiles(files) {
+    const arr = Array.from(files || []);
+    if (!arr.length) return;
+
+    let added = 0;
+
+    for (const f of arr) {
+      const sig = `${f.name}|${f.size}|${f.lastModified}|${f.webkitRelativePath || ''}`;
+      if (state.entrySig.has(sig)) continue;
+      state.entrySig.add(sig);
+
+      const kind0 = classifyEntryByName(f.name);
+      const kind = (kind0 === 'unknown') ? ((f.type && f.type.includes('zip')) ? 'zip' : 'unknown') : kind0;
+
+      state.entries.push({
+        name: f.webkitRelativePath ? f.webkitRelativePath : f.name,
+        file: f,
+        kind,
+      });
+
+      // contadores "de seleção" (não dos arquivos dentro do zip)
+      if (kind === 'xml') state.counts.xml++;
+      else if (kind === 'zip') state.counts.zip++;
+      else if (kind === 'sped') state.counts.sped++;
+      else {
+        // tenta inferir por extensão textual comum
+        const n = (f.name || '').toLowerCase();
+        if (n.endsWith('.txt') || n.endsWith('.sped')) state.counts.sped++;
+      }
+
+      added++;
+    }
+
+    refreshCounters();
+    setProcessing(false);
+
+    if (added) {
+      toast(`Entrada adicionada: ${added} arquivo(s).`);
+      pushLog('info', 'Entrada adicionada', `${added} arquivo(s)`);
+    }
+  }
+
+  function toggleSelectMenu(show) {
+    if (!els.selectMenu) return;
+    const want = (typeof show === 'boolean') ? show : !els.selectMenu.classList.contains('show');
+    els.selectMenu.classList.toggle('show', want);
+    if (els.btnSelect) els.btnSelect.setAttribute('aria-expanded', want ? 'true' : 'false');
+  }
+
+  // -------------------------
+  // UX: Manual, CFG collapse, footer height
+  // -------------------------
+  function updateFooterStackHeight() {
+    const fs = document.querySelector('.footer-stack');
+    if (!fs) return;
+    const h = Math.ceil(fs.getBoundingClientRect().height || 0);
+    if (h > 0) document.documentElement.style.setProperty('--footer-stack-h', `${h}px`);
+  }
+
+  function setCfgCollapsedUI() {
+    if (!els.cfgCard) return;
+    const details = els.cfgCard.querySelectorAll('details.box');
+    for (const d of details) {
+      if (state.cfgCollapsed) d.removeAttribute('open');
+      else d.setAttribute('open', '');
+    }
+    if (els.btnToggleCfg) els.btnToggleCfg.textContent = state.cfgCollapsed ? 'Expandir tudo' : 'Recolher tudo';
+  }
+
+  function toggleCfgAll() {
+    state.cfgCollapsed = !state.cfgCollapsed;
+    setCfgCollapsedUI();
+    saveSettingsDebounced();
+  }
+
+  // -------------------------
+  // Bind Events
+  // -------------------------
+  function bindEvents() {
+    // Menu seleção
+    if (els.btnSelect) els.btnSelect.addEventListener('click', () => toggleSelectMenu());
+    if (els.btnPickFiles) els.btnPickFiles.addEventListener('click', () => {
+      toggleSelectMenu(false);
+      els.fileInput.click();
+    });
+    if (els.btnPickDir) els.btnPickDir.addEventListener('click', () => {
+      toggleSelectMenu(false);
+      els.dirInput.click();
+    });
+    if (els.btnPickCancel) els.btnPickCancel.addEventListener('click', () => toggleSelectMenu(false));
+
+    document.addEventListener('click', (e) => {
+      if (!els.selectMenu || !els.btnSelect) return;
+      const t = e.target;
+      if (els.selectMenu.contains(t) || els.btnSelect.contains(t)) return;
+      toggleSelectMenu(false);
+    });
+
+    // Inputs de arquivo
+    if (els.fileInput) els.fileInput.addEventListener('change', (e) => {
+      addFiles(e.target.files);
+      e.target.value = '';
+      setProcessing(false);
+    });
+
+    if (els.dirInput) els.dirInput.addEventListener('change', (e) => {
+      addFiles(e.target.files);
+      e.target.value = '';
+      setProcessing(false);
+    });
+
+    // Dropzone
+    if (els.dropZone) {
+      els.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); els.dropZone.classList.add('dragover'); });
+      els.dropZone.addEventListener('dragleave', () => { els.dropZone.classList.remove('dragover'); });
+      els.dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        els.dropZone.classList.remove('dragover');
+        if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+      });
+    }
+
+    // Botões principais
+    if (els.btnProcessar) els.btnProcessar.addEventListener('click', processAll);
+    if (els.btnCancelar) els.btnCancelar.addEventListener('click', cancelProcessing);
+    if (els.btnLimpar) els.btnLimpar.addEventListener('click', clearAll);
+
+    // Export
+    if (els.btnExportTxt) els.btnExportTxt.addEventListener('click', exportTxt);
+    if (els.btnExportCsv) els.btnExportCsv.addEventListener('click', exportCsv);
+
+    // Log
+    if (els.btnCopyLog) els.btnCopyLog.addEventListener('click', copyLog);
+    if (els.btnClearLog) els.btnClearLog.addEventListener('click', clearLog);
+
+    // Manual
+    if (els.btnManual) els.btnManual.addEventListener('click', () => { try { els.manualDialog.showModal(); } catch { /* ignore */ } });
+    if (els.btnManualCloseX) els.btnManualCloseX.addEventListener('click', () => els.manualDialog.close());
+    if (els.btnManualClose) els.btnManualClose.addEventListener('click', () => els.manualDialog.close());
+
+    // CFG collapse
+    if (els.btnToggleCfg) els.btnToggleCfg.addEventListener('click', toggleCfgAll);
+
+    // Settings: destino
+    if (els.codProsoft) els.codProsoft.addEventListener('input', () => { setDestino(); saveSettingsDebounced(); });
+    if (els.chkAppendD) els.chkAppendD.addEventListener('change', () => { setDestino(); saveSettingsDebounced(); });
+
+    // Settings: checkboxes e selects
+    const saveOnChange = [
+      els.chkForcarDuasLinhas,
+      els.chkUsarSped,
+      els.chkIeSpedPadrao,   // NOVO
+      els.chkSomenteComSped,
+      els.chkIncluirSemDup,
+      els.chkVenc30,
+      els.chkConsolidarCnpj,
+      els.chkExportarFiltrados,
+      els.serieDigits,
+      els.ctxNota,
+      els.origem,
+      els.tipo,
+    ].filter(Boolean);
+
+    for (const el of saveOnChange) {
+      el.addEventListener('change', () => {
+        saveSettingsDebounced();
+
+        // Reaplicar IE 0150 quando togglar checkbox (sem reprocessar arquivos)
+        if (el === els.chkIeSpedPadrao && state.rows && state.rows.length) {
+          // tenta reaplicar sem mexer no que foi manualmente editado? (mantém regra: só muda se precisa)
+          applySped0150IeToRows();
+          renderGrid();
+        }
+
+        // Se mudar contexto ou opções que afetam parsing, apenas alerta (sem auto-refatorar fluxo)
+        if (el === els.ctxNota) {
+          toast('Contexto alterado. Para refletir nos dados, processe novamente.', true);
+        }
+      });
+    }
+
+    if (els.txtCnpjsConsolidar) els.txtCnpjsConsolidar.addEventListener('input', saveSettingsDebounced);
+
+    // Filtro
+    if (els.gridFilter) {
+      els.gridFilter.addEventListener('input', () => {
+        state.filterText = els.gridFilter.value || '';
+        renderGrid();
+        saveSettingsDebounced();
+      });
+    }
+
+    // Atalho Ctrl+K
+    document.addEventListener('keydown', (e) => {
+      const isK = (e.key || '').toLowerCase() === 'k';
+      if (isK && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        if (els.gridFilter) els.gridFilter.focus();
+      }
+    });
+
+    // Footer height patch
+    window.addEventListener('resize', () => { updateFooterStackHeight(); });
+  }
+
+  // -------------------------
+  // Init
+  // -------------------------
+  function init() {
+    loadSettings();
+    renderLog();
+    refreshCounters();
+    setDestino();
+    setCfgCollapsedUI();
+    setProcessing(false);
+
+    if (els.gridFilter && els.gridFilter.value) state.filterText = els.gridFilter.value;
+    renderGrid();
+
+    bindEvents();
+    updateFooterStackHeight();
+
+    // pequena dica inicial
+    if (!state.entries.length) toast('Aguardando arquivos…');
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>

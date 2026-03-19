@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Integra Desktop · Releases e Operação</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="container">
+      <header class="hero">
+        <span class="badge">Integra Desktop</span>
+        <h1>Portal técnico de release</h1>
+        <p>
+          Aplicação desktop em Tauri para conversão NFS-e/NFe em arquivos de importação Prosoft,
+          com fallback legado e pipeline completa de CI/CD no GitHub.
+        </p>
+      </header>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Entrega contínua</h2>
+          <p>Push em <code>main</code> dispara validação. Quando houver commit compatível com Conventional Commits, a release é versionada com SemVer e os binários são publicados no GitHub Releases.</p>
+        </article>
+        <article class="card">
+          <h2>Empacotamento</h2>
+          <p>Windows, Linux e macOS são tratados pela pipeline de release usando Tauri Build. O versionamento do projeto fica sincronizado em <code>VERSION</code>, <code>package.json</code>, <code>Cargo.toml</code> e <code>tauri.conf.json</code>.</p>
+        </article>
+        <article class="card">
+          <h2>Segredos necessários</h2>
+          <p>Para assinatura e updater, configure as chaves do Tauri e, quando necessário, os certificados de Windows/macOS no repositório.</p>
+        </article>
+        <article class="card">
+          <h2>Fallback legado</h2>
+          <p>O módulo legado continua incorporado ao projeto e permanece disponível como rota separada, sem contaminar o core novo em Rust.</p>
+        </article>
+      </section>
+
+      <section class="card full">
+        <h2>Arquivos operacionais</h2>
+        <ul>
+          <li><code>.github/workflows/ci.yml</code> — validação de PR e push</li>
+          <li><code>.github/workflows/release.yml</code> — versionamento, release e binários</li>
+          <li><code>.github/workflows/pages.yml</code> — publicação desta documentação</li>
+          <li><code>release.config.mjs</code> — automação semantic-release</li>
+          <li><code>scripts/release/*</code> — sincronismo de versão e metadados de release</li>
+          <li><code>scripts/ci/*</code> — validação de título de PR e sincronismo de versões</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

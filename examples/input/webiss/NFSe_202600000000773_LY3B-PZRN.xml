@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CompNfse xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <Nfse versao="2.02">
+    <InfNfse Id="NFSe202600000000773_30289207000199">
+      <Numero>202600000000773</Numero>
+      <CodigoVerificacao>LY3B-PZRN</CodigoVerificacao>
+      <DataEmissao>2026-02-27T12:00:33.897</DataEmissao>
+      <OutrasInformacoes>Chave de Acesso da NFS-e Nacional: 29287031230289207000199260000000077326020059214124\s\nOptante do Simples Nacional.\s\nTrib. aprox. R$ 2,82 Federal e R$ 0,44 Municipal. Fonte: IBPT [47C8DA]\s\n</OutrasInformacoes>
+      <ValoresNfse>
+        <BaseCalculo>21</BaseCalculo>
+        <Aliquota>4.1</Aliquota>
+        <ValorIss>0.86</ValorIss>
+        <ValorLiquidoNfse>21</ValorLiquidoNfse>
+      </ValoresNfse>
+      <PrestadorServico>
+        <IdentificacaoPrestador>
+          <CpfCnpj>
+            <Cnpj>30289207000199</Cnpj>
+          </CpfCnpj>
+          <InscricaoMunicipal>1590000797</InscricaoMunicipal>
+        </IdentificacaoPrestador>
+        <RazaoSocial>LABORATORIO DE ANALISES CLINICAS POPLAB LTDA</RazaoSocial>
+        <NomeFantasia>LABORATORIO DE ANALISES CLINICAS POPLAB</NomeFantasia>
+        <Endereco>
+          <Endereco>Avenida Barros e Almeida</Endereco>
+          <Numero>442</Numero>
+          <Complemento>CASA TERREO</Complemento>
+          <Bairro>Centro</Bairro>
+          <CodigoMunicipio>2928703</CodigoMunicipio>
+          <Uf>BA</Uf>
+          <Cep>44430108</Cep>
+        </Endereco>
+        <Contato>
+          <Telefone>7536317045</Telefone>
+          <Email>EXATACONTABIL01@HOTMAIL.COM</Email>
+        </Contato>
+      </PrestadorServico>
+      <OrgaoGerador>
+        <CodigoMunicipio>2928703</CodigoMunicipio>
+        <Uf>BA</Uf>
+      </OrgaoGerador>
+      <DeclaracaoPrestacaoServico>
+        <InfDeclaracaoPrestacaoServico>
+          <Rps Id="RpsA_4388_30289207000199">
+            <IdentificacaoRps>
+              <Numero>4388</Numero>
+              <Serie>A</Serie>
+              <Tipo>1</Tipo>
+            </IdentificacaoRps>
+            <DataEmissao>2026-02-27</DataEmissao>
+            <Status>1</Status>
+          </Rps>
+          <Competencia>2026-02-01</Competencia>
+          <Servico>
+            <Valores>
+              <ValorServicos>21</ValorServicos>
+            </Valores>
+            <IssRetido>2</IssRetido>
+            <ItemListaServico>0402</ItemListaServico>
+            <CodigoCnae>8640202</CodigoCnae>
+            <CodigoTributacaoMunicipio>0402</CodigoTributacaoMunicipio>
+            <Discriminacao>Analises clinicas, patologia, eletricidade medica, radioterapia, quimioterapia, ultra-sonografia, ressonancia magnetica, radiologia, tomografia e congeneres 
+Atendimento Numero #12806</Discriminacao>
+            <CodigoMunicipio>2928703</CodigoMunicipio>
+            <ExigibilidadeISS>1</ExigibilidadeISS>
+            <MunicipioIncidencia>2928703</MunicipioIncidencia>
+          </Servico>
+          <Prestador>
+            <CpfCnpj>
+              <Cnpj>30289207000199</Cnpj>
+            </CpfCnpj>
+            <InscricaoMunicipal>1590000797</InscricaoMunicipal>
+          </Prestador>
+          <Tomador>
+            <IdentificacaoTomador>
+              <CpfCnpj>
+                <Cpf>27995135572</Cpf>
+              </CpfCnpj>
+            </IdentificacaoTomador>
+            <RazaoSocial>CARLOS JORGE SILVA</RazaoSocial>
+            <Endereco>
+              <Endereco>2 Travessa Nova Brasilia</Endereco>
+              <Numero>351</Numero>
+              <Bairro>Sao Benedito</Bairro>
+              <CodigoMunicipio>2928703</CodigoMunicipio>
+              <Uf>BA</Uf>
+              <CodigoPais>1058</CodigoPais>
+              <Cep>44441550</Cep>
+            </Endereco>
+          </Tomador>
+          <RegimeEspecialTributacao>6</RegimeEspecialTributacao>
+          <OptanteSimplesNacional>1</OptanteSimplesNacional>
+          <IncentivoFiscal>2</IncentivoFiscal>
+        </InfDeclaracaoPrestacaoServico>
+      </DeclaracaoPrestacaoServico>
+      <ChaveAcesso>29287031230289207000199260000000077326020059214124</ChaveAcesso>
+    </InfNfse>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" /><Reference URI="#NFSe202600000000773_30289207000199"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" /><DigestValue>y+4VJKEfcERgvgcC6+2dWTWVTLc=</DigestValue></Reference></SignedInfo><SignatureValue>UMMZrub2cAGdpqZhz6brHLlIQ21MQk4/8nRMebpYVY5SUGn4eCPVDDAinjBABdqSXPatnse8Ad7ZWu15Faq8iF4xK0rEK/PU2upKW6ouBkHi+WCWN+9IuslPlzO0rG2diczfPSKdD7R+qZM1DOcdNe/Rnumjv5Yr5TgCtTklmqVh3+adRwOtbZxn1Pl97e+5z9RP/OyNL6aBmYT0TZo85vYiQY/gVuWwS0fCFhM+y/lwx+ewhR1NFFeuaeyLoCeRLtPZJVXPZF+YPt/B5U9rRQfVB16DBAIdrwRrLyJHpxhY2E/C11XjafrTRMguPgfKyR8GXg+Xe9C6Xq7/Etj0og==</SignatureValue><KeyInfo><X509Data><X509Certificate>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</X509Certificate></X509Data></KeyInfo></Signature></Nfse>
+</CompNfse>

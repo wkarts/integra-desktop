@@ -1,0 +1,39 @@
+{
+  "name": "integra-desktop",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:web",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "build:web": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
+    "ci:version": "node ./scripts/ci/check-version-sync.mjs",
+    "ci:pr-title": "node ./scripts/ci/validate-pr-title.mjs",
+    "lint:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --all --check && cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml --all-targets --all-features",
+    "release:ci": "node ./scripts/release/run-semantic-release.mjs",
+    "release:dry": "semantic-release --dry-run"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "semantic-release": "^24.2.3",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1"
+  },
+  "license": "UNLICENSED"
+}

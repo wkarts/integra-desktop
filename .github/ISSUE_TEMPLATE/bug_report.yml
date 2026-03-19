@@ -1,0 +1,35 @@
+name: Relatar bug
+description: Abrir um bug de funcionamento
+labels: [bug]
+body:
+  - type: input
+    id: modulo
+    attributes:
+      label: Módulo afetado
+      placeholder: nfse-servicos / nfe-faturas / legado / release / ci
+    validations:
+      required: true
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+      description: Descreva o cenário real do erro.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduzir
+    attributes:
+      label: Passos para reproduzir
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace / XML de exemplo
+      description: Anexe apenas arquivos anonimizados.

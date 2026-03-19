@@ -1,0 +1,23 @@
+name: Solicitar recurso
+description: Abrir solicitação de melhoria ou nova feature
+labels: [enhancement]
+body:
+  - type: input
+    id: modulo
+    attributes:
+      label: Módulo
+      placeholder: nfse-servicos / nfe-faturas / legado / ci / release
+    validations:
+      required: true
+  - type: textarea
+    id: necessidade
+    attributes:
+      label: Necessidade de negócio
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta técnica
+    validations:
+      required: true
