@@ -73,7 +73,7 @@ fn build_icns(png: &[u8]) -> Vec<u8> {
 }
 
 fn decode_base64(input: &str) -> Result<Vec<u8>, String> {
-    let mut cleaned = input.trim().replace('\n', "");
+    let mut cleaned = input.trim().replace('\\n', "");
     while cleaned.ends_with('=') {
         cleaned.pop();
     }
