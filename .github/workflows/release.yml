@@ -79,7 +79,17 @@ jobs:
 
   publish-tauri:
     needs: prepare-release
-    if: needs.prepare-release.outputs.published == 'true'
+    if: |
+      needs.prepare-release.outputs.published == 'true' &&
+      (
+        !matrix.requires_apple_signing ||
+        (
+          secrets.APPLE_CERTIFICATE != '' &&
+          secrets.APPLE_CERTIFICATE_PASSWORD != '' &&
+          secrets.KEYCHAIN_PASSWORD != '' &&
+          secrets.TAURI_SIGNING_PRIVATE_KEY != ''
+        )
+      )
     permissions:
       contents: write
     strategy:
@@ -88,12 +98,16 @@ jobs:
         include:
           - platform: macos-latest
             args: --target aarch64-apple-darwin
+            requires_apple_signing: true
           - platform: macos-latest
             args: --target x86_64-apple-darwin
+            requires_apple_signing: true
           - platform: ubuntu-22.04
             args: ''
+            requires_apple_signing: false
           - platform: windows-latest
             args: ''
+            requires_apple_signing: false
     runs-on: ${{ matrix.platform }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -132,7 +146,12 @@ jobs:
           workspaces: './src-tauri -> target'
       - name: Instalar dependências frontend
         run: npm install
+      - name: Pular publish macOS sem secrets de assinatura
+        if: runner.os == 'macOS' && (env.APPLE_CERTIFICATE == '' || env.APPLE_CERTIFICATE_PASSWORD == '' || env.KEYCHAIN_PASSWORD == '' || env.TAURI_SIGNING_PRIVATE_KEY == '')
+        run: |
+          echo "::warning::Secrets de assinatura Apple ausentes. Publicação macOS será pulada para evitar falha de codesign."
       - name: Publicar binários Tauri
+        if: runner.os != 'macOS' || (env.APPLE_CERTIFICATE != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.KEYCHAIN_PASSWORD != '' && env.TAURI_SIGNING_PRIVATE_KEY != '')
         uses: tauri-apps/tauri-action@v0
         with:
           tagName: ${{ needs.prepare-release.outputs.tag }}
