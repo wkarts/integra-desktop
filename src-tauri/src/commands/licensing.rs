@@ -63,7 +63,9 @@ pub fn check_license_status(
             company_name: next_settings.company_name.clone(),
             company_document: next_settings.company_document.clone(),
             expires_at: None,
-            message: "Webservice de licenciamento ainda não configurado. Operação em modo assistido.".into(),
+            message:
+                "Webservice de licenciamento ainda não configurado. Operação em modo assistido."
+                    .into(),
             machine_key: next_settings.machine_key.clone(),
             status_code: 0,
         });
@@ -72,7 +74,10 @@ pub fn check_license_status(
     let base_url = next_settings.service_url.trim_end_matches('/');
     let company_document = only_digits(&next_settings.company_document);
     let station_name = if next_settings.station_name.trim().is_empty() {
-        hostname::get().ok().and_then(|v| v.into_string().ok()).unwrap_or_else(|| "ESTACAO".into())
+        hostname::get()
+            .ok()
+            .and_then(|v| v.into_string().ok())
+            .unwrap_or_else(|| "ESTACAO".into())
     } else {
         next_settings.station_name.clone()
     };
@@ -96,12 +101,27 @@ pub fn check_license_status(
 
     let body: Value = response.json().map_err(|e| e.to_string())?;
     let status_code = find_i64(&body, &["STATUS", "status"]).unwrap_or(1) as i32;
-    let active = find_string(&body, &["ATIVO", "ativo"]).map(|v| !matches!(v.as_str(), "N" | "0" | "false")).unwrap_or(true);
-    let blocked = find_string(&body, &["BLOQUEADO", "bloqueado"]).map(|v| matches!(v.as_str(), "S" | "1" | "true")).unwrap_or(false);
-    let company_name = find_string(&body, &["RAZAO", "razao", "empresa", "EMPRESA"]).unwrap_or_else(|| next_settings.company_name.clone());
-    let expires_at = find_string(&body, &["DATA_VAL_LIC", "data_val_lic", "expires_at", "validade"]);
-    let seats_total = find_i64(&body, &["QTD_MAQ", "qtd_maq", "n_maquinas", "N_MAQUINAS"]).unwrap_or(0).max(0) as u32;
-    let devices = find_array(&body, &["COMPUTADORES", "computadores", "maquinas", "MAQUINAS"]).cloned().unwrap_or_default();
+    let active = find_string(&body, &["ATIVO", "ativo"])
+        .map(|v| !matches!(v.as_str(), "N" | "0" | "false"))
+        .unwrap_or(true);
+    let blocked = find_string(&body, &["BLOQUEADO", "bloqueado"])
+        .map(|v| matches!(v.as_str(), "S" | "1" | "true"))
+        .unwrap_or(false);
+    let company_name = find_string(&body, &["RAZAO", "razao", "empresa", "EMPRESA"])
+        .unwrap_or_else(|| next_settings.company_name.clone());
+    let expires_at = find_string(
+        &body,
+        &["DATA_VAL_LIC", "data_val_lic", "expires_at", "validade"],
+    );
+    let seats_total = find_i64(&body, &["QTD_MAQ", "qtd_maq", "n_maquinas", "N_MAQUINAS"])
+        .unwrap_or(0)
+        .max(0) as u32;
+    let devices = find_array(
+        &body,
+        &["COMPUTADORES", "computadores", "maquinas", "MAQUINAS"],
+    )
+    .cloned()
+    .unwrap_or_default();
     let seats_used = devices.len() as u32;
     let mut device_registered = false;
     let mut device_blocked = false;
@@ -110,7 +130,9 @@ pub fn check_license_status(
         let key = find_string(device, &["CHAVE", "chave"]).unwrap_or_default();
         if key == next_settings.machine_key {
             device_registered = true;
-            device_blocked = find_string(device, &["BLOQUEADO", "bloqueado"]).map(|v| matches!(v.as_str(), "S" | "1" | "true")).unwrap_or(false);
+            device_blocked = find_string(device, &["BLOQUEADO", "bloqueado"])
+                .map(|v| matches!(v.as_str(), "S" | "1" | "true"))
+                .unwrap_or(false);
             break;
         }
     }
@@ -126,12 +148,16 @@ pub fn check_license_status(
             "tipo": next_settings.app_instance,
             "email": next_settings.company_email,
         });
-        let _ = client.post(format!("{}/maquinas", base_url)).json(&payload).send();
+        let _ = client
+            .post(format!("{}/maquinas", base_url))
+            .json(&payload)
+            .send();
     }
 
     let has_free_slot = seats_total == 0 || seats_used < seats_total || device_registered;
     let allowed = status_code > 0 && active && !blocked && !device_blocked && has_free_slot;
     let mut message = find_string(&body, &["MESSAGE", "message", "mensagem"]).unwrap_or_default();
+
     if message.trim().is_empty() {
         message = if allowed {
             if device_registered {
@@ -165,19 +191,47 @@ pub fn check_license_status(
         status_code,
     };
 
-    crate::storage::license::save_license_settings(&app, &next_settings).map_err(|e| e.to_string())?;
-    crate::storage::logs::append_log(&app, &format!("Licenciamento consultado: {} | {}", result.company_document, result.message)).map_err(|e| e.to_string())?;
+    crate::storage::license::save_license_settings(&app, &next_settings)
+        .map_err(|e| e.to_string())?;
+    crate::storage::logs::append_log(
+        &app,
+        &format!(
+            "Licenciamento consultado: {} | {}",
+            result.company_document, result.message
+        ),
+    )
+    .map_err(|e| e.to_string())?;
+
     Ok(result)
 }
 
 fn machine_fingerprint() -> String {
-    let host = hostname::get().ok().and_then(|value| value.into_string().ok()).unwrap_or_else(|| "unknown-host".into());
-    let user = std::env::var("USERNAME").or_else(|_| std::env::var("USER")).unwrap_or_else(|_| "unknown-user".into());
-    let base = format!("{}|{}|{}|{}|{}", host, user, std::env::consts::OS, std::env::consts::ARCH, env!("CARGO_PKG_NAME"));
+    let host = hostname::get()
+        .ok()
+        .and_then(|value| value.into_string().ok())
+        .unwrap_or_else(|| "unknown-host".into());
+    let user = std::env::var("USERNAME")
+        .or_else(|_| std::env::var("USER"))
+        .unwrap_or_else(|_| "unknown-user".into());
+
+    let base = format!(
+        "{}|{}|{}|{}|{}",
+        host,
+        user,
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+        env!("CARGO_PKG_NAME")
+    );
+
     let mut hasher = Sha256::new();
     hasher.update(base.as_bytes());
     let result = hasher.finalize();
-    result[..16].iter().map(|item| format!("{:02X}", item)).collect::<Vec<String>>().join("")
+
+    result[..16]
+        .iter()
+        .map(|item| format!("{:02X}", item))
+        .collect::<Vec<String>>()
+        .join("")
 }
 
 fn only_digits(value: &str) -> String {
@@ -186,12 +240,16 @@ fn only_digits(value: &str) -> String {
 
 fn find_string(value: &Value, keys: &[&str]) -> Option<String> {
     match value {
-        Value::Object(map) => keys.iter().find_map(|key| map.get(*key)).and_then(|item| match item {
-            Value::String(text) => Some(text.clone()),
-            Value::Number(number) => Some(number.to_string()),
-            Value::Bool(flag) => Some(flag.to_string()),
-            _ => None,
-        }),
+        Value::Object(map) => {
+            keys.iter()
+                .find_map(|key| map.get(*key))
+                .and_then(|item| match item {
+                    Value::String(text) => Some(text.clone()),
+                    Value::Number(number) => Some(number.to_string()),
+                    Value::Bool(flag) => Some(flag.to_string()),
+                    _ => None,
+                })
+        }
         _ => None,
     }
 }
@@ -206,7 +264,7 @@ fn find_i64(value: &Value, keys: &[&str]) -> Option<i64> {
                     Value::String(text) => text.parse::<i64>().ok(),
                     _ => None,
                 })
-        },
+        }
         _ => None,
     }
 }
