@@ -142,7 +142,12 @@ jobs:
           workspaces: './src-tauri -> target'
       - name: Instalar dependências frontend
         run: npm install
+      - name: Pular publish macOS sem secrets de assinatura
+        if: runner.os == 'macOS' && (env.APPLE_CERTIFICATE == '' || env.APPLE_CERTIFICATE_PASSWORD == '' || env.KEYCHAIN_PASSWORD == '' || env.TAURI_SIGNING_PRIVATE_KEY == '')
+        run: |
+          echo "::warning::Secrets de assinatura Apple ausentes. Publicação macOS será pulada para evitar falha de codesign."
       - name: Publicar binários Tauri
+        if: runner.os != 'macOS' || (env.APPLE_CERTIFICATE != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.KEYCHAIN_PASSWORD != '' && env.TAURI_SIGNING_PRIVATE_KEY != '')
         uses: tauri-apps/tauri-action@v0
         with:
           tagName: ${{ needs.prepare-release.outputs.tag }}

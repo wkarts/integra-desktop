@@ -15,7 +15,9 @@ pub fn parse_nfse_xml(xml: &str, file_name: &str) -> Result<NfseDocument> {
             abrasf_v2::parse(xml, file_name)
         }
         detector::ProviderKind::UbairaCustom => generic_fallback::parse_ubaira(xml, file_name),
-        detector::ProviderKind::Ginfes => ginfes::parse(xml, file_name),
+        detector::ProviderKind::Ginfes | detector::ProviderKind::Saj => {
+            ginfes::parse(xml, file_name)
+        }
         detector::ProviderKind::Betha => betha::parse(xml, file_name),
         detector::ProviderKind::AbrasfV1 => abrasf_v1::parse(xml, file_name),
         detector::ProviderKind::Unknown => Err(anyhow!("Layout de XML NFS-e não suportado.")),

@@ -64,7 +64,7 @@ export default function NfseServicosPage() {
   async function handleExportTxt() {
     const txt = await exportTxt(documents, profile);
     setPreview(txt.slice(0, 12000));
-    downloadText(txt, `${profile.cod_prosoft}_nfse_ba_prestados.txt`);
+    downloadText(txt, `${profile.cod_prosoft}_nfse_${profile.output_layout}.txt`);
     pushLog('TXT Prosoft exportado pelo backend Rust.');
   }
 
