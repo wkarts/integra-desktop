@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 
 const pattern = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([^)]+\))?!?:\s.+$/;
+const legacyPattern = /^([A-Za-z][\w -]{1,40}):\s.+$/;
 
 function resolveTitle() {
   const explicitTitle = process.env.PR_TITLE?.trim();
@@ -24,13 +25,31 @@ if (!title) {
   process.exit(0);
 }
 
+if (pattern.test(title)) {
+  console.log(`Título do PR válido: ${title}`);
+  process.exit(0);
+}
+
+if (legacyPattern.test(title)) {
+  const [, scopeRaw, descriptionRaw] = title.match(/^([A-Za-z][\w -]{1,40}):\s(.+)$/) ?? [];
+  const scope = scopeRaw
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+  const description = descriptionRaw?.trim() ?? 'descreva a mudança';
+
+  console.warn(`Título legado aceito para compatibilidade: ${title}`);
+  console.warn(`Recomendação: use "feat(${scope}): ${description}" nas próximas PRs.`);
+  process.exit(0);
+}
+
 if (!pattern.test(title)) {
   console.error(`Título do PR inválido: "${title}"`);
   console.error('Use Conventional Commits. Exemplos válidos:');
   console.error('- feat(nfse): adiciona parser de ubaira');
   console.error('- fix(core): corrige exportação de layout prosoft');
   console.error('- docs(ci): documenta validação de título de PR');
+  console.error('Formato legado aceito temporariamente: Core: descrição');
   process.exit(1);
 }
-
-console.log(`Título do PR válido: ${title}`);

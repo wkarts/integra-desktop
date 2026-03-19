@@ -16,6 +16,12 @@ Exemplos válidos:
 - `fix(core): corrige exportação de layout prosoft`
 - `docs(ci): documenta validação de título de PR`
 
+Compatibilidade temporária (legado):
+
+- `Core: adiciona parsers e mappers`
+
+> Para evitar erros de CI, prefira sempre o formato Conventional Commits.
+
 ## Checklist
 
 - [ ] Mantive compatibilidade com o fallback legado

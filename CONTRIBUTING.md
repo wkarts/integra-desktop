@@ -21,6 +21,12 @@ Exemplos válidos:
 - `fix(core): corrige normalização de documento`
 - `chore(ci): ajusta validação de versão`
 
+Compatibilidade temporária (para evitar falha recorrente em PR legada):
+
+- `Core: adiciona parsers e mappers`
+
+> Esse formato legado passa na CI, mas o padrão recomendado continua sendo Conventional Commits.
+
 Exemplo inválido (vai falhar):
 
 - `Add Rust core processing (parsers, mappers, exporters), UI profile layouts and lockfiles`
@@ -72,3 +78,14 @@ cargo fmt --manifest-path src-tauri/Cargo.toml --all --check
 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
 cargo test --manifest-path src-tauri/Cargo.toml --all-targets --all-features
 ```
+
+## Release macOS na CI
+
+O job de release para macOS só executa quando os secrets de assinatura estão preenchidos:
+
+- `TAURI_SIGNING_PRIVATE_KEY`
+- `APPLE_CERTIFICATE`
+- `APPLE_CERTIFICATE_PASSWORD`
+- `KEYCHAIN_PASSWORD`
+
+Sem esses secrets, a pipeline publica Linux/Windows e pula macOS para evitar falha de `codesign` por certificado vazio.
