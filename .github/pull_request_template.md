@@ -2,6 +2,20 @@
 
 -
 
+## Formato obrigatório do título do PR
+
+Use **Conventional Commits** no título:
+
+```text
+<tipo>(<escopo opcional>)?: <descrição>
+```
+
+Exemplos válidos:
+
+- `feat(nfse): adiciona parser de ubaira`
+- `fix(core): corrige exportação de layout prosoft`
+- `docs(ci): documenta validação de título de PR`
+
 ## Checklist
 
 - [ ] Mantive compatibilidade com o fallback legado

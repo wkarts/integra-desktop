@@ -10,19 +10,33 @@ export interface ConversionFieldRules {
   iss_aliquota: FieldRule;
   iss_devido: FieldRule;
   iss_retido: FieldRule;
+  valor_iss: FieldRule;
   valor_liquido: FieldRule;
   valor_irrf: FieldRule;
   valor_inss: FieldRule;
   valor_pis: FieldRule;
   valor_cofins: FieldRule;
   valor_csll: FieldRule;
+  descontos: FieldRule;
+  deducoes: FieldRule;
   observacao: FieldRule;
   codigo_servico: FieldRule;
+  municipio: FieldRule;
+  serie: FieldRule;
+  numero: FieldRule;
+  data_emissao: FieldRule;
+  data_competencia: FieldRule;
+  tipo_documento: FieldRule;
+  especie_documento: FieldRule;
+  natureza_operacao: FieldRule;
+  campos_complementares: FieldRule;
 }
+
+export type OutputLayout = 'ba_prestados' | 'ba_tomados' | 'prosoft_faturas';
 
 export interface ConversionProfile {
   profile_name: string;
-  output_layout: 'ba_prestados';
+  output_layout: OutputLayout;
   cod_prosoft: string;
   especie_documento: string;
   modelo_nf: string;
@@ -73,7 +87,7 @@ export interface NfseDocument {
   file_name: string;
   provider: string;
   provider_friendly: string;
-  layout: 'ba_prestados';
+  layout: OutputLayout;
   numero: string;
   serie: string;
   emissao: string;

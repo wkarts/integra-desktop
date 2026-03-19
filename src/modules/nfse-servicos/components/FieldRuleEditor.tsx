@@ -5,14 +5,26 @@ const labels: Record<keyof ConversionFieldRules, string> = {
   iss_aliquota: 'Alíquota ISS',
   iss_devido: 'ISS devido',
   iss_retido: 'ISS retido',
+  valor_iss: 'Valor do ISS',
   valor_liquido: 'Valor líquido',
   valor_irrf: 'IRRF',
   valor_inss: 'INSS',
   valor_pis: 'PIS',
   valor_cofins: 'COFINS',
   valor_csll: 'CSLL',
+  descontos: 'Descontos',
+  deducoes: 'Deduções',
   observacao: 'Observação',
   codigo_servico: 'Código do serviço',
+  municipio: 'Município',
+  serie: 'Série',
+  numero: 'Número',
+  data_emissao: 'Data emissão',
+  data_competencia: 'Data competência',
+  tipo_documento: 'Tipo documento',
+  especie_documento: 'Espécie documento',
+  natureza_operacao: 'Natureza operação',
+  campos_complementares: 'Campos complementares',
 };
 
 const actions: Array<{ value: FieldAction; label: string }> = [
@@ -32,8 +44,7 @@ export function FieldRuleEditor({ value, onChange }: { value: ConversionFieldRul
     <div className="card">
       <h3>Regras de conversão por campo</h3>
       <p className="muted">
-        Você pode manter o valor do XML, zerar, anular em branco, ignorar ou forçar um valor fixo para campos como ISS, base de cálculo,
-        retenções e observação.
+        Configure priorização de campos fiscais com uso direto do XML, zero, vazio, ignorado ou valor fixo persistido por perfil.
       </p>
       <div className="rules-grid">
         {Object.entries(value).map(([field, rule]) => {

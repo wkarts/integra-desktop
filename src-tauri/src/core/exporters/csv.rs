@@ -2,7 +2,10 @@ use anyhow::Result;
 
 use crate::core::domain::document::{ConversionProfile, NfseDocument};
 
-pub fn export_documents_to_csv(documents: &[NfseDocument], _profile: &ConversionProfile) -> Result<String> {
+pub fn export_documents_to_csv(
+    documents: &[NfseDocument],
+    _profile: &ConversionProfile,
+) -> Result<String> {
     let mut rows = Vec::new();
     rows.push(vec![
         "provider".into(),
@@ -50,7 +53,11 @@ pub fn export_documents_to_csv(documents: &[NfseDocument], _profile: &Conversion
             item.taxes.base_calculo.to_string(),
             item.taxes.valor_iss.to_string(),
             item.taxes.aliquota_iss.to_string(),
-            if item.taxes.iss_retido { "1".into() } else { "0".into() },
+            if item.taxes.iss_retido {
+                "1".into()
+            } else {
+                "0".into()
+            },
             item.taxes.valor_irrf.to_string(),
             item.taxes.valor_pis.to_string(),
             item.taxes.valor_cofins.to_string(),
@@ -62,9 +69,16 @@ pub fn export_documents_to_csv(documents: &[NfseDocument], _profile: &Conversion
         ]);
     }
 
-    Ok(rows.into_iter().map(|row| {
-        row.into_iter().map(escape_csv).collect::<Vec<_>>().join(";")
-    }).collect::<Vec<_>>().join("\r\n"))
+    Ok(rows
+        .into_iter()
+        .map(|row| {
+            row.into_iter()
+                .map(escape_csv)
+                .collect::<Vec<_>>()
+                .join(";")
+        })
+        .collect::<Vec<_>>()
+        .join("\r\n"))
 }
 
 fn escape_csv(value: String) -> String {

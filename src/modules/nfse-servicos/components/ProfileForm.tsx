@@ -14,6 +14,14 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
           <input value={value.profile_name} onChange={(e) => set('profile_name', e.target.value)} />
         </div>
         <div>
+          <label>Layout de saída</label>
+          <select value={value.output_layout} onChange={(e) => set('output_layout', e.target.value as ConversionProfile['output_layout'])}>
+            <option value="ba_prestados">Serviços prestados</option>
+            <option value="ba_tomados">Serviços tomados</option>
+            <option value="prosoft_faturas">Faturas</option>
+          </select>
+        </div>
+        <div>
           <label>COD Prosoft</label>
           <input value={value.cod_prosoft} onChange={(e) => set('cod_prosoft', e.target.value)} />
         </div>

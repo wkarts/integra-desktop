@@ -9,7 +9,13 @@ pub fn parse(xml: &str, file_name: &str) -> Result<NfseDocument> {
     let document = Document::parse(xml)?;
     let inf = find_first(&document, "InfNfse").ok_or_else(|| anyhow!("InfNfse não encontrado"))?;
     let info_adic = text_from_descendant(inf, "OutrasInformacoes");
-    let provider_friendly = if document.root_element().tag_name().namespace().unwrap_or_default().contains("abrasf") {
+    let provider_friendly = if document
+        .root_element()
+        .tag_name()
+        .namespace()
+        .unwrap_or_default()
+        .contains("abrasf")
+    {
         "WebISS/ABRASF"
     } else {
         "CompNfse genérico"
@@ -35,7 +41,10 @@ pub fn parse(xml: &str, file_name: &str) -> Result<NfseDocument> {
         serie: fallback_text(text_from_descendant(inf, "Serie"), "A"),
         emissao: text_from_descendant(inf, "DataEmissao"),
         competencia: text_from_descendant(inf, "Competencia"),
-        chave: first_non_empty(vec![text_from_descendant(inf, "ChaveAcesso"), extract_chave(&info_adic)]),
+        chave: first_non_empty(vec![
+            text_from_descendant(inf, "ChaveAcesso"),
+            extract_chave(&info_adic),
+        ]),
         municipio_codigo,
         municipio_nome,
         item_lista_servico: normalize_service_code(&text_from_descendant(inf, "ItemListaServico")),
@@ -44,17 +53,29 @@ pub fn parse(xml: &str, file_name: &str) -> Result<NfseDocument> {
         info_adic: sanitize(&info_adic),
         prestador: Party {
             nome: text_from_descendant(prestador_servico, "RazaoSocial"),
-            documento: only_digits(&first_non_empty(vec![text_from_descendant(prestador_servico, "Cnpj"), text_from_descendant(prestador_servico, "Cpf")])),
-            inscricao_municipal: option_string(text_from_descendant(prestador_servico, "InscricaoMunicipal")),
+            documento: only_digits(&first_non_empty(vec![
+                text_from_descendant(prestador_servico, "Cnpj"),
+                text_from_descendant(prestador_servico, "Cpf"),
+            ])),
+            inscricao_municipal: option_string(text_from_descendant(
+                prestador_servico,
+                "InscricaoMunicipal",
+            )),
             endereco: option_string(text_from_descendant(prestador_servico, "Endereco")),
-            municipio_codigo: option_string(text_from_descendant(prestador_servico, "CodigoMunicipio")),
+            municipio_codigo: option_string(text_from_descendant(
+                prestador_servico,
+                "CodigoMunicipio",
+            )),
             municipio_nome: None,
             uf: option_string(text_from_descendant(prestador_servico, "Uf")),
             cep: option_string(only_digits(&text_from_descendant(prestador_servico, "Cep"))),
         },
         tomador: Party {
             nome: text_from_descendant(tomador, "RazaoSocial"),
-            documento: only_digits(&first_non_empty(vec![text_from_descendant(tomador, "Cnpj"), text_from_descendant(tomador, "Cpf")])),
+            documento: only_digits(&first_non_empty(vec![
+                text_from_descendant(tomador, "Cnpj"),
+                text_from_descendant(tomador, "Cpf"),
+            ])),
             inscricao_municipal: option_string(text_from_descendant(tomador, "InscricaoMunicipal")),
             endereco: option_string(text_from_descendant(tomador, "Endereco")),
             municipio_codigo: option_string(text_from_descendant(tomador, "CodigoMunicipio")),
@@ -80,7 +101,9 @@ pub fn parse(xml: &str, file_name: &str) -> Result<NfseDocument> {
 }
 
 pub(crate) fn find_first<'a>(document: &'a Document<'a>, tag: &str) -> Option<Node<'a, 'a>> {
-    document.descendants().find(|node| node.is_element() && node.tag_name().name() == tag)
+    document
+        .descendants()
+        .find(|node| node.is_element() && node.tag_name().name() == tag)
 }
 
 pub(crate) fn find_first_from<'a>(node: Node<'a, 'a>, tag: &str) -> Node<'a, 'a> {
@@ -114,11 +137,19 @@ pub(crate) fn only_digits(value: &str) -> String {
 
 pub(crate) fn optional_digits(value: String) -> Option<String> {
     let digits = only_digits(&value);
-    if digits.is_empty() { None } else { Some(digits) }
+    if digits.is_empty() {
+        None
+    } else {
+        Some(digits)
+    }
 }
 
 pub(crate) fn option_string(value: String) -> Option<String> {
-    if value.trim().is_empty() { None } else { Some(value) }
+    if value.trim().is_empty() {
+        None
+    } else {
+        Some(value)
+    }
 }
 
 pub(crate) fn extract_chave(text: &str) -> String {
@@ -151,11 +182,18 @@ pub(crate) fn normalize_service_code(value: &str) -> String {
 }
 
 pub(crate) fn fallback_text(primary: String, fallback: &str) -> String {
-    if primary.trim().is_empty() { fallback.to_string() } else { primary }
+    if primary.trim().is_empty() {
+        fallback.to_string()
+    } else {
+        primary
+    }
 }
 
 pub(crate) fn first_non_empty(values: Vec<String>) -> String {
-    values.into_iter().find(|value| !value.trim().is_empty()).unwrap_or_default()
+    values
+        .into_iter()
+        .find(|value| !value.trim().is_empty())
+        .unwrap_or_default()
 }
 
 pub(crate) fn resolve_municipio(raw: &str) -> (String, String) {
@@ -168,7 +206,9 @@ pub(crate) fn resolve_municipio(raw: &str) -> (String, String) {
         "2910809" | "2910800" => ("2910809".into(), "FEIRA DE SANTANA".into()),
         "2905700" => ("2905700".into(), "CAMAÇARI".into()),
         "2933307" => ("2933307".into(), "VITÓRIA DA CONQUISTA".into()),
-        _ if normalized.chars().all(|c| c.is_ascii_digit()) => (normalized.to_string(), normalized.to_string()),
+        _ if normalized.chars().all(|c| c.is_ascii_digit()) => {
+            (normalized.to_string(), normalized.to_string())
+        }
         _ => {
             let upper = normalized.to_uppercase();
             let code = match upper.as_str() {
