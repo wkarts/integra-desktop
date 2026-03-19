@@ -12,7 +12,11 @@ pub fn collect_xml_files_from_dir(path: &Path) -> Result<Vec<PathBuf>, String> {
         let path = entry.path();
         if path.is_dir() {
             files.extend(collect_xml_files_from_dir(&path)?);
-        } else if path.extension().map(|ext| ext.eq_ignore_ascii_case("xml")).unwrap_or(false) {
+        } else if path
+            .extension()
+            .map(|ext| ext.eq_ignore_ascii_case("xml"))
+            .unwrap_or(false)
+        {
             files.push(path);
         }
     }

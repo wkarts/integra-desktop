@@ -37,14 +37,26 @@ pub struct ConversionFieldRules {
     pub iss_aliquota: FieldRule,
     pub iss_devido: FieldRule,
     pub iss_retido: FieldRule,
+    pub valor_iss: FieldRule,
     pub valor_liquido: FieldRule,
     pub valor_irrf: FieldRule,
     pub valor_inss: FieldRule,
     pub valor_pis: FieldRule,
     pub valor_cofins: FieldRule,
     pub valor_csll: FieldRule,
+    pub descontos: FieldRule,
+    pub deducoes: FieldRule,
     pub observacao: FieldRule,
     pub codigo_servico: FieldRule,
+    pub municipio: FieldRule,
+    pub serie: FieldRule,
+    pub numero: FieldRule,
+    pub data_emissao: FieldRule,
+    pub data_competencia: FieldRule,
+    pub tipo_documento: FieldRule,
+    pub especie_documento: FieldRule,
+    pub natureza_operacao: FieldRule,
+    pub campos_complementares: FieldRule,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,20 +112,35 @@ impl Default for ConversionProfile {
 
 impl Default for ConversionFieldRules {
     fn default() -> Self {
-        let source = FieldRule { action: FieldAction::Source, value: None };
+        let source = FieldRule {
+            action: FieldAction::Source,
+            value: None,
+        };
         Self {
             base_calculo: source.clone(),
             iss_aliquota: source.clone(),
             iss_devido: source.clone(),
             iss_retido: source.clone(),
+            valor_iss: source.clone(),
             valor_liquido: source.clone(),
             valor_irrf: source.clone(),
             valor_inss: source.clone(),
             valor_pis: source.clone(),
             valor_cofins: source.clone(),
             valor_csll: source.clone(),
+            descontos: source.clone(),
+            deducoes: source.clone(),
             observacao: source.clone(),
-            codigo_servico: source,
+            codigo_servico: source.clone(),
+            municipio: source.clone(),
+            serie: source.clone(),
+            numero: source.clone(),
+            data_emissao: source.clone(),
+            data_competencia: source.clone(),
+            tipo_documento: source.clone(),
+            especie_documento: source.clone(),
+            natureza_operacao: source.clone(),
+            campos_complementares: source,
         }
     }
 }

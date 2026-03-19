@@ -79,7 +79,6 @@ jobs:
 
   publish-tauri:
     needs: prepare-release
-    if: needs.prepare-release.outputs.published == 'true'
     permissions:
       contents: write
     strategy:
@@ -97,16 +96,6 @@ jobs:
     runs-on: ${{ matrix.platform }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-      APPLE_ID: ${{ secrets.APPLE_ID }}
-      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-      APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
       WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
       WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
     steps:
@@ -143,6 +132,7 @@ jobs:
       - name: Instalar dependências frontend
         run: npm install
       - name: Publicar binários Tauri
+        if: needs.prepare-release.outputs.published == 'true'
         uses: tauri-apps/tauri-action@v0
         with:
           tagName: ${{ needs.prepare-release.outputs.tag }}
@@ -150,4 +140,5 @@ jobs:
           releaseBody: Confira o CHANGELOG.md e os assets desta versão.
           releaseDraft: false
           prerelease: false
+          includeUpdaterJson: false
           args: ${{ matrix.args }}
