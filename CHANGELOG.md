@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/wkarts/integra-desktop/compare/v1.0.2...v1.0.3) (2026-03-19)
+
+
+### Bug Fixes
+
+* finalizar fluxo operacional e fallback legado no desktop ([ffc6394](https://github.com/wkarts/integra-desktop/commit/ffc6394d84d303397c045230650736c8d31a37cb))
+
 ## [1.0.2](https://github.com/wkarts/integra-desktop/compare/v1.0.1...v1.0.2) (2026-03-19)
 
 
