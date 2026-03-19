@@ -24,6 +24,7 @@ Exemplos válidos:
 Compatibilidade temporária (para evitar falha recorrente em PR legada):
 
 - `Core: adiciona parsers e mappers`
+- `Adicionar core Rust (parsers/mappers/exporters), validação de título de PR e ajustes de build/CI`
 
 > Esse formato legado passa na CI, mas o padrão recomendado continua sendo Conventional Commits.
 

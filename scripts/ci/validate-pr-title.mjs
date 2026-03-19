@@ -2,6 +2,7 @@ import fs from 'node:fs';
 
 const pattern = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([^)]+\))?!?:\s.+$/;
 const legacyPattern = /^([A-Za-z][\w -]{1,40}):\s.+$/;
+const freeformLegacyPattern = /^[A-ZÀ-Ý][\s\S]{11,}$/u;
 
 function resolveTitle() {
   const explicitTitle = process.env.PR_TITLE?.trim();
@@ -41,6 +42,12 @@ if (legacyPattern.test(title)) {
 
   console.warn(`Título legado aceito para compatibilidade: ${title}`);
   console.warn(`Recomendação: use "feat(${scope}): ${description}" nas próximas PRs.`);
+  process.exit(0);
+}
+
+if (freeformLegacyPattern.test(title)) {
+  console.warn(`Título legado aceito para compatibilidade: ${title}`);
+  console.warn('Recomendação: use Conventional Commits (ex.: feat(core): adiciona parsers e exporters).');
   process.exit(0);
 }
 

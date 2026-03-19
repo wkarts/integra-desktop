@@ -19,6 +19,7 @@ Exemplos válidos:
 Compatibilidade temporária (legado):
 
 - `Core: adiciona parsers e mappers`
+- `Adicionar core Rust (parsers/mappers/exporters), validação de título de PR e ajustes de build/CI`
 
 > Para evitar erros de CI, prefira sempre o formato Conventional Commits.
 
