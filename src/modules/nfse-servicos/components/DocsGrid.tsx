@@ -16,13 +16,13 @@ export function DocsGrid({ documents, onDocumentsChange }: DocsGridProps) {
     } else {
       const [root, key] = path.split('.');
       if (root === 'taxes') {
-        (item.taxes as Record<string, unknown>)[key] = targetValue;
+        (item.taxes as unknown as Record<string, unknown>)[key] = targetValue;
       } else if (root === 'prestador') {
-        (item.prestador as Record<string, unknown>)[key] = rawValue;
+        (item.prestador as unknown as Record<string, unknown>)[key] = rawValue;
       } else if (root === 'tomador') {
-        (item.tomador as Record<string, unknown>)[key] = rawValue;
+        (item.tomador as unknown as Record<string, unknown>)[key] = rawValue;
       } else {
-        (item as Record<string, unknown>)[path] = rawValue;
+        (item as unknown as Record<string, unknown>)[path] = rawValue;
       }
     }
 

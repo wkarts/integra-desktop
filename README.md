@@ -1,111 +1,103 @@
 # Integra Desktop
 
-Aplicação desktop em **Tauri + Rust + React/TypeScript** para conversão local de **XML NFS-e / NFe → TXT Prosoft**, mantendo o **HTML legado** como fallback operacional.
-
-Esta versão já está preparada para **GitHub**, com **CI**, **CD**, **versionamento automático**, **release semântica**, **validação de código**, **publicação de binários** e **documentação em GitHub Pages**.
+Aplicação desktop em **Tauri + Rust + React/TypeScript** para conversão local de **XML NFS-e / NFe / SPED** em layouts Prosoft, mantendo o **HTML legado** como fallback operacional isolado.
 
 ## O que o repositório entrega
 
-- frontend modular em `src/`
-- backend Tauri/Rust em `src-tauri/`
-- fallback legado isolado em `src/assets/legacy/`
-- exportação TXT/CSV
-- regras parametrizáveis por campo na conversão NFS-e
-- pipeline GitHub pronta para:
-  - validar PR e push
-  - validar título de PR com Conventional Commits
-  - validar TypeScript e build web
-  - validar `cargo fmt`, `clippy` e `cargo test`
-  - manter versionamento sincronizado
-  - gerar release SemVer com `semantic-release`
-  - publicar binários Tauri em GitHub Releases
-  - publicar documentação no GitHub Pages
+- frontend modular em `src/` com módulos Dashboard, NFS-e, NFe/Faturas, Configurações, Logs e Legado.
+- backend Tauri/Rust em `src-tauri/` com commands para processamento, exportação, logs e perfis.
+- fallback legado isolado em `src/assets/legacy/` (sem acoplamento no motor novo).
+- exportação TXT/CSV com layout selecionável (`ba_prestados`, `ba_tomados`, `prosoft_faturas`).
+- regras parametrizáveis por campo (source, zero, empty, ignore, constant), persistidas por perfil.
+- parsers utilitários para NFe, SPED, pipe legado e descoberta de XML/ZIP.
+- normalizadores e mapeadores com testes unitários em Rust.
+- pipeline GitHub para CI/CD, release semântica e publicação Tauri.
 
 ## Estrutura principal
 
 ```text
 integra-desktop/
-  .github/
-    workflows/
-      ci.yml
-      release.yml
-      pages.yml
-  docs/
-  scripts/
-    ci/
-    release/
+  .github/workflows/
+    ci.yml
+    release.yml
+    pages.yml
   src/
     app/
     modules/
+      dashboard/
+      nfe-faturas/
+      nfse-servicos/
+      legado/
+      settings/
+      logs/
     shared/
-  src-tauri/
-    src/
-      commands/
-      core/
-      storage/
+  src-tauri/src/
+    commands/
+    core/
+      domain/
+      parsers/
+      normalizers/
+      mappers/
+      exporters/
+      validation/
+    storage/
 ```
 
 ## Scripts úteis
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run typecheck
 npm run build:web
 npm run ci:version
-npm run lint:rust
-npm run test:rust
-npm run release:dry
+cargo fmt --manifest-path src-tauri/Cargo.toml --all --check
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
+cargo test --manifest-path src-tauri/Cargo.toml --all-targets --all-features
 npm run tauri dev
 npm run tauri build
 ```
 
-## Fluxo de versionamento e release
+## Dependências de build Linux (Tauri)
 
-### PR
+```bash
+sudo apt-get update
+sudo apt-get install -y libglib2.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+```
 
-A pipeline `CI` valida:
+## Fluxo CI/CD
 
-- título do PR em Conventional Commits
-- sincronismo de versão entre arquivos de manifesto
-- TypeScript
-- build web
-- `cargo fmt`
-- `cargo clippy`
-- `cargo test`
+### Pull Request
 
-### Merge em `main`
+A workflow `CI` valida:
 
-A pipeline `Release`:
+- título do PR com Conventional Commits.
+- sincronismo de versão (`VERSION`, `package.json`, `Cargo.toml`, `tauri.conf.json`).
+- typecheck/build web.
+- `cargo fmt`, `cargo clippy`, `cargo test`.
 
-1. revalida frontend e Rust
-2. executa `semantic-release`
-3. gera tag `vX.Y.Z`
-4. sincroniza versões em:
-   - `VERSION`
-   - `package.json`
-   - `src-tauri/Cargo.toml`
-   - `src-tauri/tauri.conf.json`
-5. cria commit `chore(release): X.Y.Z [skip ci]`
-6. publica os binários Tauri no GitHub Releases
+### Merge na `main`
+
+A workflow `Release`:
+
+1. revalida frontend e Rust.
+2. executa `semantic-release`.
+3. gera tag `vX.Y.Z` e atualiza changelog.
+4. publica binários Tauri por plataforma.
 
 ## Secrets esperados no GitHub
 
-### Obrigatórios
+Obrigatório:
+- `GITHUB_TOKEN`.
 
-- `GITHUB_TOKEN` (automático no Actions)
-
-### Recomendados para assinatura/updater Tauri
-
+Recomendados para assinatura/updater:
 - `TAURI_SIGNING_PRIVATE_KEY`
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
 
-### Opcionais para Windows
-
+Opcional Windows:
 - `WINDOWS_CERTIFICATE`
 - `WINDOWS_CERTIFICATE_PASSWORD`
 
-### Opcionais para macOS
-
+Opcional macOS:
 - `APPLE_CERTIFICATE`
 - `APPLE_CERTIFICATE_PASSWORD`
 - `APPLE_ID`
@@ -115,16 +107,7 @@ A pipeline `Release`:
 - `APPLE_API_ISSUER`
 - `KEYCHAIN_PASSWORD`
 
-## Bootstrap rápido do repositório
-
-1. Suba este projeto para um repositório GitHub.
-2. Configure as branch protections da `main` exigindo a workflow `CI`.
-3. Adicione os secrets necessários.
-4. Ative GitHub Pages para a workflow `Pages`.
-5. Faça merge usando Conventional Commits.
-6. A primeira release será publicada automaticamente quando houver commit compatível.
-
-## Documentação operacional
+## Documentação complementar
 
 - `docs/RELEASES.md`
 - `docs/SECRETS.md`
