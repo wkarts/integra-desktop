@@ -1,6 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+function readOptionalTag() {
+  const tagArg = process.argv.find((arg) => arg.startsWith('--tag='));
+  if (tagArg) {
+    return tagArg.split('=')[1]?.trim();
+  }
+
+  const shortTagIndex = process.argv.findIndex((arg) => arg === '--tag' || arg === '-t');
+  if (shortTagIndex >= 0) {
+    return process.argv[shortTagIndex + 1]?.trim();
+  }
+
+  return undefined;
+}
+
 const root = process.cwd();
 const versionFile = fs.readFileSync(path.join(root, 'VERSION'), 'utf8').trim();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -21,7 +35,6 @@ const versions = {
 };
 
 const unique = new Set(Object.values(versions));
-
 if (unique.size !== 1) {
   console.error('Versões fora de sincronia:');
   for (const [file, version] of Object.entries(versions)) {
@@ -30,4 +43,14 @@ if (unique.size !== 1) {
   process.exit(1);
 }
 
-console.log(`Versionamento sincronizado em ${versionFile}`);
+const expectedTag = readOptionalTag();
+if (expectedTag) {
+  const normalizedTag = expectedTag.replace(/^v/i, '');
+  if (normalizedTag !== versionFile) {
+    console.error(`Tag de release fora de sincronia: tag=${expectedTag} e versão=${versionFile}`);
+    process.exit(1);
+  }
+}
+
+const tagMsg = expectedTag ? ` e tag ${expectedTag}` : '';
+console.log(`Versionamento sincronizado em ${versionFile}${tagMsg}`);

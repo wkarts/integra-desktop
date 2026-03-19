@@ -9,7 +9,7 @@ export default function SettingsPage() {
 
   return (
     <div className="stack-lg">
-      <PageHeader title="Configurações" subtitle="Perfil persistido no app data do Tauri." actions={<button className="btn primary" onClick={async () => { await saveProfile(profile); pushLog('Perfil salvo pela tela de configurações.'); }}>Salvar</button>} />
+      <PageHeader title="Configurações" subtitle="Configure o perfil padrão de conversão e regras por campo." actions={<button className="btn primary" onClick={async () => { await saveProfile(profile); pushLog('Perfil salvo pela tela de configurações.'); }}>Salvar</button>} />
       <ProfileForm value={profile} onChange={setProfile} />
       <FieldRuleEditor value={profile.field_rules} onChange={(rules) => setProfile({ ...profile, field_rules: rules })} />
     </div>

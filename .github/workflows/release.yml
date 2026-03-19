@@ -106,6 +106,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ needs.prepare-release.outputs.tag }}
+      - name: Validar versão x tag de release
+        run: node ./scripts/ci/check-version-sync.mjs --tag ${{ needs.prepare-release.outputs.tag }}
       - name: Dependências Linux para Tauri
         if: runner.os == 'Linux'
         run: |

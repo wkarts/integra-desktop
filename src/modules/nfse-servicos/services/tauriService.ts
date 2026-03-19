@@ -1,8 +1,18 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { ConversionProfile, NfseDocument, ProcessBatchInputItem, ProcessBatchResult } from '../../../shared/types';
+import type {
+  ConversionProfile,
+  NfseDocument,
+  ProcessBatchInputItem,
+  ProcessBatchResult,
+  UploadInputItem,
+} from '../../../shared/types';
 
 export async function processNfseBatch(items: ProcessBatchInputItem[]): Promise<ProcessBatchResult> {
   return invoke<ProcessBatchResult>('process_nfse_xml_batch', { items });
+}
+
+export async function processNfseUploadBatch(items: UploadInputItem[]): Promise<ProcessBatchResult> {
+  return invoke<ProcessBatchResult>('process_nfse_upload_batch', { items });
 }
 
 export async function exportTxt(documents: NfseDocument[], profile: ConversionProfile): Promise<string> {
