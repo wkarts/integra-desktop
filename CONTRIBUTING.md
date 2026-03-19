@@ -82,11 +82,8 @@ cargo test --manifest-path src-tauri/Cargo.toml --all-targets --all-features
 
 ## Release macOS na CI
 
-O job de release para macOS só executa quando os secrets de assinatura estão preenchidos:
+O release macOS agora gera binário **sem exigir** secrets da Apple (certificado/notarização), ideal para distribuição direta fora da App Store.
 
-- `TAURI_SIGNING_PRIVATE_KEY`
-- `APPLE_CERTIFICATE`
-- `APPLE_CERTIFICATE_PASSWORD`
-- `KEYCHAIN_PASSWORD`
+Secrets de assinatura/notarização Apple permanecem opcionais e não são obrigatórios para publicar assets da release.
 
-Sem esses secrets, a pipeline publica Linux/Windows e pula macOS para evitar falha de `codesign` por certificado vazio.
+O workflow também publica com `includeUpdaterJson: false`, evitando dependência de chave de assinatura de updater quando a distribuição for apenas por binário.
