@@ -28,7 +28,10 @@ pub fn load_license_settings(app: AppHandle) -> Result<Option<LicenseSettings>, 
 }
 
 #[tauri::command]
-pub fn save_license_settings(settings: LicenseSettings, app: AppHandle) -> Result<LicenseSettings, String> {
+pub fn save_license_settings(
+    settings: LicenseSettings,
+    app: AppHandle,
+) -> Result<LicenseSettings, String> {
     let mut next = settings;
     if next.machine_key.trim().is_empty() {
         next.machine_key = machine_fingerprint();
@@ -38,7 +41,10 @@ pub fn save_license_settings(settings: LicenseSettings, app: AppHandle) -> Resul
 }
 
 #[tauri::command]
-pub fn check_license_status(settings: LicenseSettings, app: AppHandle) -> Result<LicenseCheckResult, String> {
+pub fn check_license_status(
+    settings: LicenseSettings,
+    app: AppHandle,
+) -> Result<LicenseCheckResult, String> {
     let mut next_settings = settings.clone();
     if next_settings.machine_key.trim().is_empty() {
         next_settings.machine_key = machine_fingerprint();
@@ -192,18 +198,25 @@ fn find_string(value: &Value, keys: &[&str]) -> Option<String> {
 
 fn find_i64(value: &Value, keys: &[&str]) -> Option<i64> {
     match value {
-        Value::Object(map) => keys.iter().find_map(|key| map.get(*key)).and_then(|item| match item {
-            Value::Number(number) => number.as_i64(),
-            Value::String(text) => text.parse::<i64>().ok(),
-            _ => None,
-        }),
+        Value::Object(map) => {
+            keys.iter()
+                .find_map(|key| map.get(*key))
+                .and_then(|item| match item {
+                    Value::Number(number) => number.as_i64(),
+                    Value::String(text) => text.parse::<i64>().ok(),
+                    _ => None,
+                })
+        }
         _ => None,
     }
 }
 
 fn find_array<'a>(value: &'a Value, keys: &[&str]) -> Option<&'a Vec<Value>> {
     match value {
-        Value::Object(map) => keys.iter().find_map(|key| map.get(*key)).and_then(|item| item.as_array()),
+        Value::Object(map) => keys
+            .iter()
+            .find_map(|key| map.get(*key))
+            .and_then(|item| item.as_array()),
         _ => None,
     }
 }
