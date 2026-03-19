@@ -115,3 +115,9 @@ export interface ProcessBatchResult {
   warnings: string[];
   errors: string[];
 }
+
+export interface UploadInputItem {
+  file_name: string;
+  kind: "xml" | "zip";
+  content: string;
+}

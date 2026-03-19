@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import type { PropsWithChildren } from 'react';
 
 const menu = [
-  { to: '/', label: 'Dashboard' },
+  { to: '/', label: 'Painel operacional' },
   { to: '/nfse-servicos', label: 'NFS-e → Prosoft' },
   { to: '/nfe-faturas', label: 'NFe / Faturas' },
   { to: '/legado', label: 'Legado' },
@@ -16,7 +16,7 @@ export function NavShell({ children }: PropsWithChildren) {
       <aside className="sidebar">
         <div>
           <h1>Integra Desktop</h1>
-          <p className="muted">Tauri + Rust + React/TS com fallback legado HTML.</p>
+          <p className="muted">Operação fiscal diária e exportação Prosoft.</p>
         </div>
         <nav className="menu">
           {menu.map((item) => (
@@ -26,9 +26,7 @@ export function NavShell({ children }: PropsWithChildren) {
           ))}
         </nav>
       </aside>
-      <main className="main-content">
-        {children}
-      </main>
+      <main className="main-content">{children}</main>
     </div>
   );
 }

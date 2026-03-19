@@ -11,7 +11,7 @@ export default function LogsPage() {
 
   return (
     <div className="stack-lg">
-      <PageHeader title="Logs" subtitle="Log persistido no backend Tauri." />
+      <PageHeader title="Logs" subtitle="Histórico operacional persistido da aplicação." />
       <div className="card">
         <pre className="console-box">{logs.join('\n') || '(sem logs persistidos)'}</pre>
       </div>

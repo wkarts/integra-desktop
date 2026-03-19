@@ -6,5 +6,5 @@ pub mod settings;
 
 pub use export::{export_nfse_csv, export_nfse_txt};
 pub use logs::{append_runtime_log, list_runtime_logs};
-pub use process::process_nfse_xml_batch;
+pub use process::{process_nfse_upload_batch, process_nfse_xml_batch};
 pub use settings::{load_conversion_profile, save_conversion_profile};
