@@ -35,7 +35,12 @@ export interface ConversionFieldRules {
 export type OutputLayout = 'ba_prestados' | 'ba_tomados' | 'prosoft_faturas';
 
 export interface ConversionProfile {
+  profile_id: string;
   profile_name: string;
+  profile_company_name: string;
+  profile_company_document: string;
+  user_company_name: string;
+  user_company_document: string;
   output_layout: OutputLayout;
   cod_prosoft: string;
   especie_documento: string;
@@ -55,6 +60,46 @@ export interface ConversionProfile {
   cst_iss: string;
   obs_extended: 'auto' | 'always' | 'never';
   field_rules: ConversionFieldRules;
+}
+
+export interface ProfileBundle {
+  selected_profile_id: string;
+  profiles: ConversionProfile[];
+}
+
+export interface LicenseSettings {
+  service_url: string;
+  company_name: string;
+  company_document: string;
+  company_email: string;
+  station_name: string;
+  machine_key: string;
+  auto_register_machine: boolean;
+  app_instance: string;
+}
+
+export interface LicenseCheckResult {
+  allowed: boolean;
+  online: boolean;
+  active: boolean;
+  blocked: boolean;
+  device_registered: boolean;
+  device_blocked: boolean;
+  seats_total: number;
+  seats_used: number;
+  company_name: string;
+  company_document: string;
+  expires_at?: string | null;
+  message: string;
+  machine_key: string;
+  status_code: number;
+}
+
+export interface AppMeta {
+  product_name: string;
+  version: string;
+  build_hash: string;
+  app_id: string;
 }
 
 export interface NfseParty {

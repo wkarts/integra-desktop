@@ -14,12 +14,28 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
           <input value={value.profile_name} onChange={(e) => set('profile_name', e.target.value)} />
         </div>
         <div>
+          <label>Empresa do perfil</label>
+          <input value={value.profile_company_name} onChange={(e) => set('profile_company_name', e.target.value)} placeholder="Ex.: Escrituração ACME Ltda" />
+        </div>
+        <div>
+          <label>CNPJ/CPF do perfil</label>
+          <input value={value.profile_company_document} onChange={(e) => set('profile_company_document', e.target.value)} />
+        </div>
+        <div>
           <label>Layout de saída</label>
           <select value={value.output_layout} onChange={(e) => set('output_layout', e.target.value as ConversionProfile['output_layout'])}>
             <option value="ba_prestados">Serviços prestados</option>
             <option value="ba_tomados">Serviços tomados</option>
             <option value="prosoft_faturas">Faturas</option>
           </select>
+        </div>
+        <div>
+          <label>Empresa usuária</label>
+          <input value={value.user_company_name} onChange={(e) => set('user_company_name', e.target.value)} placeholder="Empresa licenciada" />
+        </div>
+        <div>
+          <label>CNPJ/CPF empresa usuária</label>
+          <input value={value.user_company_document} onChange={(e) => set('user_company_document', e.target.value)} />
         </div>
         <div>
           <label>COD Prosoft</label>

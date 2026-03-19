@@ -1,30 +1,23 @@
-use std::fs;
-use std::path::PathBuf;
-
 use anyhow::Result;
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
-use crate::core::domain::document::ConversionProfile;
+use crate::core::domain::document::{ConversionProfile, ProfileBundle};
 
 pub fn save_conversion_profile(app: &AppHandle, profile: &ConversionProfile) -> Result<()> {
-    let file = profile_file(app)?;
-    if let Some(parent) = file.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    fs::write(file, serde_json::to_string_pretty(profile)?)?;
-    Ok(())
+    let bundle = ProfileBundle {
+        selected_profile_id: profile.profile_id.clone(),
+        profiles: vec![profile.clone()],
+    };
+    crate::storage::profiles::save_profile_bundle(app, &bundle)
 }
 
 pub fn load_conversion_profile(app: &AppHandle) -> Result<Option<ConversionProfile>> {
-    let file = profile_file(app)?;
-    if !file.exists() {
-        return Ok(None);
-    }
-    let content = fs::read_to_string(file)?;
-    Ok(Some(serde_json::from_str(&content)?))
-}
-
-fn profile_file(app: &AppHandle) -> Result<PathBuf> {
-    let dir = app.path().app_data_dir()?;
-    Ok(dir.join("config").join("conversion_profile.json"))
+    let bundle = crate::storage::profiles::load_profile_bundle(app)?;
+    Ok(bundle.and_then(|item| {
+        item.profiles
+            .iter()
+            .find(|profile| profile.profile_id == item.selected_profile_id)
+            .cloned()
+            .or_else(|| item.profiles.first().cloned())
+    }))
 }

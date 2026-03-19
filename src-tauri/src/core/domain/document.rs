@@ -61,7 +61,12 @@ pub struct ConversionFieldRules {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConversionProfile {
+    pub profile_id: String,
     pub profile_name: String,
+    pub profile_company_name: String,
+    pub profile_company_document: String,
+    pub user_company_name: String,
+    pub user_company_document: String,
     pub output_layout: String,
     pub cod_prosoft: String,
     pub especie_documento: String,
@@ -83,10 +88,21 @@ pub struct ConversionProfile {
     pub field_rules: ConversionFieldRules,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProfileBundle {
+    pub selected_profile_id: String,
+    pub profiles: Vec<ConversionProfile>,
+}
+
 impl Default for ConversionProfile {
     fn default() -> Self {
         Self {
-            profile_name: "Padrão BA Prestados".into(),
+            profile_id: "empresa-padrao".into(),
+            profile_name: "Empresa padrão".into(),
+            profile_company_name: "Empresa padrão".into(),
+            profile_company_document: String::new(),
+            user_company_name: String::new(),
+            user_company_document: String::new(),
             output_layout: "ba_prestados".into(),
             cod_prosoft: "0001".into(),
             especie_documento: "NFSE".into(),
@@ -106,6 +122,16 @@ impl Default for ConversionProfile {
             cst_iss: String::new(),
             obs_extended: "auto".into(),
             field_rules: ConversionFieldRules::default(),
+        }
+    }
+}
+
+impl Default for ProfileBundle {
+    fn default() -> Self {
+        let profile = ConversionProfile::default();
+        Self {
+            selected_profile_id: profile.profile_id.clone(),
+            profiles: vec![profile],
         }
     }
 }

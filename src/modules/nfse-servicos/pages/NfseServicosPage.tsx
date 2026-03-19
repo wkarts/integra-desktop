@@ -5,10 +5,20 @@ import { DocsGrid } from '../components/DocsGrid';
 import { ProfileForm } from '../components/ProfileForm';
 import { FieldRuleEditor } from '../components/FieldRuleEditor';
 import { StatsCards } from '../components/StatsCards';
-import { appendLog, exportCsv, exportTxt, loadProfile, processNfseUploadBatch, saveProfile } from '../services/tauriService';
+import {
+  appendLog,
+  exportCsv,
+  exportTxt,
+  loadProfile,
+  loadProfileBundle,
+  processNfseUploadBatch,
+  saveProfile,
+  saveProfileBundle,
+} from '../services/tauriService';
 import { downloadText } from '../../../shared/utils/download';
 import { validateProfile } from '../../../shared/validators/profiles';
-import type { UploadInputItem } from '../../../shared/types';
+import { defaultProfileBundle } from '../../../shared/mappers/defaultProfile';
+import type { ProfileBundle, UploadInputItem } from '../../../shared/types';
 
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = '';
@@ -36,6 +46,14 @@ async function filesToBatchItems(files: File[]): Promise<UploadInputItem[]> {
   return items;
 }
 
+function createProfileFromCurrent(current: ReturnType<typeof useNfseStore>['profile']) {
+  return {
+    ...current,
+    profile_id: `perfil-${Date.now()}`,
+    profile_name: `${current.profile_company_name || current.profile_name} (cópia)`,
+  };
+}
+
 export default function NfseServicosPage() {
   const { documents, profile, logs, setDocuments, setProfile, pushLog } = useNfseStore();
   const xmlInputRef = useRef<HTMLInputElement | null>(null);
@@ -43,7 +61,7 @@ export default function NfseServicosPage() {
   const folderInputRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState('');
-
+  const [bundle, setBundle] = useState<ProfileBundle>(defaultProfileBundle);
 
   useEffect(() => {
     if (folderInputRef.current) {
@@ -53,15 +71,24 @@ export default function NfseServicosPage() {
   }, []);
 
   useEffect(() => {
-    loadProfile().then((saved) => {
-      if (saved) {
-        setProfile(saved);
-        pushLog('Perfil operacional carregado.');
-      }
-    }).catch(() => {
-      pushLog('Perfil padrão local carregado.');
-    });
+    Promise.all([loadProfileBundle(), loadProfile()])
+      .then(([savedBundle, savedProfile]) => {
+        const nextBundle = savedBundle ?? defaultProfileBundle;
+        setBundle(nextBundle);
+        const activeProfile = nextBundle.profiles.find((item) => item.profile_id === nextBundle.selected_profile_id) ?? savedProfile ?? nextBundle.profiles[0];
+        if (activeProfile) {
+          setProfile(activeProfile);
+          pushLog(`Perfil ativo carregado: ${activeProfile.profile_company_name || activeProfile.profile_name}.`);
+        }
+      })
+      .catch(() => pushLog('Perfil padrão local carregado.'));
   }, [pushLog, setProfile]);
+
+  async function persistBundle(nextBundle: ProfileBundle, logMessage?: string) {
+    setBundle(nextBundle);
+    await saveProfileBundle(nextBundle);
+    if (logMessage) pushLog(logMessage);
+  }
 
   async function processFiles(files: File[]) {
     if (!files.length) {
@@ -89,9 +116,7 @@ export default function NfseServicosPage() {
   }
 
   async function onInputChange(fileList: FileList | null) {
-    if (!fileList) {
-      return;
-    }
+    if (!fileList) return;
     await processFiles(Array.from(fileList));
   }
 
@@ -101,8 +126,40 @@ export default function NfseServicosPage() {
       issues.forEach((issue) => pushLog(`Validação do perfil: ${issue}`));
       return;
     }
+
+    const nextProfiles = [...bundle.profiles];
+    const index = nextProfiles.findIndex((item) => item.profile_id === profile.profile_id);
+    if (index >= 0) nextProfiles[index] = profile;
+    else nextProfiles.push(profile);
+
+    const nextBundle = { selected_profile_id: profile.profile_id, profiles: nextProfiles };
     await saveProfile(profile);
-    pushLog('Perfil de conversão salvo com sucesso.');
+    await persistBundle(nextBundle, `Perfil salvo para ${profile.profile_company_name || profile.profile_name}.`);
+  }
+
+  async function handleSelectProfile(profileId: string) {
+    const selected = bundle.profiles.find((item) => item.profile_id === profileId);
+    if (!selected) return;
+    setProfile(selected);
+    await persistBundle({ ...bundle, selected_profile_id: profileId }, `Perfil ativo alterado para ${selected.profile_company_name || selected.profile_name}.`);
+  }
+
+  async function handleCreateProfile() {
+    const nextProfile = createProfileFromCurrent(profile);
+    setProfile(nextProfile);
+    const nextBundle = { selected_profile_id: nextProfile.profile_id, profiles: [...bundle.profiles, nextProfile] };
+    await persistBundle(nextBundle, 'Novo perfil criado a partir do atual.');
+  }
+
+  async function handleRemoveProfile() {
+    if (bundle.profiles.length <= 1) {
+      pushLog('Ao menos um perfil deve permanecer cadastrado.');
+      return;
+    }
+    const remaining = bundle.profiles.filter((item) => item.profile_id !== profile.profile_id);
+    const nextProfile = remaining[0];
+    setProfile(nextProfile);
+    await persistBundle({ selected_profile_id: nextProfile.profile_id, profiles: remaining }, `Perfil removido: ${profile.profile_company_name || profile.profile_name}.`);
   }
 
   async function handleExportTxt() {
@@ -124,7 +181,7 @@ export default function NfseServicosPage() {
     <div className="stack-lg">
       <PageHeader
         title="NFS-e → Prosoft"
-        subtitle="Importe XML, ZIP ou pasta de documentos. Revise o lote, ajuste regras e exporte para TXT/CSV."
+        subtitle="Importe XML, ZIP ou pasta, escolha o perfil da empresa escriturada e exporte o arquivo Prosoft."
         actions={(
           <div className="actions-row">
             <button className="btn primary" onClick={() => xmlInputRef.current?.click()} disabled={busy}>Selecionar XML(s)</button>
@@ -141,23 +198,33 @@ export default function NfseServicosPage() {
       <input ref={zipInputRef} className="hidden" type="file" accept=".zip,application/zip" multiple onChange={(e) => onInputChange(e.target.files)} />
       <input ref={folderInputRef} className="hidden" type="file" multiple onChange={(e) => onInputChange(e.target.files)} />
 
-      <div
-        className={`dropzone ${busy ? 'disabled' : ''}`}
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={async (event) => {
-          event.preventDefault();
-          if (busy) return;
-          await processFiles(Array.from(event.dataTransfer.files || []));
-        }}
-      >
-        <strong>Arraste XML/ZIP/pasta para processamento em lote</strong>
-        <span className="muted">O lote continua mesmo quando houver erro em arquivos individuais.</span>
+      <div className={`dropzone ${busy ? 'disabled' : ''}`} onDragOver={(event) => event.preventDefault()} onDrop={async (event) => {
+        event.preventDefault();
+        if (busy) return;
+        await processFiles(Array.from(event.dataTransfer.files || []));
+      }}>
+        <strong>Arraste XML, ZIP ou uma pasta inteira para processamento em lote</strong>
+        <span className="muted">O sistema valida item a item e mantém o lote quando houver erro pontual.</span>
       </div>
 
       <StatsCards documents={documents} />
 
-      <div className="alert-strip">
-        <strong>Regras por campo ativas:</strong> usar XML, zerar, anular em branco, ignorar ou valor fixo por perfil.
+      <div className="card compact-card">
+        <div className="profile-toolbar">
+          <div>
+            <h3>Perfil ativo</h3>
+            <p className="muted">Selecione a empresa que receberá a escrituração fiscal nesta exportação.</p>
+          </div>
+          <div className="profile-toolbar-actions">
+            <select value={profile.profile_id} onChange={(e) => void handleSelectProfile(e.target.value)}>
+              {bundle.profiles.map((item) => (
+                <option key={item.profile_id} value={item.profile_id}>{item.profile_company_name || item.profile_name}</option>
+              ))}
+            </select>
+            <button className="btn" onClick={handleCreateProfile}>Novo perfil</button>
+            <button className="btn danger" onClick={handleRemoveProfile}>Excluir perfil</button>
+          </div>
+        </div>
       </div>
 
       <ProfileForm value={profile} onChange={setProfile} />
