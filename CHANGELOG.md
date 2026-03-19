@@ -1,3 +1,13 @@
+## [1.0.2](https://github.com/wkarts/integra-desktop/compare/v1.0.1...v1.0.2) (2026-03-19)
+
+
+### Bug Fixes
+
+* **ci:** corrige release.yml e amplia compatibilidade do título de PR ([deb3109](https://github.com/wkarts/integra-desktop/commit/deb310953be8a2f145923fd378ed18dddaaf00ab))
+* **ci:** evita falha de codesign no release macOS sem secrets ([9d8a08d](https://github.com/wkarts/integra-desktop/commit/9d8a08d0facd41a8addf230c3544fe25caa94653))
+* **release:** remove if de job para evitar erro com matrix no workflow ([0595f0f](https://github.com/wkarts/integra-desktop/commit/0595f0f270bdd96f5aa23a84cdbce4081c68befa))
+* **release:** torna assinatura Apple opcional no publish macOS ([b1854a6](https://github.com/wkarts/integra-desktop/commit/b1854a6d9115145b6b741e0ee1752741a3decb4d))
+
 ## [1.0.1](https://github.com/wkarts/integra-desktop/compare/v1.0.0...v1.0.1) (2026-03-19)
 
 
