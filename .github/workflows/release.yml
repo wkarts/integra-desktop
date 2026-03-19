@@ -79,17 +79,6 @@ jobs:
 
   publish-tauri:
     needs: prepare-release
-    if: |
-      needs.prepare-release.outputs.published == 'true' &&
-      (
-        !matrix.requires_apple_signing ||
-        (
-          secrets.APPLE_CERTIFICATE != '' &&
-          secrets.APPLE_CERTIFICATE_PASSWORD != '' &&
-          secrets.KEYCHAIN_PASSWORD != '' &&
-          secrets.TAURI_SIGNING_PRIVATE_KEY != ''
-        )
-      )
     permissions:
       contents: write
     strategy:
@@ -151,7 +140,7 @@ jobs:
         run: |
           echo "::warning::Secrets de assinatura Apple ausentes. Publicação macOS será pulada para evitar falha de codesign."
       - name: Publicar binários Tauri
-        if: runner.os != 'macOS' || (env.APPLE_CERTIFICATE != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.KEYCHAIN_PASSWORD != '' && env.TAURI_SIGNING_PRIVATE_KEY != '')
+        if: needs.prepare-release.outputs.published == 'true'
         uses: tauri-apps/tauri-action@v0
         with:
           tagName: ${{ needs.prepare-release.outputs.tag }}

@@ -87,3 +87,5 @@ O release macOS agora gera binário **sem exigir** secrets da Apple (certificado
 Secrets de assinatura/notarização Apple permanecem opcionais e não são obrigatórios para publicar assets da release.
 
 O workflow também publica com `includeUpdaterJson: false`, evitando dependência de chave de assinatura de updater quando a distribuição for apenas por binário.
+
+Se aparecer erro antigo sobre `Unrecognized named-value: 'matrix'` no `if` do job, atualize a branch com a versão mais recente do `release.yml` (o publish foi movido para `if` no step, sem uso de `matrix` no nível de job).
