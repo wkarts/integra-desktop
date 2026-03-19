@@ -25,6 +25,11 @@ Exemplo inválido (vai falhar):
 
 - `Add Rust core processing (parsers, mappers, exporters), UI profile layouts and lockfiles`
 
+Exemplos válidos para PRs grandes de core:
+
+- `feat(core): adiciona processamento Rust, layouts de perfil da UI e lockfiles`
+- `feat(rust): adiciona parsers, mappers, exporters e layouts de perfil da UI`
+
 ## Padrão de commit
 
 Formatos aceitos:
