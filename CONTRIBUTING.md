@@ -4,12 +4,26 @@
 
 1. Crie uma branch a partir de `main`.
 2. Faça commits seguindo Conventional Commits.
-3. Abra um Pull Request com título no formato:
-   - `feat: ...`
-   - `fix: ...`
-   - `chore: ...`
-   - `docs: ...`
+3. Abra um Pull Request com título **obrigatoriamente** no formato Conventional Commits.
 4. Aguarde a CI validar TypeScript, Rust, build e sincronismo de versão.
+
+## Título de PR (obrigatório na CI)
+
+A workflow executa `node ./scripts/ci/validate-pr-title.mjs` e aceita apenas:
+
+```text
+<tipo>(<escopo opcional>)?: <descrição>
+```
+
+Exemplos válidos:
+
+- `feat(nfse): adiciona parser de ubaira`
+- `fix(core): corrige normalização de documento`
+- `chore(ci): ajusta validação de versão`
+
+Exemplo inválido (vai falhar):
+
+- `Add Rust core processing (parsers, mappers, exporters), UI profile layouts and lockfiles`
 
 ## Padrão de commit
 
@@ -32,6 +46,15 @@ Tipos aceitos:
 - `revert`
 - `style`
 - `test`
+
+## Como validar localmente o título do PR
+
+```bash
+cat > /tmp/pr-event.json <<'JSON'
+{"pull_request":{"title":"feat(nfse): adiciona parser de ubaira"}}
+JSON
+GITHUB_EVENT_PATH=/tmp/pr-event.json node ./scripts/ci/validate-pr-title.mjs
+```
 
 ## Scripts úteis
 
