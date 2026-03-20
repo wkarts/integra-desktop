@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type {
   AppMeta,
   ConversionProfile,
-  LicenseCheckResult,
+  LicenseRuntimeStatus,
   LicenseSettings,
   NfseDocument,
   ProcessBatchInputItem,
@@ -59,8 +59,8 @@ export async function saveLicenseSettings(settings: LicenseSettings): Promise<Li
   return invoke<LicenseSettings>('save_license_settings', { settings });
 }
 
-export async function checkLicenseStatus(settings: LicenseSettings): Promise<LicenseCheckResult> {
-  return invoke<LicenseCheckResult>('check_license_status', { settings });
+export async function checkLicenseStatus(settings: LicenseSettings): Promise<LicenseRuntimeStatus> {
+  return invoke<LicenseRuntimeStatus>('check_license_status', { settings });
 }
 
 export async function getMachineFingerprint(): Promise<string> {

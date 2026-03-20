@@ -78,22 +78,117 @@ export interface LicenseSettings {
   app_instance: string;
 }
 
-export interface LicenseCheckResult {
-  allowed: boolean;
+export interface LocalLicense {
+  id: number;
+  empresa: string;
+  cnpj: string;
+  fantasia: string;
+  serial: string;
+  licencas: string;
+  ativo: boolean;
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  cep: string;
+  numero: string;
+  email: string;
+  complemento: string;
+  dias: number;
+  competencia: string;
+  bloqueio: boolean;
+  retaguarda: boolean;
+  pdv: boolean;
+  cte: boolean;
+  mdfe: boolean;
+  nfe: boolean;
+  frente: boolean;
+  sat: boolean;
+  app: boolean;
+  boletos: boolean;
+  mfe: boolean;
+  commerce: boolean;
+  serial_key: string;
+  terminal_ativo: boolean;
+  usadas: number;
+}
+
+export interface LicensedCompany {
+  idcliente: number;
+  datacad: string;
+  cnpj: string;
+  emp_inscestrg: string;
+  emp_inscmunicipal: string;
+  emp_nomefantasia: string;
+  razaosocial: string;
+  emp_endereco: string;
+  emp_numero: string;
+  emp_bairro: string;
+  emp_cidade: string;
+  emp_uf: string;
+  emp_cep: string;
+  emp_complemento: string;
+  telefone1: string;
+  emp_email: string;
+  emp_website: string;
+  emp_responsavel: string;
+  emp_cnae: string;
+  emp_serie: string;
+  idrepresentante: number;
+  bloqueio_admin: boolean;
+  bloqueado: boolean;
+  ativo: boolean;
+  dia_venc_mensalidade: number;
+  forma_pagamento: string;
+  emp_obs: string;
+  n_maquinas: number;
+  data_val_lic: string;
+  api_whatsapp: string;
+  token_whatsapp: string;
+  default_msg_whatsapp: string;
+}
+
+export interface LicensedDevice {
+  idmaquina: number;
+  cnpj: string;
+  chave: string;
+  nome: string;
+  bloqueado: boolean;
+  modulos: string;
+  nome_compu: string;
+  prog_acesso: string;
+  cod_ace_remoto: string;
+  versao_bd: string;
+  versaoexe: string;
+  sistema_operacional: string;
+  memoria_ram: string;
+  tipo: string;
+  observacao: string;
+  tecnico_instalacao: string;
+}
+
+export interface LicenseRuntimeStatus {
   online: boolean;
-  active: boolean;
+  allowed: boolean;
   blocked: boolean;
-  device_registered: boolean;
-  device_blocked: boolean;
+  machine_registered: boolean;
+  machine_blocked: boolean;
   seats_total: number;
   seats_used: number;
+  expiry?: string | null;
+  message: string;
+  block_reason?: string | null;
+  technical_message: string;
   company_name: string;
   company_document: string;
-  expires_at?: string | null;
-  message: string;
   machine_key: string;
   status_code: number;
+  local_license?: LocalLicense | null;
+  licensed_company?: LicensedCompany | null;
+  licensed_device?: LicensedDevice | null;
 }
+
+export type LicenseCheckResult = LicenseRuntimeStatus;
 
 export interface AppMeta {
   product_name: string;
