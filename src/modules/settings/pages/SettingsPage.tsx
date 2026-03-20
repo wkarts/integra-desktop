@@ -12,7 +12,7 @@ import {
   saveLicenseSettings,
   saveProfileBundle,
 } from '../../nfse-servicos/services/tauriService';
-import type { AppMeta, LicenseCheckResult, LicenseSettings, ProfileBundle } from '../../../shared/types';
+import type { AppMeta, LicenseRuntimeStatus, LicenseSettings, ProfileBundle } from '../../../shared/types';
 import { defaultProfileBundle } from '../../../shared/mappers/defaultProfile';
 import { validateProfile } from '../../../shared/validators/profiles';
 
@@ -37,7 +37,7 @@ const defaultMeta: AppMeta = {
 export default function SettingsPage() {
   const { profile, setProfile, pushLog } = useNfseStore();
   const [licenseSettings, setLicenseSettings] = useState<LicenseSettings>(defaultLicenseSettings);
-  const [licenseStatus, setLicenseStatus] = useState<LicenseCheckResult | null>(null);
+  const [licenseStatus, setLicenseStatus] = useState<LicenseRuntimeStatus | null>(null);
   const [bundle, setBundle] = useState<ProfileBundle>(defaultProfileBundle);
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
   const [busy, setBusy] = useState(false);
@@ -98,7 +98,9 @@ export default function SettingsPage() {
     try {
       const result = await checkLicenseStatus(licenseSettings);
       setLicenseStatus(result);
-      pushLog(`Licenciamento: ${result.message}`);
+      if (!result.allowed) {
+        pushLog(`Licenciamento bloqueado: ${result.message} (${result.block_reason ?? 'sem motivo informado'})`);
+      }
     } finally {
       setBusy(false);
     }
@@ -183,6 +185,43 @@ export default function SettingsPage() {
           <div className="status-item"><span>Máquinas em uso</span><strong>{licenseStatus?.seats_used ?? 0}</strong></div>
           <div className="status-item"><span>Retorno</span><strong>{licenseStatus?.message || 'Ainda não consultado'}</strong></div>
         </div>
+
+        {licenseStatus && (
+          <div className="form-grid cols-4" style={{ marginTop: 16 }}>
+            <div>
+              <label>Empresa remota (IDCLIENTE)</label>
+              <input readOnly value={licenseStatus.licensed_company?.idcliente ?? 0} />
+            </div>
+            <div>
+              <label>Máquina remota (IDMAQUINA)</label>
+              <input readOnly value={licenseStatus.licensed_device?.idmaquina ?? 0} />
+            </div>
+            <div>
+              <label>Validade</label>
+              <input readOnly value={licenseStatus.expiry || 'Não informada'} />
+            </div>
+            <div>
+              <label>Motivo técnico</label>
+              <input readOnly value={licenseStatus.technical_message || 'OK'} />
+            </div>
+            <div>
+              <label>Empresa bloqueada</label>
+              <input readOnly value={licenseStatus.licensed_company?.bloqueado || licenseStatus.licensed_company?.bloqueio_admin ? 'Sim' : 'Não'} />
+            </div>
+            <div>
+              <label>Máquina cadastrada</label>
+              <input readOnly value={licenseStatus.machine_registered ? 'Sim' : 'Não'} />
+            </div>
+            <div>
+              <label>Máquina bloqueada</label>
+              <input readOnly value={licenseStatus.machine_blocked ? 'Sim' : 'Não'} />
+            </div>
+            <div>
+              <label>Módulos remotos</label>
+              <input readOnly value={licenseStatus.licensed_device?.modulos || licenseStatus.local_license?.licencas || 'Não informado'} />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="card compact-card">

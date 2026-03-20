@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../../../shared/components/PageHeader';
-import type { LicenseCheckResult, LicenseSettings, ProfileBundle } from '../../../shared/types';
+import type { LicenseRuntimeStatus, ProfileBundle } from '../../../shared/types';
 import { checkLicenseStatus, loadLicenseSettings, loadProfileBundle } from '../../nfse-servicos/services/tauriService';
 
 export default function DashboardPage() {
   const [bundle, setBundle] = useState<ProfileBundle | null>(null);
-  const [license, setLicense] = useState<LicenseCheckResult | null>(null);
+  const [license, setLicense] = useState<LicenseRuntimeStatus | null>(null);
 
   useEffect(() => {
     loadProfileBundle().then(setBundle).catch(() => setBundle(null));
@@ -50,6 +50,7 @@ export default function DashboardPage() {
             <span>Total liberado: <b>{license?.seats_total ?? 0}</b></span>
             <span>Em uso: <b>{license?.seats_used ?? 0}</b></span>
             <span>Chave atual: <b>{license?.machine_key?.slice(0, 12) || '—'}</b></span>
+            <span>Validade: <b>{license?.expiry || 'N/D'}</b></span>
           </div>
         </div>
       </div>
