@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/wkarts/integra-desktop/compare/v1.1.1...v1.2.0) (2026-03-20)
+
+
+### Bug Fixes
+
+* **build:** remover ícones binários do repositório e gerar no build ([60724f6](https://github.com/wkarts/integra-desktop/commit/60724f6002ba18f4526aba04145b63eec41dfa33))
+
+
+### Features
+
+* **ui:** modernizar dashboard, responsividade e remover legado html ([5c68088](https://github.com/wkarts/integra-desktop/commit/5c680882a5b733db72feb375fccd785e461b187b))
+
 ## [1.1.1](https://github.com/wkarts/integra-desktop/compare/v1.1.0...v1.1.1) (2026-03-20)
 
 
