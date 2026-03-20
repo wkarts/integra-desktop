@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
   return (
     <div className="stack-lg">
-      <PageHeader title="Painel operacional" subtitle="Entrada de documentos, perfis por empresa e acompanhamento do licenciamento da estação." />
+      <PageHeader title="Dashboard operacional" subtitle="Entrada de documentos, perfis por empresa e acompanhamento do licenciamento da estação." />
 
       <div className="kpi-grid kpi-grid-4">
         <div className="card kpi-card"><span>Razão social</span><strong>{license?.company_name || selectedProfile?.user_company_name || 'Não configurada'}</strong><p className="muted">Cadastro licenciado da aplicação.</p></div>

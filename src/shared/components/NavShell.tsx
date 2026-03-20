@@ -2,14 +2,13 @@ import { NavLink } from 'react-router-dom';
 import type { PropsWithChildren } from 'react';
 import { useEffect, useState } from 'react';
 import type { AppMeta } from '../types';
-import brandLogo from '../../assets/brand-logo.svg';
+import brandLogo from '../../assets/integra-logo.svg';
 import { getAppMeta } from '../../modules/nfse-servicos/services/tauriService';
 
 const menu = [
-  { to: '/', label: 'Painel' },
+  { to: '/', label: 'Dashboard' },
   { to: '/nfse-servicos', label: 'NFS-e → Prosoft' },
   { to: '/nfe-faturas', label: 'NFe / Faturas' },
-  { to: '/legado', label: 'Legado' },
   { to: '/settings', label: 'Configurações' },
   { to: '/logs', label: 'Logs' },
 ];
@@ -34,7 +33,7 @@ export function NavShell({ children }: PropsWithChildren) {
         <div className="sidebar-brand">
           <img src={brandLogo} alt="Integra Web" className="sidebar-logo" />
           <div>
-            <h1>Integra Web</h1>
+            <h1>Integra Desktop</h1>
             <p className="muted sidebar-subtitle">Importação fiscal, perfis por empresa e controle de licenças por estação.</p>
           </div>
         </div>
