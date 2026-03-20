@@ -12,19 +12,19 @@ import {
   saveLicenseSettings,
   saveProfileBundle,
 } from '../../nfse-servicos/services/tauriService';
-import type { AppMeta, LicenseCheckResult, LicenseSettings, ProfileBundle } from '../../../shared/types';
+import type { AppMeta, LicenseRuntimeStatus, LicenseSettings, ProfileBundle } from '../../../shared/types';
 import { defaultProfileBundle } from '../../../shared/mappers/defaultProfile';
 import { validateProfile } from '../../../shared/validators/profiles';
 
 const defaultLicenseSettings: LicenseSettings = {
-  service_url: '',
+  service_url: 'https://api.rest.wwsoftwares.com.br/api/v1',
   company_name: '',
   company_document: '',
   company_email: '',
   station_name: '',
   machine_key: '',
   auto_register_machine: true,
-  app_instance: 'integra-web',
+  app_instance: 'integra-desktop',
 };
 
 const defaultMeta: AppMeta = {
@@ -37,7 +37,7 @@ const defaultMeta: AppMeta = {
 export default function SettingsPage() {
   const { profile, setProfile, pushLog } = useNfseStore();
   const [licenseSettings, setLicenseSettings] = useState<LicenseSettings>(defaultLicenseSettings);
-  const [licenseStatus, setLicenseStatus] = useState<LicenseCheckResult | null>(null);
+  const [licenseStatus, setLicenseStatus] = useState<LicenseRuntimeStatus | null>(null);
   const [bundle, setBundle] = useState<ProfileBundle>(defaultProfileBundle);
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
   const [busy, setBusy] = useState(false);
@@ -98,7 +98,9 @@ export default function SettingsPage() {
     try {
       const result = await checkLicenseStatus(licenseSettings);
       setLicenseStatus(result);
-      pushLog(`Licenciamento: ${result.message}`);
+      if (!result.allowed) {
+        pushLog(`Licenciamento bloqueado: ${result.message} (${result.block_reason ?? 'sem motivo informado'})`);
+      }
     } finally {
       setBusy(false);
     }
@@ -118,7 +120,7 @@ export default function SettingsPage() {
     <div className="stack-lg">
       <PageHeader
         title="Configurações"
-        subtitle="Cadastre a empresa usuária, conecte o webservice de licenciamento e gerencie os perfis por empresa escriturada."
+        subtitle="Cadastre os dados da empresa, valide licenciamento e gerencie os perfis por empresa escriturada."
         actions={(
           <div className="actions-row">
             <button className="btn" onClick={handleCheckLicense} disabled={busy}>Validar licença</button>
@@ -130,7 +132,7 @@ export default function SettingsPage() {
       <div className="card">
         <div className="section-title-row">
           <div>
-            <h3>Licenciamento da empresa usuária</h3>
+            <h3>Licenciamento da empresa</h3>
             <p className="muted">Replica o conceito do Delphi: empresa licenciada, chave da estação e totalização centralizada pelo webservice.</p>
           </div>
           <div className="meta-badges">
@@ -141,20 +143,16 @@ export default function SettingsPage() {
 
         <div className="form-grid cols-4">
           <div>
-            <label>Nome da empresa usuária</label>
+            <label>Razão social</label>
             <input value={licenseSettings.company_name} onChange={(e) => setLicenseSettings({ ...licenseSettings, company_name: e.target.value })} />
           </div>
           <div>
-            <label>CNPJ/CPF empresa usuária</label>
+            <label>CNPJ/CPF</label>
             <input value={licenseSettings.company_document} onChange={(e) => setLicenseSettings({ ...licenseSettings, company_document: e.target.value })} />
           </div>
           <div>
             <label>E-mail</label>
             <input value={licenseSettings.company_email} onChange={(e) => setLicenseSettings({ ...licenseSettings, company_email: e.target.value })} />
-          </div>
-          <div>
-            <label>URL do WS de licenciamento</label>
-            <input value={licenseSettings.service_url} onChange={(e) => setLicenseSettings({ ...licenseSettings, service_url: e.target.value })} placeholder="https://licencas.seudominio.com/api" />
           </div>
           <div>
             <label>Nome da estação</label>
@@ -164,17 +162,6 @@ export default function SettingsPage() {
             <label>Chave da máquina</label>
             <input value={licenseSettings.machine_key} readOnly />
           </div>
-          <div>
-            <label>Instância da aplicação</label>
-            <input value={licenseSettings.app_instance} onChange={(e) => setLicenseSettings({ ...licenseSettings, app_instance: e.target.value })} />
-          </div>
-          <div>
-            <label>Auto cadastrar estação</label>
-            <select value={licenseSettings.auto_register_machine ? 'S' : 'N'} onChange={(e) => setLicenseSettings({ ...licenseSettings, auto_register_machine: e.target.value === 'S' })}>
-              <option value="S">Sim</option>
-              <option value="N">Não</option>
-            </select>
-          </div>
         </div>
 
         <div className="status-panel">
@@ -183,11 +170,48 @@ export default function SettingsPage() {
           <div className="status-item"><span>Máquinas em uso</span><strong>{licenseStatus?.seats_used ?? 0}</strong></div>
           <div className="status-item"><span>Retorno</span><strong>{licenseStatus?.message || 'Ainda não consultado'}</strong></div>
         </div>
+
+        {licenseStatus && (
+          <div className="form-grid cols-4" style={{ marginTop: 16 }}>
+            <div>
+              <label>Empresa remota (IDCLIENTE)</label>
+              <input readOnly value={licenseStatus.licensed_company?.idcliente ?? 0} />
+            </div>
+            <div>
+              <label>Máquina remota (IDMAQUINA)</label>
+              <input readOnly value={licenseStatus.licensed_device?.idmaquina ?? 0} />
+            </div>
+            <div>
+              <label>Validade</label>
+              <input readOnly value={licenseStatus.expiry || 'Não informada'} />
+            </div>
+            <div>
+              <label>Motivo técnico</label>
+              <input readOnly value={licenseStatus.technical_message || 'OK'} />
+            </div>
+            <div>
+              <label>Empresa bloqueada</label>
+              <input readOnly value={licenseStatus.licensed_company?.bloqueado || licenseStatus.licensed_company?.bloqueio_admin ? 'Sim' : 'Não'} />
+            </div>
+            <div>
+              <label>Máquina cadastrada</label>
+              <input readOnly value={licenseStatus.machine_registered ? 'Sim' : 'Não'} />
+            </div>
+            <div>
+              <label>Máquina bloqueada</label>
+              <input readOnly value={licenseStatus.machine_blocked ? 'Sim' : 'Não'} />
+            </div>
+            <div>
+              <label>Módulos remotos</label>
+              <input readOnly value={licenseStatus.licensed_device?.modulos || licenseStatus.local_license?.licencas || 'Não informado'} />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="card compact-card">
         <h3>Perfis cadastrados</h3>
-        <p className="muted">A empresa usuária é quem usa o aplicativo. Cada perfil representa a empresa para a qual será feita a escrituração.</p>
+        <p className="muted">A empresa principal é quem usa o aplicativo. Cada perfil representa a empresa para a qual será feita a escrituração.</p>
         <div className="profile-toolbar-actions">
           <select value={profile.profile_id} onChange={(e) => void selectProfile(e.target.value)}>
             {bundle.profiles.map((item) => (

@@ -1,0 +1,7 @@
+<svg width="320" height="84" viewBox="0 0 320 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="84" rx="14" fill="#0B5D78"/>
+  <rect x="12" y="12" width="60" height="60" rx="12" fill="#E2F2F7"/>
+  <path d="M30 26H39V37H50V46H39V58H30V46H18V37H30V26Z" fill="#0B5D78"/>
+  <text x="86" y="38" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial" font-size="28" font-weight="700">Integra</text>
+  <text x="86" y="61" fill="#CDE7F1" font-family="Inter, Segoe UI, Arial" font-size="18" font-weight="600">Desktop</text>
+</svg>
