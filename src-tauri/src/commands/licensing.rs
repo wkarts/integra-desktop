@@ -12,6 +12,11 @@ use crate::core::domain::license::{
     LicensedDevice, LocalLicense,
 };
 
+const LICENSE_BASE_URL: &str = "https://api.rest.wwsoftwares.com.br";
+const LICENSE_ENDPOINT: &str = "/api/v1/";
+const LICENSE_APP_INSTANCE: &str = "integra-desktop";
+const LICENSE_AUTO_REGISTER_MACHINE: bool = true;
+
 #[tauri::command]
 pub fn get_machine_fingerprint() -> Result<String, String> {
     Ok(machine_fingerprint())
@@ -29,7 +34,8 @@ pub fn get_app_meta() -> Result<AppMeta, String> {
 
 #[tauri::command]
 pub fn load_license_settings(app: AppHandle) -> Result<Option<LicenseSettings>, String> {
-    crate::storage::license::load_license_settings(&app).map_err(|e| e.to_string())
+    let loaded = crate::storage::license::load_license_settings(&app).map_err(|e| e.to_string())?;
+    Ok(loaded.map(normalize_license_settings))
 }
 
 #[tauri::command]
@@ -37,7 +43,7 @@ pub fn save_license_settings(
     settings: LicenseSettings,
     app: AppHandle,
 ) -> Result<LicenseSettings, String> {
-    let mut next = settings;
+    let mut next = normalize_license_settings(settings);
     if next.machine_key.trim().is_empty() {
         next.machine_key = machine_fingerprint();
     }
@@ -50,7 +56,7 @@ pub fn check_license_status(
     settings: LicenseSettings,
     app: AppHandle,
 ) -> Result<LicenseRuntimeStatus, String> {
-    let mut next_settings = settings.clone();
+    let mut next_settings = normalize_license_settings(settings.clone());
     if next_settings.machine_key.trim().is_empty() {
         next_settings.machine_key = machine_fingerprint();
     }
@@ -606,6 +612,13 @@ fn machine_fingerprint() -> String {
         .map(|item| format!("{:02X}", item))
         .collect::<Vec<String>>()
         .join("")
+}
+
+fn normalize_license_settings(mut settings: LicenseSettings) -> LicenseSettings {
+    settings.service_url = format!("{}{}", LICENSE_BASE_URL, LICENSE_ENDPOINT);
+    settings.app_instance = LICENSE_APP_INSTANCE.into();
+    settings.auto_register_machine = LICENSE_AUTO_REGISTER_MACHINE;
+    settings
 }
 
 fn only_digits(value: &str) -> String {

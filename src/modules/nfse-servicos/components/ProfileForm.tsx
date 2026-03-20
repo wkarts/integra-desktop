@@ -30,11 +30,11 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
           </select>
         </div>
         <div>
-          <label>Empresa usuária</label>
-          <input value={value.user_company_name} onChange={(e) => set('user_company_name', e.target.value)} placeholder="Empresa licenciada" />
+          <label>Razão Social</label>
+          <input value={value.user_company_name} onChange={(e) => set('user_company_name', e.target.value)} placeholder="Razão social licenciada" />
         </div>
         <div>
-          <label>CNPJ/CPF empresa usuária</label>
+          <label>CNPJ/CPF</label>
           <input value={value.user_company_document} onChange={(e) => set('user_company_document', e.target.value)} />
         </div>
         <div>

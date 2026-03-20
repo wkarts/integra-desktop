@@ -8,8 +8,7 @@ import { getAppMeta } from '../../modules/nfse-servicos/services/tauriService';
 const menu = [
   { to: '/', label: 'Painel' },
   { to: '/nfse-servicos', label: 'NFS-e → Prosoft' },
-  { to: '/nfe-faturas', label: 'NFe / Faturas' },
-  { to: '/legado', label: 'Legado' },
+  { to: '/nfe-faturas', label: 'NFe / Faturas (Tauri)' },
   { to: '/settings', label: 'Configurações' },
   { to: '/logs', label: 'Logs' },
 ];
@@ -32,10 +31,10 @@ export function NavShell({ children }: PropsWithChildren) {
     <div className="shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <img src={brandLogo} alt="Integra Web" className="sidebar-logo" />
+          <img src={brandLogo} alt="Integra Desktop" className="sidebar-logo" />
           <div>
-            <h1>Integra Web</h1>
-            <p className="muted sidebar-subtitle">Importação fiscal, perfis por empresa e controle de licenças por estação.</p>
+            <h1>Integra Desktop</h1>
+            <p className="muted sidebar-subtitle">Importação fiscal com interface Tauri, layout proporcional e controle de licenças por estação.</p>
           </div>
         </div>
 
