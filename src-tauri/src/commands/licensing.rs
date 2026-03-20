@@ -63,15 +63,6 @@ pub fn check_license_status(
 
     let station_name = resolve_station_name(&next_settings.station_name);
 
-    if next_settings.service_url.trim().is_empty() {
-        return Ok(from_cache_or_default(
-            &app,
-            &next_settings,
-            false,
-            "Webservice de licenciamento não configurado.",
-        ));
-    }
-
     let base_url = next_settings.service_url.trim_end_matches('/');
     let company_document = only_digits(&next_settings.company_document);
 
@@ -325,6 +316,16 @@ fn resolve_station_name(input: &str) -> String {
             .unwrap_or_else(|| "ESTACAO".into());
     }
     input.to_string()
+}
+
+fn normalize_license_settings(settings: LicenseSettings) -> LicenseSettings {
+    let mut next = settings;
+    next.service_url = format!("{}{}", URL_WS_LICENCA.trim_end_matches('/'), URL_ENDPOINT)
+        .trim_end_matches('/')
+        .to_string();
+    next.app_instance = DEFAULT_APP_INSTANCE.into();
+    next.auto_register_machine = true;
+    next
 }
 
 fn ensure_company_registered(
