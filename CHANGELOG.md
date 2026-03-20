@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/wkarts/integra-desktop/compare/v1.1.0...v1.1.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* **licensing:** ocultar ws e padronizar labels de empresa ([95480b9](https://github.com/wkarts/integra-desktop/commit/95480b937b1cf76d55c8a71a74a1c55c38e2c9d6))
+
 # [1.1.0](https://github.com/wkarts/integra-desktop/compare/v1.0.3...v1.1.0) (2026-03-20)
 
 
