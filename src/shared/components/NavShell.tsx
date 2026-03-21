@@ -22,10 +22,31 @@ const defaultMeta: AppMeta = {
 
 export function NavShell({ children }: PropsWithChildren) {
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
     getAppMeta().then(setMeta).catch(() => setMeta(defaultMeta));
   }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const hour = now.getHours() % 12;
+  const minute = now.getMinutes();
+  const second = now.getSeconds();
+
+  const hourAngle = hour * 30 + minute * 0.5;
+  const minuteAngle = minute * 6 + second * 0.1;
+  const secondAngle = second * 6;
+
+  const timeLabel = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const dateLabel = now.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'short',
+  });
 
   return (
     <div className="shell">
@@ -47,8 +68,20 @@ export function NavShell({ children }: PropsWithChildren) {
         </nav>
 
         <footer className="sidebar-footer">
-          <div className="sidebar-meta-row"><span>Versão</span><strong>{meta.version}</strong></div>
-          <div className="sidebar-meta-row"><span>ASHA</span><strong title={meta.build_hash}>{meta.build_hash.slice(0, 12)}</strong></div>
+          <section className="sidebar-clock" aria-label="Relógio atual">
+            <div className="clock-face" role="img" aria-label={`Horário atual: ${timeLabel}`}>
+              <span className="clock-hand clock-hand-hour" style={{ transform: `translateX(-50%) rotate(${hourAngle}deg)` }} />
+              <span className="clock-hand clock-hand-minute" style={{ transform: `translateX(-50%) rotate(${minuteAngle}deg)` }} />
+              <span className="clock-hand clock-hand-second" style={{ transform: `translateX(-50%) rotate(${secondAngle}deg)` }} />
+              <span className="clock-center" />
+            </div>
+            <strong className="clock-time">{timeLabel}</strong>
+            <span className="clock-date">{dateLabel}</span>
+          </section>
+          <div className="sidebar-meta">
+            <div className="sidebar-meta-row"><span>Versão</span><strong>{meta.version}</strong></div>
+            <div className="sidebar-meta-row"><span>ASHA</span><strong title={meta.build_hash}>{meta.build_hash.slice(0, 12)}</strong></div>
+          </div>
         </footer>
       </aside>
       <main className="main-content">{children}</main>
