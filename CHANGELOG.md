@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/wkarts/integra-desktop/compare/v1.3.0...v1.4.0) (2026-03-21)
+
+
+### Features
+
+* adicionar relógio responsivo na sidebar ([e78bbdf](https://github.com/wkarts/integra-desktop/commit/e78bbdf23bacc2f3169f669c92681cdc9cf0d907))
+
 # [1.3.0](https://github.com/wkarts/integra-desktop/compare/v1.2.0...v1.3.0) (2026-03-21)
 
 
