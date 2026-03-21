@@ -5,24 +5,51 @@ pub mod core;
 pub mod storage;
 
 use commands::{
-    append_runtime_log, check_license_status, export_nfse_csv, export_nfse_txt, get_app_meta,
-    get_machine_fingerprint, list_runtime_logs, load_conversion_profile, load_license_settings,
-    load_profile_bundle, process_nfse_upload_batch, process_nfse_xml_batch,
-    save_conversion_profile, save_license_settings, save_profile_bundle,
+    append_runtime_log, check_license_status, clipboard_write_text, dialog_confirm,
+    dialog_message_error, dialog_message_info, dialog_message_warning,
+    dialog_pick_nfe_faturas_directory, dialog_pick_nfe_faturas_files,
+    dialog_pick_nfe_faturas_legacy_file, dialog_pick_nfe_faturas_output_dir,
+    dialog_save_nfe_faturas_file, export_nfe_faturas_csv, export_nfe_faturas_sped,
+    export_nfe_faturas_txt, export_nfse_csv, export_nfse_txt, get_app_meta,
+    get_machine_fingerprint, guess_nfe_faturas_cnpj_filial, import_nfe_faturas_legacy,
+    list_runtime_logs, load_conversion_profile, load_license_settings,
+    load_nfe_faturas_settings, load_profile_bundle, process_nfe_faturas_selection,
+    process_nfse_upload_batch, process_nfse_xml_batch, save_conversion_profile,
+    save_license_settings, save_nfe_faturas_settings, save_profile_bundle,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             process_nfse_xml_batch,
             process_nfse_upload_batch,
+            process_nfe_faturas_selection,
+            import_nfe_faturas_legacy,
+            guess_nfe_faturas_cnpj_filial,
+            dialog_pick_nfe_faturas_files,
+            dialog_pick_nfe_faturas_directory,
+            dialog_pick_nfe_faturas_legacy_file,
+            dialog_pick_nfe_faturas_output_dir,
+            dialog_save_nfe_faturas_file,
+            dialog_message_info,
+            dialog_message_warning,
+            dialog_message_error,
+            dialog_confirm,
+            clipboard_write_text,
             export_nfse_txt,
             export_nfse_csv,
+            export_nfe_faturas_txt,
+            export_nfe_faturas_csv,
+            export_nfe_faturas_sped,
             save_conversion_profile,
             load_conversion_profile,
             save_profile_bundle,
             load_profile_bundle,
+            save_nfe_faturas_settings,
+            load_nfe_faturas_settings,
             save_license_settings,
             load_license_settings,
             check_license_status,
