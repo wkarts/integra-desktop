@@ -55,7 +55,7 @@ export function NavShell({ children }: PropsWithChildren) {
           <img src={brandLogo} alt="Integra Web" className="sidebar-logo" />
           <div>
             <h1>Integra Desktop</h1>
-            <p className="muted sidebar-subtitle">Importação fiscal, perfis por empresa e controle de licenças por estação.</p>
+            <p className="muted sidebar-subtitle">Operação fiscal e licenciamento.</p>
           </div>
         </div>
 
