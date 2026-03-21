@@ -224,7 +224,9 @@ struct ExportLineItem {
 
 
 fn file_path_to_string(path: FilePath) -> Option<String> {
-    path.into_path().ok().map(|p| p.to_string_lossy().to_string())
+    path.into_path()
+        .ok()
+        .map(|p| p.to_string_lossy().to_string())
 }
 
 #[tauri::command]
@@ -289,25 +291,46 @@ pub fn dialog_save_nfe_faturas_file(
 
 #[tauri::command]
 pub fn dialog_message_info(title: String, message: String, app: AppHandle) -> Result<(), String> {
-    app.dialog().message(message).title(title).kind(MessageDialogKind::Info).blocking_show();
+    app.dialog()
+        .message(message)
+        .title(title)
+        .kind(MessageDialogKind::Info)
+        .blocking_show();
     Ok(())
 }
 
 #[tauri::command]
-pub fn dialog_message_warning(title: String, message: String, app: AppHandle) -> Result<(), String> {
-    app.dialog().message(message).title(title).kind(MessageDialogKind::Warning).blocking_show();
+pub fn dialog_message_warning(
+    title: String,
+    message: String,
+    app: AppHandle,
+) -> Result<(), String> {
+    app.dialog()
+        .message(message)
+        .title(title)
+        .kind(MessageDialogKind::Warning)
+        .blocking_show();
     Ok(())
 }
 
 #[tauri::command]
 pub fn dialog_message_error(title: String, message: String, app: AppHandle) -> Result<(), String> {
-    app.dialog().message(message).title(title).kind(MessageDialogKind::Error).blocking_show();
+    app.dialog()
+        .message(message)
+        .title(title)
+        .kind(MessageDialogKind::Error)
+        .blocking_show();
     Ok(())
 }
 
 #[tauri::command]
 pub fn dialog_confirm(title: String, message: String, app: AppHandle) -> Result<bool, String> {
-    Ok(app.dialog().message(message).title(title).kind(MessageDialogKind::Warning).blocking_show())
+    Ok(app
+        .dialog()
+        .message(message)
+        .title(title)
+        .kind(MessageDialogKind::Warning)
+        .blocking_show())
 }
 
 #[tauri::command]
@@ -317,9 +340,11 @@ pub fn clipboard_write_text(text: String, app: AppHandle) -> Result<(), String> 
 
 #[tauri::command]
 pub fn load_nfe_faturas_settings(app: AppHandle) -> Result<NfeFaturasSettings, String> {
-    Ok(crate::storage::nfe_faturas_settings::load_nfe_faturas_settings(&app)
-        .map_err(|e| e.to_string())?
-        .unwrap_or_default())
+    Ok(
+        crate::storage::nfe_faturas_settings::load_nfe_faturas_settings(&app)
+            .map_err(|e| e.to_string())?
+            .unwrap_or_default(),
+    )
 }
 
 #[tauri::command]
@@ -343,24 +368,34 @@ pub fn process_nfe_faturas_selection(
 
     let mut virtual_entries = Vec::<VirtualEntry>::new();
     for path in &collected {
-        let kind = classify_kind_from_name(path.file_name().and_then(|v| v.to_str()).unwrap_or_default());
+        let kind = classify_kind_from_name(
+            path.file_name()
+                .and_then(|v| v.to_str())
+                .unwrap_or_default(),
+        );
         if kind == "zip" {
             match build_virtual_entries_from_zip(path) {
                 Ok(mut entries) => virtual_entries.append(&mut entries),
-                Err(error) => log_push(&mut logs, "error", "Falha ao abrir ZIP", Some(format!("{} | {}", path.display(), error))),
+                Err(error) => log_push(
+                    &mut logs,
+                    "error",
+                    "Falha ao abrir ZIP",
+                    Some(format!("{} | {}", path.display(), error)),
+                ),
             }
         } else {
             match fs::read(path) {
                 Ok(bytes) => {
                     let text = decode_text(&bytes);
                     let name = path.to_string_lossy().to_string();
-                    virtual_entries.push(VirtualEntry {
-                        name,
-                        kind,
-                        text,
-                    });
+                    virtual_entries.push(VirtualEntry { name, kind, text });
                 }
-                Err(error) => log_push(&mut logs, "error", "Falha ao ler arquivo", Some(format!("{} | {}", path.display(), error))),
+                Err(error) => log_push(
+                    &mut logs,
+                    "error",
+                    "Falha ao ler arquivo",
+                    Some(format!("{} | {}", path.display(), error)),
+                ),
             }
         }
     }
@@ -386,7 +421,12 @@ pub fn process_nfe_faturas_selection(
                 text: entry.text,
             });
         } else {
-            log_push(&mut logs, "warn", "Arquivo ignorado (tipo não reconhecido)", Some(entry.name));
+            log_push(
+                &mut logs,
+                "warn",
+                "Arquivo ignorado (tipo não reconhecido)",
+                Some(entry.name),
+            );
         }
     }
 
@@ -403,10 +443,20 @@ pub fn process_nfe_faturas_selection(
         }
     }
     if !sped_by_chave.is_empty() {
-        log_push(&mut logs, "info", "SPED (C100) indexado", Some(format!("chaves: {}", sped_by_chave.len())));
+        log_push(
+            &mut logs,
+            "info",
+            "SPED (C100) indexado",
+            Some(format!("chaves: {}", sped_by_chave.len())),
+        );
     }
     if !sped_0150_by_doc.is_empty() {
-        log_push(&mut logs, "info", "SPED (0150) indexado", Some(format!("docs: {}", sped_0150_by_doc.len())));
+        log_push(
+            &mut logs,
+            "info",
+            "SPED (0150) indexado",
+            Some(format!("docs: {}", sped_0150_by_doc.len())),
+        );
     }
 
     let mut rows = Vec::<NfeFaturasRow>::new();
@@ -427,7 +477,12 @@ pub fn process_nfe_faturas_selection(
                     rows.append(&mut parsed_rows);
                 }
             }
-            Err(error) => log_push(&mut logs, "error", "Erro ao processar XML", Some(format!("{} | {}", entry.name, error))),
+            Err(error) => log_push(
+                &mut logs,
+                "error",
+                "Erro ao processar XML",
+                Some(format!("{} | {}", entry.name, error)),
+            ),
         }
     }
 
@@ -438,7 +493,10 @@ pub fn process_nfe_faturas_selection(
         &app,
         &format!(
             "NFe/Faturas: {} registro(s), {} XML, {} SPED, {} ZIP.",
-            rows.len(), counts.xml, counts.sped, counts.zip
+            rows.len(),
+            counts.xml,
+            counts.sped,
+            counts.zip
         ),
     )
     .map_err(|e| e.to_string())?;
@@ -477,7 +535,11 @@ pub fn import_nfe_faturas_legacy(
             .and_then(|v| v.to_str())
             .unwrap_or("legado.txt"),
         conferir,
-        if auto_cnpj.is_empty() { None } else { Some(auto_cnpj.as_str()) },
+        if auto_cnpj.is_empty() {
+            None
+        } else {
+            Some(auto_cnpj.as_str())
+        },
         &sped_files,
         &nfe_metas,
         &mut logs,
@@ -525,7 +587,8 @@ pub fn export_nfe_faturas_txt(
         .collect::<Vec<_>>();
     let content = format!("{}\r\n", lines.join("\r\n"));
     write_text_file(Path::new(&output_path), &content)?;
-    crate::storage::logs::append_log(&app, &format!("TXT exportado: {}", output_path)).map_err(|e| e.to_string())?;
+    crate::storage::logs::append_log(&app, &format!("TXT exportado: {}", output_path))
+        .map_err(|e| e.to_string())?;
     Ok(NfeFaturasExportResult {
         output_paths: vec![output_path.clone()],
         lines: lines.len(),
@@ -549,7 +612,11 @@ pub fn export_nfe_faturas_csv(
     let mut content = String::new();
     content.push_str("ITEM;CHAVE;DESDOB;CNPJFILIAL;CNPJCPF;UF;IE;NFSERIE;NFNUMERO;DATAEMISSAO;DATAENTRADA;NUMFATURA;DATAVENCIMENTO;VALORBRUTOFAT;FONTE;SPED\r\n");
     for item in &line_items {
-        let sped = if item.row.sped_matched { "MATCH" } else { "MISSING" };
+        let sped = if item.row.sped_matched {
+            "MATCH"
+        } else {
+            "MISSING"
+        };
         let values = [
             item.item3.clone(),
             item.row.chave.clone(),
@@ -568,12 +635,17 @@ pub fn export_nfe_faturas_csv(
             item.row.source.clone(),
             sped.into(),
         ];
-        let line = values.iter().map(|v| csv_escape(v)).collect::<Vec<_>>().join(";");
+        let line = values
+            .iter()
+            .map(|v| csv_escape(v))
+            .collect::<Vec<_>>()
+            .join(";");
         content.push_str(&line);
         content.push_str("\r\n");
     }
     write_text_file(Path::new(&output_path), &content)?;
-    crate::storage::logs::append_log(&app, &format!("CSV exportado: {}", output_path)).map_err(|e| e.to_string())?;
+    crate::storage::logs::append_log(&app, &format!("CSV exportado: {}", output_path))
+        .map_err(|e| e.to_string())?;
     Ok(NfeFaturasExportResult {
         output_paths: vec![output_path.clone()],
         lines: line_items.len(),
@@ -690,13 +762,21 @@ fn log_push(logs: &mut Vec<NfeFaturasLogItem>, level: &str, msg: &str, meta: Opt
     }
 }
 
-fn collect_input_files(paths: &[String], logs: &mut Vec<NfeFaturasLogItem>) -> Result<Vec<PathBuf>> {
+fn collect_input_files(
+    paths: &[String],
+    logs: &mut Vec<NfeFaturasLogItem>,
+) -> Result<Vec<PathBuf>> {
     let mut out = Vec::<PathBuf>::new();
     let mut seen = HashSet::<String>::new();
     for raw in paths {
         let path = PathBuf::from(raw);
         if !path.exists() {
-            log_push(logs, "warn", "Caminho ignorado (não encontrado)", Some(raw.clone()));
+            log_push(
+                logs,
+                "warn",
+                "Caminho ignorado (não encontrado)",
+                Some(raw.clone()),
+            );
             continue;
         }
         if path.is_dir() {
@@ -711,7 +791,11 @@ fn collect_input_files(paths: &[String], logs: &mut Vec<NfeFaturasLogItem>) -> R
     Ok(out)
 }
 
-fn collect_dir_recursively(path: &Path, out: &mut Vec<PathBuf>, seen: &mut HashSet<String>) -> Result<()> {
+fn collect_dir_recursively(
+    path: &Path,
+    out: &mut Vec<PathBuf>,
+    seen: &mut HashSet<String>,
+) -> Result<()> {
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let child = entry.path();
@@ -730,7 +814,13 @@ fn collect_dir_recursively(path: &Path, out: &mut Vec<PathBuf>, seen: &mut HashS
 fn count_input_files(paths: &[PathBuf]) -> NfeFaturasCounts {
     let mut counts = NfeFaturasCounts::default();
     for path in paths {
-        match classify_kind_from_name(path.file_name().and_then(|v| v.to_str()).unwrap_or_default()).as_str() {
+        match classify_kind_from_name(
+            path.file_name()
+                .and_then(|v| v.to_str())
+                .unwrap_or_default(),
+        )
+        .as_str()
+        {
             "xml" => counts.xml += 1,
             "zip" => counts.zip += 1,
             "sped" => counts.sped += 1,
@@ -808,7 +898,10 @@ fn parse_money(value: &str) -> Option<f64> {
     if original.is_empty() {
         return None;
     }
-    let mut s = original.chars().filter(|c| !c.is_whitespace()).collect::<String>();
+    let mut s = original
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect::<String>();
     if s.contains(',') && s.contains('.') {
         s = s.replace('.', "").replace(',', ".");
     } else if s.contains(',') {
@@ -881,9 +974,9 @@ fn add_days_to_dig_date(value: &str, days: i64) -> String {
     let day = digits[0..2].parse::<u32>().ok();
     let month = digits[2..4].parse::<u32>().ok();
     let year = digits[4..8].parse::<i32>().ok();
-    let Some(date) = year
-        .and_then(|y| month.and_then(|m| day.and_then(|d| chrono::NaiveDate::from_ymd_opt(y, m, d))))
-    else {
+    let Some(date) = year.and_then(|y| {
+        month.and_then(|m| day.and_then(|d| chrono::NaiveDate::from_ymd_opt(y, m, d)))
+    }) else {
         return String::new();
     };
     let date = date + chrono::Duration::days(days);
@@ -950,7 +1043,10 @@ fn find_chave_nfe(doc: &Document<'_>) -> String {
     }
     for node in doc.descendants().filter(|n| n.is_element()) {
         if node.tag_name().name().eq_ignore_ascii_case("infNFe") {
-            let id = node.attribute("Id").or_else(|| node.attribute("id")).unwrap_or_default();
+            let id = node
+                .attribute("Id")
+                .or_else(|| node.attribute("id"))
+                .unwrap_or_default();
             let digits = only_digits(id);
             if digits.len() >= 44 {
                 return digits[digits.len() - 44..].to_string();
@@ -960,7 +1056,11 @@ fn find_chave_nfe(doc: &Document<'_>) -> String {
     String::new()
 }
 
-fn parse_nfe_meta_and_rows(xml: &str, file_name: &str, settings: &NfeFaturasSettings) -> Result<(NfeMeta, Vec<NfeFaturasRow>)> {
+fn parse_nfe_meta_and_rows(
+    xml: &str,
+    file_name: &str,
+    settings: &NfeFaturasSettings,
+) -> Result<(NfeMeta, Vec<NfeFaturasRow>)> {
     let doc = Document::parse(xml)?;
     let nfe = doc
         .descendants()
@@ -1008,7 +1108,11 @@ fn parse_nfe_meta_and_rows(xml: &str, file_name: &str, settings: &NfeFaturasSett
         let dh = find_text_in_node(ide, &["dhSaiEnt"]);
         if dh.is_empty() {
             let d = find_text_in_node(ide, &["dSaiEnt"]);
-            if d.is_empty() { dh_emi.clone() } else { d }
+            if d.is_empty() {
+                dh_emi.clone()
+            } else {
+                d
+            }
         } else {
             dh
         }
@@ -1026,12 +1130,19 @@ fn parse_nfe_meta_and_rows(xml: &str, file_name: &str, settings: &NfeFaturasSett
     let mut dup_list = Vec::<NfeMetaDup>::new();
     let mut rows = Vec::<NfeFaturasRow>::new();
     if let Some(cobr_node) = cobr {
-        for dup in cobr_node.descendants().filter(|n| n.is_element() && n.tag_name().name().eq_ignore_ascii_case("dup")) {
+        for dup in cobr_node
+            .descendants()
+            .filter(|n| n.is_element() && n.tag_name().name().eq_ignore_ascii_case("dup"))
+        {
             let n_dup = find_text_in_node(Some(dup), &["nDup"]);
             let d_venc = find_text_in_node(Some(dup), &["dVenc"]);
             let v_dup = find_text_in_node(Some(dup), &["vDup"]);
             dup_list.push(NfeMetaDup {
-                n_dup: if n_dup.is_empty() { format!("{}/{}", nf_numero, serie) } else { n_dup.clone() },
+                n_dup: if n_dup.is_empty() {
+                    format!("{}/{}", nf_numero, serie)
+                } else {
+                    n_dup.clone()
+                },
                 d_venc: d_venc.clone(),
                 v_dup: v_dup.clone(),
             });
@@ -1046,7 +1157,11 @@ fn parse_nfe_meta_and_rows(xml: &str, file_name: &str, settings: &NfeFaturasSett
                 nf_numero: nf_numero.clone(),
                 data_emissao: data_emissao_br.clone(),
                 data_entrada: data_entrada_br.clone(),
-                num_fatura: if n_dup.is_empty() { format!("{}/{}", nf_numero, serie) } else { n_dup },
+                num_fatura: if n_dup.is_empty() {
+                    format!("{}/{}", nf_numero, serie)
+                } else {
+                    n_dup
+                },
                 data_vencimento: digits_to_br_date(&ddmmyyyy_to_digits(&d_venc)),
                 valor_bruto_fat: to_money2(if v_dup.is_empty() { &v_nf } else { &v_dup }),
                 source: file_name.to_string(),
@@ -1069,9 +1184,21 @@ fn parse_nfe_meta_and_rows(xml: &str, file_name: &str, settings: &NfeFaturasSett
             nf_numero: nf_numero.clone(),
             data_emissao: data_emissao_br.clone(),
             data_entrada: data_entrada_br.clone(),
-            num_fatura: if n_fat.is_empty() { format!("{}/{}", nf_numero, serie) } else { n_fat.clone() },
+            num_fatura: if n_fat.is_empty() {
+                format!("{}/{}", nf_numero, serie)
+            } else {
+                n_fat.clone()
+            },
             data_vencimento: String::new(),
-            valor_bruto_fat: to_money2(if v_orig.is_empty() { if v_liq.is_empty() { &v_nf } else { &v_liq } } else { &v_orig }),
+            valor_bruto_fat: to_money2(if v_orig.is_empty() {
+                if v_liq.is_empty() {
+                    &v_nf
+                } else {
+                    &v_liq
+                }
+            } else {
+                &v_orig
+            }),
             source: file_name.to_string(),
             sped_matched: false,
             legado: false,
@@ -1103,7 +1230,11 @@ fn parse_sped_c100(content: &str) -> HashMap<String, SpedC100Item> {
         if !line.starts_with("|C100|") {
             continue;
         }
-        let fields = line.trim_matches('|').split('|').map(|v| v.trim()).collect::<Vec<_>>();
+        let fields = line
+            .trim_matches('|')
+            .split('|')
+            .map(|v| v.trim())
+            .collect::<Vec<_>>();
         if fields.is_empty() || fields[0] != "C100" {
             continue;
         }
@@ -1129,7 +1260,11 @@ fn parse_sped_0150(content: &str) -> HashMap<String, String> {
         if !line.starts_with("|0150|") {
             continue;
         }
-        let fields = line.trim_matches('|').split('|').map(|v| v.trim()).collect::<Vec<_>>();
+        let fields = line
+            .trim_matches('|')
+            .split('|')
+            .map(|v| v.trim())
+            .collect::<Vec<_>>();
         if fields.is_empty() || fields[0] != "0150" {
             continue;
         }
@@ -1211,7 +1346,11 @@ fn apply_sped_0150_ie_to_rows(
                     row.chave,
                     row.nf_numero,
                     doc,
-                    if ie_xml.is_empty() { "(vazio)" } else { ie_xml.as_str() },
+                    if ie_xml.is_empty() {
+                        "(vazio)"
+                    } else {
+                        ie_xml.as_str()
+                    },
                     ie_sped
                 )),
             );
@@ -1234,7 +1373,11 @@ fn guess_cnpj_filial(rows: &[NfeFaturasRow], sped_files: &[NamedText]) -> Option
             if !line.starts_with("|0000|") {
                 continue;
             }
-            let fields = line.trim_matches('|').split('|').map(|v| v.trim()).collect::<Vec<_>>();
+            let fields = line
+            .trim_matches('|')
+            .split('|')
+            .map(|v| v.trim())
+            .collect::<Vec<_>>();
             if fields.first().copied() != Some("0000") {
                 continue;
             }
@@ -1270,26 +1413,42 @@ fn parse_legacy_pipe_file(
         if trimmed.is_empty() {
             continue;
         }
-        let fields = trimmed.split('|').map(|v| v.trim().to_string()).collect::<Vec<_>>();
+        let fields = trimmed
+            .split('|')
+            .map(|v| v.trim().to_string())
+            .collect::<Vec<_>>();
         if !header_skipped && is_legacy_header_line(&fields, idx) {
             header_skipped = true;
             continue;
         }
         if fields.len() < 11 {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: colunas insuficientes.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: colunas insuficientes.", line_no),
+            );
             continue;
         }
         let cnpj = only_digits(fields.get(0).map(|v| v.as_str()).unwrap_or_default());
         if cnpj.len() != 14 {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: CNPJ inválido.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: CNPJ inválido.", line_no),
+            );
             continue;
         }
-        let uf = fields.get(1).cloned().unwrap_or_default().to_ascii_uppercase();
+        let uf = fields
+            .get(1)
+            .cloned()
+            .unwrap_or_default()
+            .to_ascii_uppercase();
         if uf.len() != 2 {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: UF inválida.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: UF inválida.", line_no),
+            );
             continue;
         }
         let ie = only_alphanum_upper(fields.get(2).map(|v| v.as_str()).unwrap_or_default());
@@ -1297,28 +1456,48 @@ fn parse_legacy_pipe_file(
         let nf_numero = only_digits(fields.get(5).map(|v| v.as_str()).unwrap_or_default());
         if nf_numero.is_empty() {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: NF Num ausente.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: NF Num ausente.", line_no),
+            );
             continue;
         }
-        let Some((dt_escrit_br, dt_escrit_dig)) = parse_legacy_date(fields.get(6).map(|v| v.as_str()).unwrap_or_default()) else {
+        let Some((dt_escrit_br, dt_escrit_dig)) =
+            parse_legacy_date(fields.get(6).map(|v| v.as_str()).unwrap_or_default())
+        else {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: DT Escrit inválida.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: DT Escrit inválida.", line_no),
+            );
             continue;
         };
         let parcela = fields.get(7).cloned().unwrap_or_default();
-        let Some((dt_venc_br, _)) = parse_legacy_date(fields.get(8).map(|v| v.as_str()).unwrap_or_default()) else {
+        let Some((dt_venc_br, _)) =
+            parse_legacy_date(fields.get(8).map(|v| v.as_str()).unwrap_or_default())
+        else {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: DT VENC inválida.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: DT VENC inválida.", line_no),
+            );
             continue;
         };
         let Some(vl_nf) = parse_money(fields.get(9).map(|v| v.as_str()).unwrap_or_default()) else {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: VL NF inválido.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: VL NF inválido.", line_no),
+            );
             continue;
         };
-        let Some(vl_fat) = parse_money(fields.get(10).map(|v| v.as_str()).unwrap_or_default()) else {
+        let Some(vl_fat) = parse_money(fields.get(10).map(|v| v.as_str()).unwrap_or_default())
+        else {
             invalid_count += 1;
-            push_bounded(&mut invalid_lines, format!("Linha {}: VL Fatura inválido.", line_no));
+            push_bounded(
+                &mut invalid_lines,
+                format!("Linha {}: VL Fatura inválido.", line_no),
+            );
             continue;
         };
         if vl_fat <= 0.0 {
@@ -1327,7 +1506,10 @@ fn parse_legacy_pipe_file(
         }
         if parcela.trim().is_empty() {
             warning_count += 1;
-            push_bounded(&mut warnings, format!("Linha {}: Parcela vazia (fallback aplicado).", line_no));
+            push_bounded(
+                &mut warnings,
+                format!("Linha {}: Parcela vazia (fallback aplicado).", line_no),
+            );
         }
         let key = format!("{}|{}|{}|{}", cnpj, serie, nf_numero, dt_escrit_dig);
         let group = groups.entry(key).or_insert(LegacyGroup {
@@ -1348,7 +1530,11 @@ fn parse_legacy_pipe_file(
             );
         }
         group.duplicatas.push(LegacyDup {
-            n_dup: if parcela.trim().is_empty() { format!("{}/{}", nf_numero, serie) } else { parcela },
+            n_dup: if parcela.trim().is_empty() {
+                format!("{}/{}", nf_numero, serie)
+            } else {
+                parcela
+            },
             d_venc: dt_venc_br,
             v_dup: vl_fat,
         });
@@ -1383,7 +1569,10 @@ fn parse_legacy_pipe_file(
     }
     if guessed_cnpj.is_none() && !rows.is_empty() {
         warning_count += 1;
-        push_bounded(&mut warnings, "CNPJ da filial não definido (coluna CNPJFILIAL ficará vazia).".into());
+        push_bounded(
+            &mut warnings,
+            "CNPJ da filial não definido (coluna CNPJFILIAL ficará vazia).".into(),
+        );
     }
 
     let mut divergences = Vec::<String>::new();
@@ -1393,10 +1582,18 @@ fn parse_legacy_pipe_file(
         let sped_index = build_sped_index(sped_files);
         if xml_index.is_empty() && sped_index.is_empty() {
             divergence_count += 1;
-            push_bounded(&mut divergences, "XML/SPED não processados. Carregue e processe antes para conferir.".into());
+            push_bounded(
+                &mut divergences,
+                "XML/SPED não processados. Carregue e processe antes para conferir.".into(),
+            );
         } else {
             for group in groups.values() {
-                let key = format!("{}|{}|{}", group.cnpj, only_digits(&group.serie), only_digits(&group.nf_numero));
+                let key = format!(
+                    "{}|{}|{}",
+                    group.cnpj,
+                    only_digits(&group.serie),
+                    only_digits(&group.nf_numero)
+                );
                 let total_dup = group.duplicatas.iter().map(|d| d.v_dup).sum::<f64>();
                 if let Some(meta) = xml_index.get(&key) {
                     let xml_total = compute_total_from_meta(meta);
@@ -1404,10 +1601,17 @@ fn parse_legacy_pipe_file(
                         divergence_count += 1;
                         push_bounded(
                             &mut divergences,
-                            format!("XML: total divergente para NF {}/{} (legado {:.2} x XML {:.2}).", group.nf_numero, group.serie, total_dup, xml_total),
+                            format!(
+                                "XML: total divergente para NF {}/{} (legado {:.2} x XML {:.2}).",
+                                group.nf_numero, group.serie, total_dup, xml_total
+                            ),
                         );
                     }
-                    let mut legacy_venc = group.duplicatas.iter().map(|d| d.d_venc.clone()).collect::<Vec<_>>();
+                    let mut legacy_venc = group
+                        .duplicatas
+                        .iter()
+                        .map(|d| d.d_venc.clone())
+                        .collect::<Vec<_>>();
                     legacy_venc.sort();
                     let mut xml_venc = meta
                         .dup_list
@@ -1420,14 +1624,20 @@ fn parse_legacy_pipe_file(
                         divergence_count += 1;
                         push_bounded(
                             &mut divergences,
-                            format!("XML: vencimentos divergentes na NF {}/{}.", group.nf_numero, group.serie),
+                            format!(
+                                "XML: vencimentos divergentes na NF {}/{}.",
+                                group.nf_numero, group.serie
+                            ),
                         );
                     }
                 } else if !xml_index.is_empty() {
                     divergence_count += 1;
                     push_bounded(
                         &mut divergences,
-                        format!("XML: NF {}/{} não encontrada para CNPJ {}.", group.nf_numero, group.serie, group.cnpj),
+                        format!(
+                            "XML: NF {}/{} não encontrada para CNPJ {}.",
+                            group.nf_numero, group.serie, group.cnpj
+                        ),
                     );
                 }
                 if let Some(sped) = sped_index.get(&key) {
@@ -1435,7 +1645,10 @@ fn parse_legacy_pipe_file(
                         divergence_count += 1;
                         push_bounded(
                             &mut divergences,
-                            format!("SPED: DT_E_S divergente na NF {}/{} (legado {} x SPED {}).", group.nf_numero, group.serie, group.dt_escrit, sped.0),
+                            format!(
+                                "SPED: DT_E_S divergente na NF {}/{} (legado {} x SPED {}).",
+                                group.nf_numero, group.serie, group.dt_escrit, sped.0
+                            ),
                         );
                     }
                     if let Some(vl_doc) = sped.1 {
@@ -1451,7 +1664,10 @@ fn parse_legacy_pipe_file(
                     divergence_count += 1;
                     push_bounded(
                         &mut divergences,
-                        format!("SPED: NF {}/{} não encontrada para CNPJ {}.", group.nf_numero, group.serie, group.cnpj),
+                        format!(
+                            "SPED: NF {}/{} não encontrada para CNPJ {}.",
+                            group.nf_numero, group.serie, group.cnpj
+                        ),
                     );
                 }
             }
@@ -1459,7 +1675,17 @@ fn parse_legacy_pipe_file(
     }
 
     if !rows.is_empty() {
-        log_push(logs, "info", "LEGADO importado", Some(format!("{} | notas {} | parcelas {}", file_name, groups.len(), parcelas)));
+        log_push(
+            logs,
+            "info",
+            "LEGADO importado",
+            Some(format!(
+                "{} | notas {} | parcelas {}",
+                file_name,
+                groups.len(),
+                parcelas
+            )),
+        );
     }
 
     Ok(LegacyStats {
@@ -1483,14 +1709,25 @@ fn push_bounded(list: &mut Vec<String>, value: String) {
 
 fn is_legacy_header_line(fields: &[String], line_index: usize) -> bool {
     let joined = fields.join("|").to_ascii_uppercase();
-    if line_index == 0 && (joined.contains("CNPJ") || joined.contains("EMITENTE") || joined.contains("SERIE") || joined.contains("ESCRIT")) {
+    if line_index == 0
+        && (joined.contains("CNPJ")
+            || joined.contains("EMITENTE")
+            || joined.contains("SERIE")
+            || joined.contains("ESCRIT"))
+    {
         return true;
     }
-    let first = fields.first().cloned().unwrap_or_default().to_ascii_uppercase();
+    let first = fields
+        .first()
+        .cloned()
+        .unwrap_or_default()
+        .to_ascii_uppercase();
     if first.contains("CNPJ") || first.contains("EMITENTE") {
         return true;
     }
-    line_index < 3 && joined.chars().any(|c| c.is_ascii_alphabetic()) && only_digits(&joined).len() < 11
+    line_index < 3
+        && joined.chars().any(|c| c.is_ascii_alphabetic())
+        && only_digits(&joined).len() < 11
 }
 
 fn parse_legacy_date(value: &str) -> Option<(String, String)> {
@@ -1509,7 +1746,10 @@ fn parse_legacy_date(value: &str) -> Option<(String, String)> {
         year += 2000;
     }
     let date = chrono::NaiveDate::from_ymd_opt(year, month, day)?;
-    Some((date.format("%d/%m/%Y").to_string(), date.format("%d%m%Y").to_string()))
+    Some((
+        date.format("%d/%m/%Y").to_string(),
+        date.format("%d%m%Y").to_string(),
+    ))
 }
 
 fn build_xml_index(nfe_metas: &[NfeMeta]) -> HashMap<String, NfeMeta> {
@@ -1537,7 +1777,11 @@ fn build_sped_index(sped_files: &[NamedText]) -> HashMap<String, (String, Option
             if !line.starts_with("|0150|") {
                 continue;
             }
-            let fields = line.trim_matches('|').split('|').map(|v| v.trim()).collect::<Vec<_>>();
+            let fields = line
+            .trim_matches('|')
+            .split('|')
+            .map(|v| v.trim())
+            .collect::<Vec<_>>();
             let cod = fields.get(1).copied().unwrap_or_default().to_string();
             let mut doc = only_digits(fields.get(4).copied().unwrap_or_default());
             if doc.is_empty() {
@@ -1552,7 +1796,11 @@ fn build_sped_index(sped_files: &[NamedText]) -> HashMap<String, (String, Option
             if !line.starts_with("|C100|") {
                 continue;
             }
-            let fields = line.trim_matches('|').split('|').map(|v| v.trim()).collect::<Vec<_>>();
+            let fields = line
+            .trim_matches('|')
+            .split('|')
+            .map(|v| v.trim())
+            .collect::<Vec<_>>();
             let cod_part = fields.get(3).copied().unwrap_or_default();
             let doc = part_doc.get(cod_part).cloned().unwrap_or_default();
             let serie = only_digits(fields.get(6).copied().unwrap_or_default());
@@ -1560,7 +1808,8 @@ fn build_sped_index(sped_files: &[NamedText]) -> HashMap<String, (String, Option
             if doc.is_empty() || num.is_empty() {
                 continue;
             }
-            let dt_es = digits_to_br_date(&only_digits(fields.get(10).copied().unwrap_or_default()));
+            let dt_es =
+                digits_to_br_date(&only_digits(fields.get(10).copied().unwrap_or_default()));
             let vl_doc = parse_money(fields.get(11).copied().unwrap_or_default());
             let key = format!("{}|{}|{}", doc, serie, num);
             index.entry(key).or_insert((dt_es, vl_doc));
@@ -1599,7 +1848,10 @@ fn parse_cnpj_set(raw: &str) -> HashSet<String> {
         .collect()
 }
 
-fn apply_consolidacao_por_terceiro(rows: &[NfeFaturasRow], settings: &NfeFaturasSettings) -> Vec<NfeFaturasRow> {
+fn apply_consolidacao_por_terceiro(
+    rows: &[NfeFaturasRow],
+    settings: &NfeFaturasSettings,
+) -> Vec<NfeFaturasRow> {
     if !settings.chk_consolidar_cnpj {
         return rows.to_vec();
     }
@@ -1621,13 +1873,21 @@ fn apply_consolidacao_por_terceiro(rows: &[NfeFaturasRow], settings: &NfeFaturas
     let mut out = Vec::<NfeFaturasRow>::new();
     for key in order {
         let arr = groups.remove(&key).unwrap_or_default();
-        let cnpj = arr.first().map(|r| only_digits(&r.cnpj_cpf)).unwrap_or_default();
+        let cnpj = arr
+            .first()
+            .map(|r| only_digits(&r.cnpj_cpf))
+            .unwrap_or_default();
         if set.contains(&cnpj) && arr.len() > 1 {
             let mut base = arr[0].clone();
-            let total = arr.iter().map(|r| parse_money(&r.valor_bruto_fat).unwrap_or(0.0)).sum::<f64>();
+            let total = arr
+                .iter()
+                .map(|r| parse_money(&r.valor_bruto_fat).unwrap_or(0.0))
+                .sum::<f64>();
             let min_venc = arr
                 .iter()
-                .filter_map(|r| br_date_to_time(&r.data_vencimento).map(|t| (t, r.data_vencimento.clone())))
+                .filter_map(|r| {
+                    br_date_to_time(&r.data_vencimento).map(|t| (t, r.data_vencimento.clone()))
+                })
                 .min_by_key(|item| item.0)
                 .map(|item| item.1)
                 .unwrap_or_else(|| base.data_vencimento.clone());
@@ -1643,25 +1903,46 @@ fn apply_consolidacao_por_terceiro(rows: &[NfeFaturasRow], settings: &NfeFaturas
     out
 }
 
-fn compute_export_rows_base(rows: &[NfeFaturasRow], settings: &NfeFaturasSettings) -> Vec<NfeFaturasRow> {
+fn compute_export_rows_base(
+    rows: &[NfeFaturasRow],
+    settings: &NfeFaturasSettings,
+) -> Vec<NfeFaturasRow> {
     let filtered = if settings.chk_usar_sped && settings.chk_somente_com_sped {
-        rows.iter().filter(|r| r.sped_matched).cloned().collect::<Vec<_>>()
+        rows.iter()
+            .filter(|r| r.sped_matched)
+            .cloned()
+            .collect::<Vec<_>>()
     } else {
         rows.to_vec()
     };
     apply_consolidacao_por_terceiro(&filtered, settings)
 }
 
-fn compute_export_lines(rows: &[NfeFaturasRow], settings: &NfeFaturasSettings) -> Vec<ExportLineItem> {
+fn compute_export_lines(
+    rows: &[NfeFaturasRow],
+    settings: &NfeFaturasSettings,
+) -> Vec<ExportLineItem> {
     let mut lines = Vec::<ExportLineItem>::new();
     for row in rows {
         if settings.chk_forcar_duas_linhas {
-            lines.push(ExportLineItem { row: row.clone(), item3: "000".into() });
-            lines.push(ExportLineItem { row: row.clone(), item3: "001".into() });
+            lines.push(ExportLineItem {
+                row: row.clone(),
+                item3: "000".into(),
+            });
+            lines.push(ExportLineItem {
+                row: row.clone(),
+                item3: "001".into(),
+            });
         } else {
-            lines.push(ExportLineItem { row: row.clone(), item3: "000".into() });
+            lines.push(ExportLineItem {
+                row: row.clone(),
+                item3: "000".into(),
+            });
             if row.desdob == 1 {
-                lines.push(ExportLineItem { row: row.clone(), item3: "001".into() });
+                lines.push(ExportLineItem {
+                    row: row.clone(),
+                    item3: "001".into(),
+                });
             }
         }
     }
@@ -1696,7 +1977,11 @@ fn format_str_size(source: &str, ch: char, size: usize, left_align: bool) -> Str
     }
 }
 
-fn build_txt_line(row: &NfeFaturasRow, item_desdob3: &str, settings: &NfeFaturasSettings) -> String {
+fn build_txt_line(
+    row: &NfeFaturasRow,
+    item_desdob3: &str,
+    settings: &NfeFaturasSettings,
+) -> String {
     let origem = settings.origem.chars().next().unwrap_or('0').to_string();
     let tipo = settings.tipo.chars().next().unwrap_or('1').to_string();
     let cnpjcpf = only_digits(&row.cnpj_cpf);
@@ -1704,11 +1989,19 @@ fn build_txt_line(row: &NfeFaturasRow, item_desdob3: &str, settings: &NfeFaturas
     let ie = only_alphanum_upper(&row.ie);
     let serie_fmt = pad_serie_with_zeros(&row.nf_serie, settings);
     let nfnumero = row.nf_numero.clone();
-    let data_escr = ddmmyyyy_to_digits(if row.data_entrada.is_empty() { &row.data_emissao } else { &row.data_entrada });
+    let data_escr = ddmmyyyy_to_digits(if row.data_entrada.is_empty() {
+        &row.data_emissao
+    } else {
+        &row.data_entrada
+    });
     let num_fatura = format!("{}/{}", row.nf_numero, row.num_fatura);
     let mut data_venc = ddmmyyyy_to_digits(&row.data_vencimento);
     if settings.chk_venc30 {
-        let base = ddmmyyyy_to_digits(if row.data_entrada.is_empty() { &row.data_emissao } else { &row.data_entrada });
+        let base = ddmmyyyy_to_digits(if row.data_entrada.is_empty() {
+            &row.data_emissao
+        } else {
+            &row.data_entrada
+        });
         if base.len() == 8 {
             data_venc = add_days_to_dig_date(&base, 30);
         }
@@ -1775,10 +2068,20 @@ impl SpedExportOptions {
             recriar: settings.chk_recriar_c140_c141,
             modo_parcelas: settings.sel_modo_parcelas.clone(),
             qtd_parcelas_geral: settings.num_qtd_parcelas_geral.max(1) as usize,
-            regras_fornecedor: parse_parcelas_por_fornecedor(&settings.txt_regras_fornecedor_parcelas),
-            intervalo_dias: if settings.chk_venc30 { 30 } else { settings.num_venc_intervalo_dias },
+            regras_fornecedor: parse_parcelas_por_fornecedor(
+                &settings.txt_regras_fornecedor_parcelas,
+            ),
+            intervalo_dias: if settings.chk_venc30 {
+                30
+            } else {
+                settings.num_venc_intervalo_dias
+            },
             dias_por_parcela: parse_dias_por_parcela(&settings.txt_venc_dias_por_parcela),
-            regra_sem_dup: if settings.chk_incluir_sem_dup { "gerar".into() } else { "nao_gerar".into() },
+            regra_sem_dup: if settings.chk_incluir_sem_dup {
+                "gerar".into()
+            } else {
+                "nao_gerar".into()
+            },
             consolidacao_interna: settings.sel_consolidacao_interna_nfe.clone(),
         }
     }
@@ -1830,7 +2133,12 @@ struct ParcelaData {
     valor: f64,
 }
 
-fn build_parcelas_for_c100(meta: &NfeMeta, opts: &SpedExportOptions, dt_doc: &str, dt_es: &str) -> Vec<ParcelaData> {
+fn build_parcelas_for_c100(
+    meta: &NfeMeta,
+    opts: &SpedExportOptions,
+    dt_doc: &str,
+    dt_es: &str,
+) -> Vec<ParcelaData> {
     let total = compute_total_from_meta(meta);
     let mut base = Vec::<ParcelaData>::new();
 
@@ -1881,7 +2189,11 @@ fn build_parcelas_for_c100(meta: &NfeMeta, opts: &SpedExportOptions, dt_doc: &st
         let venc = if !item.venc.is_empty() {
             ddmmyyyy_to_digits(&item.venc)
         } else {
-            let base_date = if is_valid_dig_date(dt_es) { dt_es.to_string() } else { dt_doc.to_string() };
+            let base_date = if is_valid_dig_date(dt_es) {
+                dt_es.to_string()
+            } else {
+                dt_doc.to_string()
+            };
             if !is_valid_dig_date(&base_date) {
                 String::new()
             } else {
@@ -1912,7 +2224,11 @@ fn normalize_parcelas(parcelas: Vec<ParcelaData>, mode: &str) -> Vec<ParcelaData
     }
     if mode == "reduzir_para_1_parcela" {
         let total = parcelas.iter().map(|p| p.valor).sum::<f64>();
-        let first = parcelas.iter().find(|p| !p.venc.is_empty()).cloned().unwrap_or_else(|| parcelas[0].clone());
+        let first = parcelas
+            .iter()
+            .find(|p| !p.venc.is_empty())
+            .cloned()
+            .unwrap_or_else(|| parcelas[0].clone());
         return vec![ParcelaData {
             n_dup: first.n_dup,
             venc: first.venc,
@@ -1958,10 +2274,18 @@ fn build_c140_c141_lines(meta: &NfeMeta, parcelas: &[ParcelaData], dt_doc: &str)
         });
     let total = parcelas.iter().map(|p| p.valor).sum::<f64>();
     let mut out = Vec::<String>::new();
-    out.push(format!("|C140|1|00||{}|{}|{}||", num_tit, parcelas.len(), to_sped_money(total)));
+    out.push(format!(
+        "|C140|1|00||{}|{}|{}||",
+        num_tit,
+        parcelas.len(),
+        to_sped_money(total)
+    ));
     for (idx, parcela) in parcelas.iter().enumerate() {
         let mut venc = parcela.venc.clone();
-        if let (Some(t_doc), Some(t_venc)) = (br_date_to_time(&digits_to_br_date(dt_doc)), br_date_to_time(&digits_to_br_date(&venc))) {
+        if let (Some(t_doc), Some(t_venc)) = (
+            br_date_to_time(&digits_to_br_date(dt_doc)),
+            br_date_to_time(&digits_to_br_date(&venc)),
+        ) {
             if t_venc < t_doc {
                 venc = dt_doc.to_string();
             }
@@ -2025,7 +2349,11 @@ fn update_sped_text_with_c140_c141(
             end += 1;
         }
         let mut group = lines[start..end].to_vec();
-        let fields = line.trim_matches('|').split('|').map(|v| v.trim()).collect::<Vec<_>>();
+        let fields = line
+            .trim_matches('|')
+            .split('|')
+            .map(|v| v.trim())
+            .collect::<Vec<_>>();
         let chave = only_digits(fields.get(8).copied().unwrap_or_default());
         let dt_doc = only_digits(fields.get(9).copied().unwrap_or_default());
         let dt_es = only_digits(fields.get(10).copied().unwrap_or_default());
@@ -2062,8 +2390,16 @@ fn update_sped_text_with_c140_c141(
             continue;
         }
         let c_lines = build_c140_c141_lines(meta, &parcelas, &dt_doc);
-        let insert_at = group.iter().position(|l| l.trim().starts_with("|C170|")).unwrap_or(group.len());
-        let new_group = [group[..insert_at].to_vec(), c_lines, group[insert_at..].to_vec()].concat();
+        let insert_at = group
+            .iter()
+            .position(|l| l.trim().starts_with("|C170|"))
+            .unwrap_or(group.len());
+        let new_group = [
+            group[..insert_at].to_vec(),
+            c_lines,
+            group[insert_at..].to_vec(),
+        ]
+        .concat();
         stats.updated += 1;
         out.extend(new_group);
         i = end;
@@ -2115,7 +2451,12 @@ fn rebuild_block9(lines: &[String]) -> Vec<String> {
         if !trim.starts_with('|') {
             continue;
         }
-        let reg = trim.trim_matches('|').split('|').next().unwrap_or_default().to_string();
+        let reg = trim
+            .trim_matches('|')
+            .split('|')
+            .next()
+            .unwrap_or_default()
+            .to_string();
         if !reg.is_empty() {
             *counts.entry(reg).or_insert(0) += 1;
         }
@@ -2141,15 +2482,26 @@ fn rebuild_block9(lines: &[String]) -> Vec<String> {
     out
 }
 
-fn parse_sped_header(sped_text: &str) -> Option<(String, String, String, String, String, String, usize)> {
+fn parse_sped_header(
+    sped_text: &str,
+) -> Option<(String, String, String, String, String, String, usize)> {
     let line = sped_text.lines().find(|l| l.trim().starts_with("|0000|"))?;
-    let fields = line.trim().trim_matches('|').split('|').map(|v| v.trim().to_string()).collect::<Vec<_>>();
+    let fields = line
+        .trim()
+        .trim_matches('|')
+        .split('|')
+        .map(|v| v.trim().to_string())
+        .collect::<Vec<_>>();
     Some((
         fields.get(1).cloned().unwrap_or_default(),
         only_digits(fields.get(3).map(|v| v.as_str()).unwrap_or_default()),
         only_digits(fields.get(4).map(|v| v.as_str()).unwrap_or_default()),
         only_digits(fields.get(6).map(|v| v.as_str()).unwrap_or_default()),
-        fields.get(8).cloned().unwrap_or_default().to_ascii_uppercase(),
+        fields
+            .get(8)
+            .cloned()
+            .unwrap_or_default()
+            .to_ascii_uppercase(),
         only_alphanum_upper(fields.get(9).map(|v| v.as_str()).unwrap_or_default()),
         fields.len(),
     ))
@@ -2159,7 +2511,10 @@ fn can_consolidate_sped_files(sped_files: &[NamedText]) -> bool {
     if sped_files.len() < 2 {
         return true;
     }
-    let headers = sped_files.iter().filter_map(|s| parse_sped_header(&s.text)).collect::<Vec<_>>();
+    let headers = sped_files
+        .iter()
+        .filter_map(|s| parse_sped_header(&s.text))
+        .collect::<Vec<_>>();
     if headers.len() != sped_files.len() {
         return false;
     }
@@ -2171,7 +2526,13 @@ fn split_sped_by_c100(lines: &[String]) -> (Vec<String>, Vec<Vec<String>>, Vec<S
     let indexes = lines
         .iter()
         .enumerate()
-        .filter_map(|(i, l)| if l.trim().starts_with("|C100|") { Some(i) } else { None })
+        .filter_map(|(i, l)| {
+            if l.trim().starts_with("|C100|") {
+                Some(i)
+            } else {
+                None
+            }
+        })
         .collect::<Vec<_>>();
     if indexes.is_empty() {
         return (lines.to_vec(), Vec::new(), Vec::new());
@@ -2186,24 +2547,48 @@ fn split_sped_by_c100(lines: &[String]) -> (Vec<String>, Vec<Vec<String>>, Vec<S
     let prefix = lines[..indexes[0]].to_vec();
     let mut groups = Vec::<Vec<String>>::new();
     for (pos, start) in indexes.iter().enumerate() {
-        let end = if pos + 1 < indexes.len() { indexes[pos + 1] } else { suffix_start };
+        let end = if pos + 1 < indexes.len() {
+            indexes[pos + 1]
+        } else {
+            suffix_start
+        };
         groups.push(lines[*start..end].to_vec());
     }
-    let suffix = if suffix_start < lines.len() { lines[suffix_start..].to_vec() } else { Vec::new() };
+    let suffix = if suffix_start < lines.len() {
+        lines[suffix_start..].to_vec()
+    } else {
+        Vec::new()
+    };
     (prefix, groups, suffix)
 }
 
-fn consolidate_sped_outputs(outputs: &[(String, String, UpdateSpedStats)]) -> Option<(String, String)> {
+fn consolidate_sped_outputs(
+    outputs: &[(String, String, UpdateSpedStats)],
+) -> Option<(String, String)> {
     let updated_lines = outputs
         .iter()
-        .map(|(_, text, _)| strip_block9(&text.lines().map(|v| v.to_string()).filter(|v| !v.trim().is_empty()).collect::<Vec<_>>()))
+        .map(|(_, text, _)| {
+            strip_block9(
+                &text
+                    .lines()
+                    .map(|v| v.to_string())
+                    .filter(|v| !v.trim().is_empty())
+                    .collect::<Vec<_>>(),
+            )
+        })
         .collect::<Vec<_>>();
     let (base_prefix, _, base_suffix) = split_sped_by_c100(&updated_lines[0]);
-    let base_suffix_no_c990 = base_suffix.into_iter().filter(|l| !l.trim().starts_with("|C990|")).collect::<Vec<_>>();
+    let base_suffix_no_c990 = base_suffix
+        .into_iter()
+        .filter(|l| !l.trim().starts_with("|C990|"))
+        .collect::<Vec<_>>();
     let mut all_groups = Vec::<Vec<String>>::new();
     for lines in &updated_lines {
         let (prefix, groups, suffix) = split_sped_by_c100(lines);
-        let suffix_no_c990 = suffix.into_iter().filter(|l| !l.trim().starts_with("|C990|")).collect::<Vec<_>>();
+        let suffix_no_c990 = suffix
+            .into_iter()
+            .filter(|l| !l.trim().starts_with("|C990|"))
+            .collect::<Vec<_>>();
         if prefix != base_prefix || suffix_no_c990 != base_suffix_no_c990 {
             return None;
         }
