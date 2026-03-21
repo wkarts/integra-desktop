@@ -1327,9 +1327,8 @@ fn apply_sped_0150_ie_to_rows(
         };
         let ie_xml = only_alphanum_upper(&row.ie);
         let forced = settings.chk_ie_sped_padrao;
-        let should_replace = forced
-            || ie_xml.is_empty()
-            || only_digits(&ie_xml).len() != only_digits(ie_sped).len();
+        let should_replace =
+            forced || ie_xml.is_empty() || only_digits(&ie_xml).len() != only_digits(ie_sped).len();
         if should_replace && ie_xml != *ie_sped {
             row.ie = ie_sped.clone();
             log_push(
