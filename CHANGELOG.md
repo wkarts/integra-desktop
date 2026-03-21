@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/wkarts/integra-desktop/compare/v1.2.0...v1.3.0) (2026-03-21)
+
+
+### Bug Fixes
+
+* **tauri:** corrige avisos do clippy em nfe_faturas ([d539b4d](https://github.com/wkarts/integra-desktop/commit/d539b4ddb8036e814ee3ba82e9da4a9ce572758b))
+
+
+### Features
+
+* **nfe-faturas:** migra processamento para tauri nativo ([8ac207a](https://github.com/wkarts/integra-desktop/commit/8ac207a796c5ed6a1aa76b0d625380f2cd7fef7e))
+
 # [1.2.0](https://github.com/wkarts/integra-desktop/compare/v1.1.1...v1.2.0) (2026-03-20)
 
 
