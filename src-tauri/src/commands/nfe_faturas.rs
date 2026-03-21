@@ -1327,13 +1327,9 @@ fn apply_sped_0150_ie_to_rows(
         };
         let ie_xml = only_alphanum_upper(&row.ie);
         let forced = settings.chk_ie_sped_padrao;
-        let should_replace = if forced {
-            true
-        } else if ie_xml.is_empty() {
-            true
-        } else {
-            only_digits(&ie_xml).len() != only_digits(ie_sped).len()
-        };
+        let should_replace = forced
+            || ie_xml.is_empty()
+            || only_digits(&ie_xml).len() != only_digits(ie_sped).len();
         if should_replace && ie_xml != *ie_sped {
             row.ie = ie_sped.clone();
             log_push(
@@ -1428,7 +1424,7 @@ fn parse_legacy_pipe_file(
             );
             continue;
         }
-        let cnpj = only_digits(fields.get(0).map(|v| v.as_str()).unwrap_or_default());
+        let cnpj = only_digits(fields.first().map(|v| v.as_str()).unwrap_or_default());
         if cnpj.len() != 14 {
             invalid_count += 1;
             push_bounded(
@@ -1732,7 +1728,7 @@ fn is_legacy_header_line(fields: &[String], line_index: usize) -> bool {
 fn parse_legacy_date(value: &str) -> Option<(String, String)> {
     let clean = value.trim();
     let parts = clean
-        .split(|c| c == '/' || c == '-' || c == '.')
+        .split(['/', '-', '.'])
         .filter(|v| !v.is_empty())
         .collect::<Vec<_>>();
     if parts.len() != 3 {
