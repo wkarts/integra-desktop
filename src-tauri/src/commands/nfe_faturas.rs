@@ -222,7 +222,6 @@ struct ExportLineItem {
     item3: String,
 }
 
-
 fn file_path_to_string(path: FilePath) -> Option<String> {
     path.into_path()
         .ok()
@@ -1374,10 +1373,10 @@ fn guess_cnpj_filial(rows: &[NfeFaturasRow], sped_files: &[NamedText]) -> Option
                 continue;
             }
             let fields = line
-            .trim_matches('|')
-            .split('|')
-            .map(|v| v.trim())
-            .collect::<Vec<_>>();
+                .trim_matches('|')
+                .split('|')
+                .map(|v| v.trim())
+                .collect::<Vec<_>>();
             if fields.first().copied() != Some("0000") {
                 continue;
             }
@@ -1778,10 +1777,10 @@ fn build_sped_index(sped_files: &[NamedText]) -> HashMap<String, (String, Option
                 continue;
             }
             let fields = line
-            .trim_matches('|')
-            .split('|')
-            .map(|v| v.trim())
-            .collect::<Vec<_>>();
+                .trim_matches('|')
+                .split('|')
+                .map(|v| v.trim())
+                .collect::<Vec<_>>();
             let cod = fields.get(1).copied().unwrap_or_default().to_string();
             let mut doc = only_digits(fields.get(4).copied().unwrap_or_default());
             if doc.is_empty() {
@@ -1797,10 +1796,10 @@ fn build_sped_index(sped_files: &[NamedText]) -> HashMap<String, (String, Option
                 continue;
             }
             let fields = line
-            .trim_matches('|')
-            .split('|')
-            .map(|v| v.trim())
-            .collect::<Vec<_>>();
+                .trim_matches('|')
+                .split('|')
+                .map(|v| v.trim())
+                .collect::<Vec<_>>();
             let cod_part = fields.get(3).copied().unwrap_or_default();
             let doc = part_doc.get(cod_part).cloned().unwrap_or_default();
             let serie = only_digits(fields.get(6).copied().unwrap_or_default());
