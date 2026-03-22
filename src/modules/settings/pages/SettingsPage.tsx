@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PageHeader } from '../../../shared/components/PageHeader';
 import { useNfseStore } from '../../nfse-servicos/stores/NfseStore';
 import { ProfileForm } from '../../nfse-servicos/components/ProfileForm';
@@ -8,12 +8,11 @@ import {
   getAppMeta,
   getMachineFingerprint,
   loadLicenseSettings,
-  loadProfileBundle,
   saveLicenseSettings,
-  saveProfileBundle,
+  loadProfile,
+  saveProfile,
 } from '../../nfse-servicos/services/tauriService';
-import type { AppMeta, LicenseRuntimeStatus, LicenseSettings, ProfileBundle } from '../../../shared/types';
-import { defaultProfileBundle } from '../../../shared/mappers/defaultProfile';
+import type { AppMeta, LicenseRuntimeStatus, LicenseSettings } from '../../../shared/types';
 import { validateProfile } from '../../../shared/validators/profiles';
 
 const defaultLicenseSettings: LicenseSettings = {
@@ -38,24 +37,18 @@ export default function SettingsPage() {
   const { profile, setProfile, pushLog } = useNfseStore();
   const [licenseSettings, setLicenseSettings] = useState<LicenseSettings>(defaultLicenseSettings);
   const [licenseStatus, setLicenseStatus] = useState<LicenseRuntimeStatus | null>(null);
-  const [bundle, setBundle] = useState<ProfileBundle>(defaultProfileBundle);
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    Promise.all([loadLicenseSettings(), getMachineFingerprint(), loadProfileBundle(), getAppMeta()])
-      .then(([savedLicense, fingerprint, savedBundle, appMeta]) => {
+    Promise.all([loadLicenseSettings(), getMachineFingerprint(), loadProfile(), getAppMeta()])
+      .then(([savedLicense, fingerprint, savedProfile, appMeta]) => {
         setMeta(appMeta);
         setLicenseSettings(savedLicense ?? { ...defaultLicenseSettings, machine_key: fingerprint });
-        const nextBundle = savedBundle ?? defaultProfileBundle;
-        setBundle(nextBundle);
-        const activeProfile = nextBundle.profiles.find((item) => item.profile_id === nextBundle.selected_profile_id) ?? nextBundle.profiles[0];
-        if (activeProfile) setProfile(activeProfile);
+        if (savedProfile) setProfile(savedProfile);
       })
       .catch(() => pushLog('Falha ao carregar configurações locais.'));
   }, [pushLog, setProfile]);
-
-  const profileNames = useMemo(() => bundle.profiles.map((item) => item.profile_company_name || item.profile_name), [bundle]);
 
   async function saveAllSettings() {
     const issues = validateProfile(profile);
@@ -80,14 +73,8 @@ export default function SettingsPage() {
       };
       setProfile(nextProfile);
 
-      const nextProfiles = bundle.profiles.some((item) => item.profile_id === nextProfile.profile_id)
-        ? bundle.profiles.map((item) => item.profile_id === nextProfile.profile_id ? nextProfile : item)
-        : [...bundle.profiles, nextProfile];
-
-      const nextBundle = { selected_profile_id: nextProfile.profile_id, profiles: nextProfiles };
-      await saveProfileBundle(nextBundle);
-      setBundle(nextBundle);
-      pushLog('Configurações gerais e perfis salvos com sucesso.');
+      await saveProfile(nextProfile);
+      pushLog('Configurações gerais e empresa salvas com sucesso.');
     } finally {
       setBusy(false);
     }
@@ -106,21 +93,11 @@ export default function SettingsPage() {
     }
   }
 
-  async function selectProfile(profileId: string) {
-    const selected = bundle.profiles.find((item) => item.profile_id === profileId);
-    if (!selected) return;
-    setProfile(selected);
-    const nextBundle = { ...bundle, selected_profile_id: profileId };
-    setBundle(nextBundle);
-    await saveProfileBundle(nextBundle);
-    pushLog(`Perfil ativo nas configurações: ${selected.profile_company_name || selected.profile_name}.`);
-  }
-
   return (
     <div className="stack-lg">
       <PageHeader
         title="Configurações"
-        subtitle="Empresa, licença e perfis."
+        subtitle="Empresa, licença e layout municipal de NFS-e."
         actions={(
           <div className="actions-row">
             <button className="btn" onClick={handleCheckLicense} disabled={busy}>Validar licença</button>
@@ -210,16 +187,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="card compact-card">
-        <h3>Perfis cadastrados</h3>
-        <p className="muted">Cada perfil representa uma empresa de escrituração.</p>
-        <div className="profile-toolbar-actions">
-          <select value={profile.profile_id} onChange={(e) => void selectProfile(e.target.value)}>
-            {bundle.profiles.map((item) => (
-              <option key={item.profile_id} value={item.profile_id}>{item.profile_company_name || item.profile_name}</option>
-            ))}
-          </select>
-          <span className="muted">Perfis disponíveis: {profileNames.join(', ') || 'nenhum'}</span>
-        </div>
+        <h3>Configuração única de empresa</h3>
+        <p className="muted">
+          A empresa utiliza um único layout de NFS-e, definido pelo município cadastrado.
+        </p>
       </div>
 
       <ProfileForm value={profile} onChange={setProfile} />
