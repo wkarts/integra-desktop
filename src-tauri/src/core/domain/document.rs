@@ -60,6 +60,7 @@ pub struct ConversionFieldRules {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ConversionProfile {
     pub profile_id: String,
     pub profile_name: String,
@@ -84,6 +85,9 @@ pub struct ConversionProfile {
     pub cst_pis: String,
     pub cst_cofins: String,
     pub cst_iss: String,
+    pub company_municipio_nome: String,
+    pub company_municipio_codigo: String,
+    pub nfse_layout: String,
     pub obs_extended: String,
     pub field_rules: ConversionFieldRules,
 }
@@ -120,6 +124,9 @@ impl Default for ConversionProfile {
             cst_pis: String::new(),
             cst_cofins: String::new(),
             cst_iss: String::new(),
+            company_municipio_nome: String::new(),
+            company_municipio_codigo: String::new(),
+            nfse_layout: "auto".into(),
             obs_extended: "auto".into(),
             field_rules: ConversionFieldRules::default(),
         }

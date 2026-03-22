@@ -5,10 +5,12 @@ use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 use zip::ZipArchive;
 
-use crate::core::domain::document::{NfseDocument, ProcessBatchInputItem, ProcessBatchResult};
+use crate::core::domain::document::{
+    ConversionProfile, NfseDocument, ProcessBatchInputItem, ProcessBatchResult,
+};
 use crate::core::{
-    normalizers::nfse_normalizer::normalize_nfse_document, parsers::nfse::parse_nfse_xml,
-    validation::warnings::collect_document_warnings,
+    normalizers::nfse_normalizer::normalize_nfse_document,
+    parsers::nfse::parse_nfse_xml_with_layout, validation::warnings::collect_document_warnings,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -21,14 +23,28 @@ pub struct UploadInputItem {
 fn process_xml(
     file_name: &str,
     xml: &str,
+    profile: Option<&ConversionProfile>,
     documents: &mut Vec<NfseDocument>,
     warnings: &mut Vec<String>,
     errors: &mut Vec<String>,
 ) {
-    match parse_nfse_xml(xml, file_name) {
+    let configured_layout = profile.map(|item| item.nfse_layout.as_str());
+    match parse_nfse_xml_with_layout(xml, file_name, configured_layout) {
         Ok(document) => {
             let mut normalized = normalize_nfse_document(document);
             normalized.warnings = collect_document_warnings(&normalized);
+            if let Some(item) = profile {
+                let profile_city = item.company_municipio_nome.trim();
+                if !profile_city.is_empty()
+                    && profile_city.to_ascii_lowercase()
+                        != normalized.municipio_nome.to_ascii_lowercase()
+                {
+                    normalized.warnings.push(format!(
+                        "Município do XML ({}) difere do município configurado na empresa ({}).",
+                        normalized.municipio_nome, profile_city
+                    ));
+                }
+            }
             warnings.extend(
                 normalized
                     .warnings
@@ -47,6 +63,7 @@ fn process_xml(
 #[tauri::command]
 pub fn process_nfse_xml_batch(
     items: Vec<ProcessBatchInputItem>,
+    profile: Option<ConversionProfile>,
     app: AppHandle,
 ) -> Result<ProcessBatchResult, String> {
     let mut documents: Vec<NfseDocument> = Vec::new();
@@ -57,6 +74,7 @@ pub fn process_nfse_xml_batch(
         process_xml(
             &item.file_name,
             &item.xml,
+            profile.as_ref(),
             &mut documents,
             &mut warnings,
             &mut errors,
@@ -83,6 +101,7 @@ pub fn process_nfse_xml_batch(
 #[tauri::command]
 pub fn process_nfse_upload_batch(
     items: Vec<UploadInputItem>,
+    profile: Option<ConversionProfile>,
     app: AppHandle,
 ) -> Result<ProcessBatchResult, String> {
     let mut documents: Vec<NfseDocument> = Vec::new();
@@ -94,6 +113,7 @@ pub fn process_nfse_upload_batch(
             "xml" => process_xml(
                 &item.file_name,
                 &item.content,
+                profile.as_ref(),
                 &mut documents,
                 &mut warnings,
                 &mut errors,
@@ -129,6 +149,7 @@ pub fn process_nfse_upload_batch(
                     process_xml(
                         &nested_file_name,
                         &xml,
+                        profile.as_ref(),
                         &mut documents,
                         &mut warnings,
                         &mut errors,

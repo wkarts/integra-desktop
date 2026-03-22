@@ -33,7 +33,7 @@ export default function DashboardPage() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const profileCount = bundle?.profiles.length ?? 0;
+  const profileCount = bundle?.profiles.length ? 1 : 0;
   const selectedProfile = bundle?.profiles.find((item) => item.profile_id === bundle?.selected_profile_id);
   const hour = now.getHours() % 12;
   const minute = now.getMinutes();
@@ -71,8 +71,8 @@ export default function DashboardPage() {
 
       <div className="kpi-grid kpi-grid-4">
         <div className="card kpi-card"><span>Razão social</span><strong>{license?.company_name || selectedProfile?.user_company_name || 'Não configurada'}</strong><p className="muted">Cadastro licenciado da aplicação.</p></div>
-        <div className="card kpi-card"><span>Perfis de escrituração</span><strong>{profileCount}</strong><p className="muted">Empresas/perfis disponíveis para exportação.</p></div>
-        <div className="card kpi-card"><span>Perfil ativo</span><strong>{selectedProfile?.profile_company_name || selectedProfile?.profile_name || 'Não selecionado'}</strong><p className="muted">Perfil usado na próxima conversão.</p></div>
+        <div className="card kpi-card"><span>Configuração de empresa</span><strong>{profileCount}</strong><p className="muted">A aplicação utiliza um único layout por empresa.</p></div>
+        <div className="card kpi-card"><span>Empresa ativa</span><strong>{selectedProfile?.profile_company_name || selectedProfile?.profile_name || 'Não selecionado'}</strong><p className="muted">Configuração usada na próxima conversão.</p></div>
         <div className="card kpi-card"><span>Status da licença</span><strong>{license ? (license.allowed ? 'Liberada' : 'Bloqueada') : 'Pendente'}</strong><p className="muted">{license?.message || 'Valide em Configurações.'}</p></div>
       </div>
 
@@ -81,9 +81,9 @@ export default function DashboardPage() {
           <h3>Fluxo principal</h3>
           <ol className="clean-list">
             <li>Cadastre empresa e valide a licença.</li>
-            <li>Cadastre um ou mais perfis com o nome da empresa para a qual fará a escrituração.</li>
+            <li>Cadastre a empresa, município e layout municipal de NFS-e.</li>
             <li>Importe XML, ZIP ou pasta em <b>NFS-e → Prosoft</b>.</li>
-            <li>Revise o lote, escolha o perfil correto e exporte TXT/CSV.</li>
+            <li>Revise o lote e exporte TXT/CSV com a configuração ativa.</li>
           </ol>
         </div>
 
