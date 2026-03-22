@@ -1,3 +1,29 @@
+## [1.4.1](https://github.com/wkarts/integra-desktop/compare/v1.4.0...v1.4.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* mover divisória do rodapé para abaixo do relógio ([d055856](https://github.com/wkarts/integra-desktop/commit/d055856a07e82e6813655d90e54f7e8d3582973a))
+
+# [1.4.0](https://github.com/wkarts/integra-desktop/compare/v1.3.0...v1.4.0) (2026-03-21)
+
+
+### Features
+
+* adicionar relógio responsivo na sidebar ([e78bbdf](https://github.com/wkarts/integra-desktop/commit/e78bbdf23bacc2f3169f669c92681cdc9cf0d907))
+
+# [1.3.0](https://github.com/wkarts/integra-desktop/compare/v1.2.0...v1.3.0) (2026-03-21)
+
+
+### Bug Fixes
+
+* **tauri:** corrige avisos do clippy em nfe_faturas ([d539b4d](https://github.com/wkarts/integra-desktop/commit/d539b4ddb8036e814ee3ba82e9da4a9ce572758b))
+
+
+### Features
+
+* **nfe-faturas:** migra processamento para tauri nativo ([8ac207a](https://github.com/wkarts/integra-desktop/commit/8ac207a796c5ed6a1aa76b0d625380f2cd7fef7e))
+
 # [1.2.0](https://github.com/wkarts/integra-desktop/compare/v1.1.1...v1.2.0) (2026-03-20)
 
 
