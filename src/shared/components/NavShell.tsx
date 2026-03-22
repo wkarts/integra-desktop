@@ -15,7 +15,7 @@ const menu = [
 
 const defaultMeta: AppMeta = {
   product_name: 'Integra Desktop',
-  version: '1.0.3',
+  version: '1.4.1',
   build_hash: 'dev-local',
   app_id: 'integra-desktop',
 };
