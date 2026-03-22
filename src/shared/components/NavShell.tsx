@@ -55,7 +55,7 @@ export function NavShell({ children }: PropsWithChildren) {
           <img src={brandLogo} alt="Integra Web" className="sidebar-logo" />
           <div>
             <h1>Integra Desktop</h1>
-            <p className="muted sidebar-subtitle">Importação fiscal, perfis por empresa e controle de licenças por estação.</p>
+            <p className="muted sidebar-subtitle">Operação fiscal e licenciamento.</p>
           </div>
         </div>
 
@@ -78,8 +78,10 @@ export function NavShell({ children }: PropsWithChildren) {
             <strong className="clock-time">{timeLabel}</strong>
             <span className="clock-date">{dateLabel}</span>
           </section>
-          <div className="sidebar-meta-row"><span>Versão</span><strong>{meta.version}</strong></div>
-          <div className="sidebar-meta-row"><span>ASHA</span><strong title={meta.build_hash}>{meta.build_hash.slice(0, 12)}</strong></div>
+          <div className="sidebar-meta">
+            <div className="sidebar-meta-row"><span>Versão</span><strong>{meta.version}</strong></div>
+            <div className="sidebar-meta-row"><span>ASHA</span><strong title={meta.build_hash}>{meta.build_hash.slice(0, 12)}</strong></div>
+          </div>
         </footer>
       </aside>
       <main className="main-content">{children}</main>

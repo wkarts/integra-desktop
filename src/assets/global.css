@@ -42,7 +42,8 @@ button, input, select, textarea { font: inherit; }
 .menu { display: flex; flex-direction: column; gap: 6px; }
 .menu-link { padding: 9px 10px; border-radius: 10px; color: rgba(248, 250, 252, 0.92); font-weight: 500; font-size: 0.92rem; }
 .menu-link.active, .menu-link:hover { background: rgba(255, 255, 255, 0.13); }
-.sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,.12); padding-top: 12px; display: grid; gap: 8px; }
+.sidebar-footer { margin-top: auto; display: grid; gap: 8px; }
+.sidebar-meta { border-top: 1px solid rgba(255,255,255,.12); padding-top: 10px; display: grid; gap: 8px; }
 .sidebar-meta-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
 .sidebar-meta-row span { color: rgba(255,255,255,.72); }
 .sidebar-meta-row strong { color: #fff; font-family: 'Segoe UI', monospace; }
