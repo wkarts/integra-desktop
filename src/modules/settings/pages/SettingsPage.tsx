@@ -29,7 +29,7 @@ const defaultLicenseSettings: LicenseSettings = {
 
 const defaultMeta: AppMeta = {
   product_name: 'Integra Desktop',
-  version: '1.0.3',
+  version: '1.4.1',
   build_hash: 'dev-local',
   app_id: 'integra-desktop',
 };
@@ -120,7 +120,7 @@ export default function SettingsPage() {
     <div className="stack-lg">
       <PageHeader
         title="Configurações"
-        subtitle="Cadastre os dados da empresa, valide licenciamento e gerencie os perfis por empresa escriturada."
+        subtitle="Empresa, licença e perfis."
         actions={(
           <div className="actions-row">
             <button className="btn" onClick={handleCheckLicense} disabled={busy}>Validar licença</button>
@@ -133,7 +133,7 @@ export default function SettingsPage() {
         <div className="section-title-row">
           <div>
             <h3>Licenciamento da empresa</h3>
-            <p className="muted">Replica o conceito do Delphi: empresa licenciada, chave da estação e totalização centralizada pelo webservice.</p>
+            <p className="muted">Dados da empresa e status da licença.</p>
           </div>
           <div className="meta-badges">
             <span className="badge">Versão {meta.version}</span>
@@ -211,7 +211,7 @@ export default function SettingsPage() {
 
       <div className="card compact-card">
         <h3>Perfis cadastrados</h3>
-        <p className="muted">A empresa principal é quem usa o aplicativo. Cada perfil representa a empresa para a qual será feita a escrituração.</p>
+        <p className="muted">Cada perfil representa uma empresa de escrituração.</p>
         <div className="profile-toolbar-actions">
           <select value={profile.profile_id} onChange={(e) => void selectProfile(e.target.value)}>
             {bundle.profiles.map((item) => (
