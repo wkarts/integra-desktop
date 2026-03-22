@@ -1,3 +1,11 @@
+## [1.5.1](https://github.com/wkarts/integra-desktop/compare/v1.5.0...v1.5.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* **release:** corrige ícones, favicon e pipeline de build do Tauri ([dc026a7](https://github.com/wkarts/integra-desktop/commit/dc026a717a26cf730eb599c9daf788c58c59627a))
+* **release:** versiona ícones do Tauri e corrige assets de build ([ab72c2c](https://github.com/wkarts/integra-desktop/commit/ab72c2cb697f339a6b7905e891fed7c0323763a9))
+
 # [1.5.0](https://github.com/wkarts/integra-desktop/compare/v1.4.1...v1.5.0) (2026-03-22)
 
 
