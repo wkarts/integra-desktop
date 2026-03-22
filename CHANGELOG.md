@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/wkarts/integra-desktop/compare/v1.4.1...v1.5.0) (2026-03-22)
+
+
+### Features
+
+* versionar release 1.4.1 para nova compilação ([c1e2587](https://github.com/wkarts/integra-desktop/commit/c1e258707e8fb92b827746527b58a4140c80461f))
+
 ## [1.4.1](https://github.com/wkarts/integra-desktop/compare/v1.4.0...v1.4.1) (2026-03-22)
 
 
