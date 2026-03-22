@@ -26,6 +26,9 @@ export const defaultProfile: ConversionProfile = {
   cst_pis: '',
   cst_cofins: '',
   cst_iss: '',
+  company_municipio_nome: '',
+  company_municipio_codigo: '',
+  nfse_layout: 'auto',
   obs_extended: 'auto',
   field_rules: {
     base_calculo: source,
