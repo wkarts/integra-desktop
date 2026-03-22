@@ -36,8 +36,7 @@ fn process_xml(
             if let Some(item) = profile {
                 let profile_city = item.company_municipio_nome.trim();
                 if !profile_city.is_empty()
-                    && profile_city.to_ascii_lowercase()
-                        != normalized.municipio_nome.to_ascii_lowercase()
+                    && !profile_city.eq_ignore_ascii_case(&normalized.municipio_nome)
                 {
                     normalized.warnings.push(format!(
                         "Município do XML ({}) difere do município configurado na empresa ({}).",
