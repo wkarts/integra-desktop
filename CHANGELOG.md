@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/wkarts/integra-desktop/compare/v1.4.0...v1.4.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* mover divisória do rodapé para abaixo do relógio ([d055856](https://github.com/wkarts/integra-desktop/commit/d055856a07e82e6813655d90e54f7e8d3582973a))
+
 # [1.4.0](https://github.com/wkarts/integra-desktop/compare/v1.3.0...v1.4.0) (2026-03-21)
 
 
