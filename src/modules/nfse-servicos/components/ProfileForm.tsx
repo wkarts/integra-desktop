@@ -10,16 +10,35 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
       <h3>Perfil de conversão</h3>
       <div className="form-grid cols-4">
         <div>
-          <label>Nome do perfil</label>
+          <label>Nome da empresa</label>
           <input value={value.profile_name} onChange={(e) => set('profile_name', e.target.value)} />
         </div>
         <div>
-          <label>Empresa do perfil</label>
+          <label>Razão social para escrituração</label>
           <input value={value.profile_company_name} onChange={(e) => set('profile_company_name', e.target.value)} placeholder="Ex.: Escrituração ACME Ltda" />
         </div>
         <div>
-          <label>CNPJ/CPF do perfil</label>
+          <label>CNPJ/CPF da empresa</label>
           <input value={value.profile_company_document} onChange={(e) => set('profile_company_document', e.target.value)} />
+        </div>
+        <div>
+          <label>Município da empresa</label>
+          <input value={value.company_municipio_nome} onChange={(e) => set('company_municipio_nome', e.target.value)} placeholder="Ex.: Santo Antônio de Jesus" />
+        </div>
+        <div>
+          <label>Código IBGE município</label>
+          <input value={value.company_municipio_codigo} onChange={(e) => set('company_municipio_codigo', e.target.value)} placeholder="Opcional" />
+        </div>
+        <div>
+          <label>Layout municipal NFS-e</label>
+          <select value={value.nfse_layout} onChange={(e) => set('nfse_layout', e.target.value as ConversionProfile['nfse_layout'])}>
+            <option value="auto">Automático (detecção)</option>
+            <option value="webiss_abrasf_v2">ABRASF / WebISS</option>
+            <option value="ginfes">GINFES / SAJ</option>
+            <option value="betha">Betha</option>
+            <option value="abrasf_v1">ABRASF v1</option>
+            <option value="ubaira_custom">Ubaíra (custom)</option>
+          </select>
         </div>
         <div>
           <label>Layout de saída</label>

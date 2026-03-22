@@ -12,11 +12,11 @@ import type {
 } from '../../../shared/types';
 
 export async function processNfseBatch(items: ProcessBatchInputItem[]): Promise<ProcessBatchResult> {
-  return invoke<ProcessBatchResult>('process_nfse_xml_batch', { items });
+  return invoke<ProcessBatchResult>('process_nfse_xml_batch', { items, profile: null });
 }
 
-export async function processNfseUploadBatch(items: UploadInputItem[]): Promise<ProcessBatchResult> {
-  return invoke<ProcessBatchResult>('process_nfse_upload_batch', { items });
+export async function processNfseUploadBatch(items: UploadInputItem[], profile: ConversionProfile): Promise<ProcessBatchResult> {
+  return invoke<ProcessBatchResult>('process_nfse_upload_batch', { items, profile });
 }
 
 export async function exportTxt(documents: NfseDocument[], profile: ConversionProfile): Promise<string> {

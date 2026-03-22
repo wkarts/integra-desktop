@@ -10,7 +10,20 @@ use anyhow::{anyhow, Result};
 use crate::core::domain::document::NfseDocument;
 
 pub fn parse_nfse_xml(xml: &str, file_name: &str) -> Result<NfseDocument> {
-    match detector::detect_provider(xml)? {
+    parse_nfse_xml_with_layout(xml, file_name, None)
+}
+
+pub fn parse_nfse_xml_with_layout(
+    xml: &str,
+    file_name: &str,
+    configured_layout: Option<&str>,
+) -> Result<NfseDocument> {
+    let provider = configured_layout
+        .and_then(provider_from_layout)
+        .map(Ok)
+        .unwrap_or_else(|| detector::detect_provider(xml))?;
+
+    match provider {
         detector::ProviderKind::WebissAbrasf202 | detector::ProviderKind::GenericCompNfse => {
             abrasf_v2::parse(xml, file_name)
         }
@@ -21,5 +34,17 @@ pub fn parse_nfse_xml(xml: &str, file_name: &str) -> Result<NfseDocument> {
         detector::ProviderKind::Betha => betha::parse(xml, file_name),
         detector::ProviderKind::AbrasfV1 => abrasf_v1::parse(xml, file_name),
         detector::ProviderKind::Unknown => Err(anyhow!("Layout de XML NFS-e não suportado.")),
+    }
+}
+
+fn provider_from_layout(layout: &str) -> Option<detector::ProviderKind> {
+    match layout {
+        "auto" | "" => None,
+        "webiss_abrasf_v2" => Some(detector::ProviderKind::WebissAbrasf202),
+        "ginfes" => Some(detector::ProviderKind::Ginfes),
+        "betha" => Some(detector::ProviderKind::Betha),
+        "abrasf_v1" => Some(detector::ProviderKind::AbrasfV1),
+        "ubaira_custom" => Some(detector::ProviderKind::UbairaCustom),
+        _ => None,
     }
 }

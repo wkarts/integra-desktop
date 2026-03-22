@@ -56,10 +56,10 @@ jobs:
     needs: [validate-frontend, validate-rust]
     runs-on: ubuntu-latest
     outputs:
-      published: ${{ steps.semantic.outputs.published }}
-      version: ${{ steps.semantic.outputs.version }}
-      tag: ${{ steps.semantic.outputs.tag }}
-      name: ${{ steps.semantic.outputs.name }}
+      published: ${{ steps.release_meta.outputs.published }}
+      version: ${{ steps.release_meta.outputs.version }}
+      tag: ${{ steps.release_meta.outputs.tag }}
+      name: ${{ steps.release_meta.outputs.name }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -76,6 +76,35 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node ./scripts/release/run-semantic-release.mjs
+      - name: Resolver metadados finais da release (com fallback)
+        id: release_meta
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.semantic.outputs.published }}" = "true" ]; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "version=${{ steps.semantic.outputs.version }}" >> "$GITHUB_OUTPUT"
+            echo "tag=${{ steps.semantic.outputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "name=${{ steps.semantic.outputs.name }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          VERSION="$(tr -d '\n' < VERSION)"
+          TAG="v${VERSION}"
+          echo "::warning::Semantic release não publicou nova versão. Fallback habilitado para manter geração de binários no merge."
+          echo "::notice::Usando versão ${VERSION} e tag ${TAG}."
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::notice::Tag ${TAG} já existe no origin."
+          else
+            git tag "${TAG}"
+            git push origin "${TAG}"
+            echo "::notice::Tag ${TAG} criada e enviada para origin."
+          fi
+
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "name=${TAG}" >> "$GITHUB_OUTPUT"
 
   publish-tauri:
     needs: prepare-release
@@ -87,16 +116,12 @@ jobs:
         include:
           - platform: macos-latest
             args: --target aarch64-apple-darwin
-            requires_apple_signing: true
           - platform: macos-latest
             args: --target x86_64-apple-darwin
-            requires_apple_signing: true
           - platform: ubuntu-22.04
             args: ''
-            requires_apple_signing: false
           - platform: windows-latest
             args: ''
-            requires_apple_signing: false
     runs-on: ${{ matrix.platform }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -145,12 +170,16 @@ jobs:
           workspaces: './src-tauri -> target'
       - name: Instalar dependências frontend
         run: npm install
-      - name: Pular publish macOS sem secrets de assinatura
-        if: runner.os == 'macOS' && (env.APPLE_CERTIFICATE == '' || env.APPLE_CERTIFICATE_PASSWORD == '' || env.KEYCHAIN_PASSWORD == '' || env.TAURI_SIGNING_PRIVATE_KEY == '')
+      - name: Detectar modo de build macOS
+        if: runner.os == 'macOS'
         run: |
-          echo "::warning::Secrets de assinatura Apple ausentes. Publicação macOS será pulada para evitar falha de codesign."
+          if [ -n "$APPLE_CERTIFICATE" ] && [ -n "$APPLE_CERTIFICATE_PASSWORD" ] && [ -n "$KEYCHAIN_PASSWORD" ] && [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            echo "::notice::Build macOS com assinatura Apple habilitada."
+          else
+            echo "::warning::Secrets Apple ausentes. Build macOS seguirá em modo NÃO ASSINADO para manter geração de binários."
+          fi
       - name: Publicar binários Tauri
-        if: needs.prepare-release.outputs.published == 'true' && (runner.os != 'macOS' || (env.APPLE_CERTIFICATE != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.KEYCHAIN_PASSWORD != '' && env.TAURI_SIGNING_PRIVATE_KEY != ''))
+        if: needs.prepare-release.outputs.published == 'true'
         uses: tauri-apps/tauri-action@v0
         with:
           tagName: ${{ needs.prepare-release.outputs.tag }}

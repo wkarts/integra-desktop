@@ -33,6 +33,7 @@ export interface ConversionFieldRules {
 }
 
 export type OutputLayout = 'ba_prestados' | 'ba_tomados' | 'prosoft_faturas';
+export type NfseLayout = 'webiss_abrasf_v2' | 'ginfes' | 'betha' | 'abrasf_v1' | 'ubaira_custom' | 'auto';
 
 export interface ConversionProfile {
   profile_id: string;
@@ -58,6 +59,9 @@ export interface ConversionProfile {
   cst_pis: string;
   cst_cofins: string;
   cst_iss: string;
+  company_municipio_nome: string;
+  company_municipio_codigo: string;
+  nfse_layout: NfseLayout;
   obs_extended: 'auto' | 'always' | 'never';
   field_rules: ConversionFieldRules;
 }
