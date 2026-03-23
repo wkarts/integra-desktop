@@ -1,3 +1,11 @@
+## [1.6.1](https://github.com/wkarts/integra-desktop/compare/v1.6.0...v1.6.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* **licensing:** ajusta rustfmt em service.rs e lib.rs ([c864b57](https://github.com/wkarts/integra-desktop/commit/c864b57ef8dd780639b827451a504335cf47a7c7))
+* **licensing:** corrige registro inicial automático e separa licença dos perfis de empresa ([d3350e4](https://github.com/wkarts/integra-desktop/commit/d3350e44ab747b3bd192a0f0fae3b768d620f19c))
+
 # [1.6.0](https://github.com/wkarts/integra-desktop/compare/v1.5.1...v1.6.0) (2026-03-23)
 
 
