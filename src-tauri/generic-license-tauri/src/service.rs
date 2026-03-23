@@ -83,7 +83,17 @@ impl GenericLicenseService {
     ) -> Result<LicenseDecision, LicenseError> {
         if payload.status == 0 {
             if self.config.auto_register_company_on_missing {
-                let _ = self.api.register_company(input).await;
+                if self.api.register_company(input).await.is_ok() {
+                    if let Ok(registered_payload) =
+                        self.api.company_status(&input.company_document).await
+                    {
+                        let _ = self.cache.put(&input.company_document, &registered_payload).await;
+                        return Box::pin(
+                            self.evaluate(registered_payload, input, used_offline_cache),
+                        )
+                        .await;
+                    }
+                }
             }
 
             return Ok(LicenseDecision {
@@ -127,7 +137,17 @@ impl GenericLicenseService {
 
         if device.is_none() {
             if self.config.auto_register_device_on_missing {
-                let _ = self.api.register_device(input).await;
+                if self.api.register_device(input).await.is_ok() {
+                    if let Ok(registered_payload) =
+                        self.api.company_status(&input.company_document).await
+                    {
+                        let _ = self.cache.put(&input.company_document, &registered_payload).await;
+                        return Box::pin(
+                            self.evaluate(registered_payload, input, used_offline_cache),
+                        )
+                        .await;
+                    }
+                }
             }
 
             if self.config.block_on_device_missing {

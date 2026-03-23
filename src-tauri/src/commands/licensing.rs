@@ -22,6 +22,11 @@ pub fn get_machine_fingerprint() -> Result<String, String> {
 }
 
 #[tauri::command]
+pub fn get_default_station_name() -> Result<String, String> {
+    Ok(default_device_name())
+}
+
+#[tauri::command]
 pub fn get_app_meta() -> Result<AppMeta, String> {
     Ok(AppMeta {
         product_name: DEFAULT_PRODUCT_NAME.into(),

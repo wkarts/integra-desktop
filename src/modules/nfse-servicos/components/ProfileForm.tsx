@@ -10,15 +10,15 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
       <h3>Perfil de conversão</h3>
       <div className="form-grid cols-4">
         <div>
-          <label>Nome da empresa</label>
+          <label>Nome do perfil</label>
           <input value={value.profile_name} onChange={(e) => set('profile_name', e.target.value)} />
         </div>
         <div>
-          <label>Razão social para escrituração</label>
+          <label>Razão social do perfil</label>
           <input value={value.profile_company_name} onChange={(e) => set('profile_company_name', e.target.value)} placeholder="Ex.: Escrituração ACME Ltda" />
         </div>
         <div>
-          <label>CNPJ/CPF da empresa</label>
+          <label>CNPJ/CPF do perfil</label>
           <input value={value.profile_company_document} onChange={(e) => set('profile_company_document', e.target.value)} />
         </div>
         <div>
@@ -49,11 +49,11 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
           </select>
         </div>
         <div>
-          <label>Empresa usuária</label>
-          <input value={value.user_company_name} onChange={(e) => set('user_company_name', e.target.value)} placeholder="Empresa licenciada" />
+          <label>Empresa operacional do perfil</label>
+          <input value={value.user_company_name} onChange={(e) => set('user_company_name', e.target.value)} placeholder="Empresa atendida por este perfil" />
         </div>
         <div>
-          <label>CNPJ/CPF empresa usuária</label>
+          <label>CNPJ/CPF operacional do perfil</label>
           <input value={value.user_company_document} onChange={(e) => set('user_company_document', e.target.value)} />
         </div>
         <div>

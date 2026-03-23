@@ -15,8 +15,10 @@ pub fn save_profile_bundle(app: &AppHandle, bundle: &ProfileBundle) -> Result<()
     fs::write(&file, serde_json::to_string_pretty(&canonical_bundle)?)?;
     let selected = canonical_bundle
         .profiles
-        .first()
+        .iter()
+        .find(|item| item.profile_id == canonical_bundle.selected_profile_id)
         .cloned()
+        .or_else(|| canonical_bundle.profiles.first().cloned())
         .unwrap_or_default();
     let single_file = single_profile_file(app)?;
     fs::write(single_file, serde_json::to_string_pretty(&selected)?)?;
@@ -55,16 +57,31 @@ fn single_profile_file(app: &AppHandle) -> Result<PathBuf> {
 }
 
 fn canonicalize_bundle(bundle: &ProfileBundle) -> ProfileBundle {
-    let selected = bundle
+    let mut profiles = bundle
         .profiles
         .iter()
-        .find(|item| item.profile_id == bundle.selected_profile_id)
+        .filter(|item| !item.profile_id.trim().is_empty())
         .cloned()
-        .or_else(|| bundle.profiles.first().cloned())
-        .unwrap_or_default();
+        .collect::<Vec<_>>();
+
+    if profiles.is_empty() {
+        profiles.push(ConversionProfile::default());
+    }
+
+    let selected_profile_id = if profiles
+        .iter()
+        .any(|item| item.profile_id == bundle.selected_profile_id)
+    {
+        bundle.selected_profile_id.clone()
+    } else {
+        profiles
+            .first()
+            .map(|item| item.profile_id.clone())
+            .unwrap_or_else(|| ConversionProfile::default().profile_id)
+    };
 
     ProfileBundle {
-        selected_profile_id: selected.profile_id.clone(),
-        profiles: vec![selected],
+        selected_profile_id,
+        profiles,
     }
 }
