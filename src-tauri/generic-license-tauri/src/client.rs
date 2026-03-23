@@ -3,7 +3,9 @@ use reqwest::{Client, RequestBuilder};
 use serde_json::{json, Value};
 
 use crate::error::LicenseError;
-use crate::models::{DeviceRecord, LicenseApiResponse, LicenseCheckInput, LicenseConfig, LicenseRecord};
+use crate::models::{
+    DeviceRecord, LicenseApiResponse, LicenseCheckInput, LicenseConfig, LicenseRecord,
+};
 
 pub struct LicenseApiClient {
     config: LicenseConfig,
@@ -21,10 +23,7 @@ impl LicenseApiClient {
     pub async fn company_status(&self, document: &str) -> Result<LicenseApiResponse, LicenseError> {
         self.guard()?;
 
-        let endpoint = self
-            .config
-            .status_endpoint
-            .replace("{document}", document);
+        let endpoint = self.config.status_endpoint.replace("{document}", document);
 
         let response = self
             .with_auth(self.http.get(self.url(&endpoint)))
@@ -34,10 +33,7 @@ impl LicenseApiClient {
             .map_err(|e| LicenseError::Http(e.to_string()))?;
 
         if !response.status().is_success() {
-            return Err(LicenseError::Http(format!(
-                "HTTP {}",
-                response.status()
-            )));
+            return Err(LicenseError::Http(format!("HTTP {}", response.status())));
         }
 
         let value = response
@@ -66,7 +62,10 @@ impl LicenseApiClient {
         });
 
         let response = self
-            .with_auth(self.http.post(self.url(&self.config.register_company_endpoint)))
+            .with_auth(
+                self.http
+                    .post(self.url(&self.config.register_company_endpoint)),
+            )
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")
             .json(&payload)
@@ -95,7 +94,10 @@ impl LicenseApiClient {
         });
 
         let response = self
-            .with_auth(self.http.post(self.url(&self.config.register_device_endpoint)))
+            .with_auth(
+                self.http
+                    .post(self.url(&self.config.register_device_endpoint)),
+            )
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")
             .json(&payload)
@@ -110,10 +112,18 @@ impl LicenseApiClient {
         }
     }
 
-    pub async fn update_device_name(&self, device_id: &str, device_name: &str, app_version: &str) -> Result<(), LicenseError> {
+    pub async fn update_device_name(
+        &self,
+        device_id: &str,
+        device_name: &str,
+        app_version: &str,
+    ) -> Result<(), LicenseError> {
         self.guard()?;
 
-        let endpoint = self.config.update_device_endpoint.replace("{id}", device_id);
+        let endpoint = self
+            .config
+            .update_device_endpoint
+            .replace("{id}", device_id);
 
         let payload = json!({
             "NOME": device_name,
@@ -250,9 +260,21 @@ fn normalize_license(value: &Value) -> LicenseRecord {
             .get("max_devices")
             .and_then(|v| v.as_u64())
             .map(|v| v as u32)
-            .or_else(|| obj.get("QTD_MAQ").and_then(|v| v.as_u64()).map(|v| v as u32))
-            .or_else(|| obj.get("n_maquinas").and_then(|v| v.as_u64()).map(|v| v as u32))
-            .or_else(|| obj.get("N_MAQUINAS").and_then(|v| v.as_u64()).map(|v| v as u32)),
+            .or_else(|| {
+                obj.get("QTD_MAQ")
+                    .and_then(|v| v.as_u64())
+                    .map(|v| v as u32)
+            })
+            .or_else(|| {
+                obj.get("n_maquinas")
+                    .and_then(|v| v.as_u64())
+                    .map(|v| v as u32)
+            })
+            .or_else(|| {
+                obj.get("N_MAQUINAS")
+                    .and_then(|v| v.as_u64())
+                    .map(|v| v as u32)
+            }),
         devices,
     }
 }
@@ -296,7 +318,10 @@ fn parse_bool(value: &Value) -> bool {
     match value {
         Value::Bool(v) => *v,
         Value::Number(v) => v.as_i64().unwrap_or(0) != 0,
-        Value::String(v) => matches!(v.trim().to_uppercase().as_str(), "1" | "TRUE" | "T" | "Y" | "YES" | "S" | "SIM"),
+        Value::String(v) => matches!(
+            v.trim().to_uppercase().as_str(),
+            "1" | "TRUE" | "T" | "Y" | "YES" | "S" | "SIM"
+        ),
         _ => false,
     }
 }
@@ -327,7 +352,13 @@ fn stringify_value(value: &Value) -> String {
     match value {
         Value::String(v) => v.clone(),
         Value::Number(v) => v.to_string(),
-        Value::Bool(v) => if *v { "true".to_string() } else { "false".to_string() },
+        Value::Bool(v) => {
+            if *v {
+                "true".to_string()
+            } else {
+                "false".to_string()
+            }
+        },
         _ => String::new(),
     }
 }

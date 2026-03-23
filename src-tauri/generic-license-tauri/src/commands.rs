@@ -20,10 +20,7 @@ pub async fn license_check(
     service: State<'_, SharedLicenseService>,
     input: LicenseCheckInput,
 ) -> Result<LicenseDecision, String> {
-    service
-        .check(input)
-        .await
-        .map_err(map_error)
+    service.check(input).await.map_err(map_error)
 }
 
 #[cfg(feature = "tauri-commands")]

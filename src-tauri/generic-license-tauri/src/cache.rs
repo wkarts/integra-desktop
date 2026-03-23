@@ -18,7 +18,11 @@ impl OfflineCache {
         }
     }
 
-    pub async fn put(&self, document: &str, payload: &LicenseApiResponse) -> Result<(), LicenseError> {
+    pub async fn put(
+        &self,
+        document: &str,
+        payload: &LicenseApiResponse,
+    ) -> Result<(), LicenseError> {
         let path = self.file_path(document)?;
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)
@@ -27,8 +31,7 @@ impl OfflineCache {
         }
 
         let cached = CachedLicenseFile {
-            cached_at: Utc::now()
-                .with_timezone(&FixedOffset::east_opt(0).unwrap()),
+            cached_at: Utc::now().with_timezone(&FixedOffset::east_opt(0).unwrap()),
             payload: payload.clone(),
         };
 
@@ -60,8 +63,9 @@ impl OfflineCache {
     }
 
     fn file_path(&self, document: &str) -> Result<PathBuf, LicenseError> {
-        let dirs = ProjectDirs::from("br", "wkarts", "generic-license")
-            .ok_or_else(|| LicenseError::Io("não foi possível resolver o diretório de dados do app".to_string()))?;
+        let dirs = ProjectDirs::from("br", "wkarts", "generic-license").ok_or_else(|| {
+            LicenseError::Io("não foi possível resolver o diretório de dados do app".to_string())
+        })?;
 
         let mut path = dirs.data_local_dir().to_path_buf();
         path.push("offline");

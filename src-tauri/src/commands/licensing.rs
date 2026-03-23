@@ -1,7 +1,8 @@
 use chrono::{Local, Utc};
 use generic_license_tauri::{
-    default_device_name, generate_device_key, GenericLicenseService,
+    default_device_name, generate_device_key,
     models::{DeviceRecord, LicenseCheckInput, LicenseConfig, LicenseDecision, LicenseRecord},
+    GenericLicenseService,
 };
 use tauri::AppHandle;
 
@@ -70,7 +71,12 @@ pub async fn check_license_status(
     let result = service.check(input).await;
     let (runtime, snapshot_devices) = match result {
         Ok(decision) => {
-            let runtime = map_decision_to_runtime(&decision, &next_settings, &company_document, &station_name);
+            let runtime = map_decision_to_runtime(
+                &decision,
+                &next_settings,
+                &company_document,
+                &station_name,
+            );
             let snapshot_devices = decision
                 .license
                 .as_ref()
@@ -78,7 +84,14 @@ pub async fn check_license_status(
                     license
                         .devices
                         .iter()
-                        .map(|item| map_licensed_device(item, &company_document, &station_name, &next_settings))
+                        .map(|item| {
+                            map_licensed_device(
+                                item,
+                                &company_document,
+                                &station_name,
+                                &next_settings,
+                            )
+                        })
                         .collect::<Vec<LicensedDevice>>()
                 })
                 .unwrap_or_default();
@@ -193,7 +206,8 @@ fn map_decision_to_runtime(
 ) -> LicenseRuntimeStatus {
     let license = decision.license.as_ref();
     let local_license = license.map(|item| map_local_license(item, settings, company_document));
-    let licensed_company = license.map(|item| map_licensed_company(item, settings, company_document));
+    let licensed_company =
+        license.map(|item| map_licensed_company(item, settings, company_document));
     let licensed_device = decision
         .device
         .as_ref()
@@ -202,12 +216,18 @@ fn map_decision_to_runtime(
     let seats_total = license.and_then(|item| item.max_devices).unwrap_or(0);
     let seats_used = license.map(|item| item.devices.len() as u32).unwrap_or(0);
     let machine_registered = licensed_device.is_some();
-    let machine_blocked = licensed_device.as_ref().map(|item| item.bloqueado).unwrap_or(false);
+    let machine_blocked = licensed_device
+        .as_ref()
+        .map(|item| item.bloqueado)
+        .unwrap_or(false);
     let company_blocked = licensed_company
         .as_ref()
         .map(|item| item.bloqueado || item.bloqueio_admin)
         .unwrap_or(false);
-    let company_inactive = licensed_company.as_ref().map(|item| !item.ativo).unwrap_or(false);
+    let company_inactive = licensed_company
+        .as_ref()
+        .map(|item| !item.ativo)
+        .unwrap_or(false);
     let expiry = license
         .and_then(|item| item.expires_at.as_ref())
         .map(format_expiry);
@@ -366,7 +386,11 @@ fn map_licensed_device(
     settings: &LicenseSettings,
 ) -> LicensedDevice {
     LicensedDevice {
-        idmaquina: device.id.as_deref().and_then(|item| item.parse::<i64>().ok()).unwrap_or_default(),
+        idmaquina: device
+            .id
+            .as_deref()
+            .and_then(|item| item.parse::<i64>().ok())
+            .unwrap_or_default(),
         cnpj: company_document.to_string(),
         chave: device.device_key.clone().unwrap_or_default(),
         nome: settings.company_name.clone(),
@@ -385,7 +409,10 @@ fn map_licensed_device(
 }
 
 fn format_expiry(value: &chrono::DateTime<chrono::FixedOffset>) -> String {
-    value.with_timezone(&Local).format("%Y-%m-%d %H:%M:%S").to_string()
+    value
+        .with_timezone(&Local)
+        .format("%Y-%m-%d %H:%M:%S")
+        .to_string()
 }
 
 fn machine_fingerprint(app_instance: &str) -> String {

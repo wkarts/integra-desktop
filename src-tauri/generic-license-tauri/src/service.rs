@@ -4,7 +4,10 @@ use crate::cache::OfflineCache;
 use crate::client::LicenseApiClient;
 use crate::device::{default_device_name, generate_device_key};
 use crate::error::LicenseError;
-use crate::models::{DeviceRecord, LicenseApiResponse, LicenseCheckInput, LicenseConfig, LicenseDecision, LicenseRecord};
+use crate::models::{
+    DeviceRecord, LicenseApiResponse, LicenseCheckInput, LicenseConfig, LicenseDecision,
+    LicenseRecord,
+};
 
 pub struct GenericLicenseService {
     config: LicenseConfig,
@@ -20,7 +23,10 @@ impl GenericLicenseService {
         Self { config, api, cache }
     }
 
-    pub async fn check(&self, mut input: LicenseCheckInput) -> Result<LicenseDecision, LicenseError> {
+    pub async fn check(
+        &self,
+        mut input: LicenseCheckInput,
+    ) -> Result<LicenseDecision, LicenseError> {
         input.company_document = only_digits(&input.company_document);
 
         if input.company_document.is_empty() {
@@ -82,9 +88,9 @@ impl GenericLicenseService {
 
             return Ok(LicenseDecision {
                 allowed: false,
-                message: payload
-                    .message
-                    .unwrap_or_else(|| "empresa não cadastrada no serviço de licenciamento".to_string()),
+                message: payload.message.unwrap_or_else(|| {
+                    "empresa não cadastrada no serviço de licenciamento".to_string()
+                }),
                 used_offline_cache,
                 warning: None,
                 license: Some(payload.license),
