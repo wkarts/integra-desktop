@@ -87,10 +87,15 @@ impl GenericLicenseService {
                     if let Ok(registered_payload) =
                         self.api.company_status(&input.company_document).await
                     {
-                        let _ = self.cache.put(&input.company_document, &registered_payload).await;
-                        return Box::pin(
-                            self.evaluate(registered_payload, input, used_offline_cache),
-                        )
+                        let _ = self
+                            .cache
+                            .put(&input.company_document, &registered_payload)
+                            .await;
+                        return Box::pin(self.evaluate(
+                            registered_payload,
+                            input,
+                            used_offline_cache,
+                        ))
                         .await;
                     }
                 }
@@ -141,10 +146,15 @@ impl GenericLicenseService {
                     if let Ok(registered_payload) =
                         self.api.company_status(&input.company_document).await
                     {
-                        let _ = self.cache.put(&input.company_document, &registered_payload).await;
-                        return Box::pin(
-                            self.evaluate(registered_payload, input, used_offline_cache),
-                        )
+                        let _ = self
+                            .cache
+                            .put(&input.company_document, &registered_payload)
+                            .await;
+                        return Box::pin(self.evaluate(
+                            registered_payload,
+                            input,
+                            used_offline_cache,
+                        ))
                         .await;
                     }
                 }
