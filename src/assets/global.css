@@ -229,3 +229,25 @@ textarea { min-height: 82px; resize: vertical; }
   .clock-date { font-size: 0.66rem; }
   .dashboard-version { font-size: 0.66rem; }
 }
+
+.startup-gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 9999;
+}
+.startup-gate-card {
+  width: min(980px, 100%);
+}
+.startup-gate-card h2 {
+  margin-top: 0;
+}
+.startup-gate-error {
+  margin-top: 12px;
+  border-color: #fecdd3;
+  background: #fff1f2;
+}

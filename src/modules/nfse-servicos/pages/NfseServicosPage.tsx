@@ -9,13 +9,14 @@ import {
   appendLog,
   exportCsv,
   exportTxt,
-  loadProfile,
+  loadProfileBundle,
   processNfseUploadBatch,
-  saveProfile,
+  saveProfileBundle,
 } from '../services/tauriService';
 import { downloadText } from '../../../shared/utils/download';
 import { validateProfile } from '../../../shared/validators/profiles';
-import type { UploadInputItem } from '../../../shared/types';
+import type { ProfileBundle, UploadInputItem } from '../../../shared/types';
+import { defaultProfileBundle } from '../../../shared/mappers/defaultProfile';
 
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = '';
@@ -50,6 +51,7 @@ export default function NfseServicosPage() {
   const folderInputRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState('');
+  const [profileBundle, setProfileBundle] = useState<ProfileBundle>(defaultProfileBundle);
 
   useEffect(() => {
     if (folderInputRef.current) {
@@ -59,11 +61,20 @@ export default function NfseServicosPage() {
   }, []);
 
   useEffect(() => {
-    loadProfile()
-      .then((savedProfile) => {
-        if (!savedProfile) return;
-        setProfile(savedProfile);
-        pushLog(`Configuração da empresa carregada: ${savedProfile.profile_company_name || savedProfile.profile_name}.`);
+    loadProfileBundle()
+      .then((savedBundle) => {
+        const nextBundle = savedBundle ?? defaultProfileBundle;
+        setProfileBundle(nextBundle);
+        const activeProfile =
+          nextBundle.profiles.find((item) => item.profile_id === nextBundle.selected_profile_id) ||
+          nextBundle.profiles[0];
+
+        if (!activeProfile) return;
+
+        setProfile(activeProfile);
+        pushLog(
+          `Perfil ativo carregado: ${activeProfile.profile_company_name || activeProfile.profile_name}.`,
+        );
       })
       .catch(() => pushLog('Perfil padrão local carregado.'));
   }, [pushLog, setProfile]);
@@ -105,8 +116,16 @@ export default function NfseServicosPage() {
       return;
     }
 
-    await saveProfile(profile);
-    pushLog(`Configuração da empresa salva para ${profile.profile_company_name || profile.profile_name}.`);
+    const nextBundle: ProfileBundle = {
+      selected_profile_id: profile.profile_id,
+      profiles: profileBundle.profiles.map((item) =>
+        item.profile_id === profile.profile_id ? profile : item,
+      ),
+    };
+
+    await saveProfileBundle(nextBundle);
+    setProfileBundle(nextBundle);
+    pushLog(`Perfil salvo para ${profile.profile_company_name || profile.profile_name}.`);
   }
 
   async function handleExportTxt() {
@@ -122,19 +141,22 @@ export default function NfseServicosPage() {
     pushLog('Exportação CSV concluída.');
   }
 
-  const warningsCount = useMemo(() => documents.reduce((acc, item) => acc + item.warnings.length, 0), [documents]);
+  const warningsCount = useMemo(
+    () => documents.reduce((acc, item) => acc + item.warnings.length, 0),
+    [documents],
+  );
 
   return (
     <div className="stack-lg">
       <PageHeader
         title="NFS-e → Prosoft"
-        subtitle="Importe XML, ZIP ou pasta, usando o layout municipal configurado para a empresa."
+        subtitle="Importe XML, ZIP ou pasta usando o perfil de empresa atualmente selecionado."
         actions={(
           <div className="actions-row">
             <button className="btn primary" onClick={() => xmlInputRef.current?.click()} disabled={busy}>Selecionar XML(s)</button>
             <button className="btn" onClick={() => zipInputRef.current?.click()} disabled={busy}>Selecionar ZIP</button>
             <button className="btn" onClick={() => folderInputRef.current?.click()} disabled={busy}>Selecionar Pasta</button>
-            <button className="btn" onClick={handleSaveProfile} disabled={busy}>Salvar configuração da empresa</button>
+            <button className="btn" onClick={handleSaveProfile} disabled={busy}>Salvar perfil ativo</button>
             <button className="btn success" onClick={handleExportTxt} disabled={busy || documents.length === 0}>Exportar TXT</button>
             <button className="btn" onClick={handleExportCsv} disabled={busy || documents.length === 0}>Exportar CSV</button>
           </div>
@@ -157,9 +179,9 @@ export default function NfseServicosPage() {
       <StatsCards documents={documents} />
 
       <div className="card compact-card">
-        <h3>Empresa ativa</h3>
+        <h3>Perfil ativo</h3>
         <p className="muted">
-          Esta tela trabalha com uma única configuração por empresa. O layout NFS-e segue o município informado.
+          Perfil selecionado: <b>{profile.profile_company_name || profile.profile_name}</b>. Os perfis são independentes do licenciamento da aplicação.
         </p>
       </div>
 

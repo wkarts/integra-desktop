@@ -67,6 +67,10 @@ export async function getMachineFingerprint(): Promise<string> {
   return invoke<string>('get_machine_fingerprint');
 }
 
+export async function getDefaultStationName(): Promise<string> {
+  return invoke<string>('get_default_station_name');
+}
+
 export async function getAppMeta(): Promise<AppMeta> {
   return invoke<AppMeta>('get_app_meta');
 }
