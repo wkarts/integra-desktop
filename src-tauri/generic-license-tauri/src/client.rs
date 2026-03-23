@@ -358,7 +358,7 @@ fn stringify_value(value: &Value) -> String {
             } else {
                 "false".to_string()
             }
-        },
+        }
         _ => String::new(),
     }
 }
