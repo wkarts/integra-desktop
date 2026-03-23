@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/wkarts/integra-desktop/compare/v1.5.1...v1.6.0) (2026-03-23)
+
+
+### Bug Fixes
+
+* **licensing:** corrige falha de rustfmt no client do componente ([11f9b60](https://github.com/wkarts/integra-desktop/commit/11f9b603b1f3c44cae37781fc3f0b268a8caaed6))
+* **licensing:** corrige falhas de rustfmt na integração do licenciamento ([b6ac141](https://github.com/wkarts/integra-desktop/commit/b6ac141d3f73ef3990c5e7cd8d07a7d34ceaf6b9))
+
+
+### Features
+
+* **licensing:** integra novo componente de licenciamento ao Integra Desktop ([1ba5232](https://github.com/wkarts/integra-desktop/commit/1ba523235176ed20168ff4f8e275360a16619c9e))
+
 ## [1.5.1](https://github.com/wkarts/integra-desktop/compare/v1.5.0...v1.5.1) (2026-03-22)
 
 
