@@ -1,3 +1,10 @@
+## [1.8.4](https://github.com/wkarts/integra-desktop/compare/v1.8.3...v1.8.4) (2026-03-24)
+
+
+### Bug Fixes
+
+* **licensing:** aplica no-license globalmente em runtime ([831ef20](https://github.com/wkarts/integra-desktop/commit/831ef208f25d39d6cd01cd4332b8c2d113ee50cb))
+
 ## [1.8.3](https://github.com/wkarts/integra-desktop/compare/v1.8.2...v1.8.3) (2026-03-24)
 
 
