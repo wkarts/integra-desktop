@@ -370,6 +370,7 @@ fn read_command_output(cmd: &str, args: &[&str]) -> String {
         .unwrap_or_default()
 }
 
+#[allow(dead_code)]
 fn parse_last_token(value: String) -> String {
     value
         .split_whitespace()
@@ -379,6 +380,7 @@ fn parse_last_token(value: String) -> String {
         .to_string()
 }
 
+#[allow(dead_code)]
 fn parse_serial_lines(value: String) -> String {
     value
         .lines()

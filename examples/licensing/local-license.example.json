@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "issuer": "WWSoftwares Local License",
+  "app_instance": "integra-desktop",
+  "company_name": "Empresa Exemplo LTDA",
+  "company_document": "12345678000199",
+  "company_email": "suporte@empresa.com.br",
+  "station_name": "CPD-01",
+  "machine_key": "SUA-CHAVE-DA-MAQUINA",
+  "serial_number": "SERIAL-COMPLETO-DA-MAQUINA",
+  "requested_licenses": 5,
+  "issued_at": "2026-03-23T10:00:00-03:00",
+  "expires_at": "2026-12-31T23:59:59-03:00",
+  "signature": "ASSINATURA_GERADA_PELA_APLICACAO"
+}

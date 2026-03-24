@@ -8,8 +8,9 @@ pub mod settings;
 
 pub use export::{export_nfse_csv, export_nfse_txt};
 pub use licensing::{
-    check_license_status, get_app_meta, get_default_station_name, get_machine_fingerprint,
-    get_registration_device_info, load_license_settings, save_license_settings,
+    check_license_status, generate_local_license, get_app_meta, get_default_station_name,
+    get_machine_fingerprint, get_registration_device_info, get_startup_licensing_context,
+    load_license_settings, save_license_settings, validate_local_license,
 };
 pub use logs::{append_runtime_log, list_runtime_logs};
 pub use process::{process_nfse_upload_batch, process_nfse_xml_batch};

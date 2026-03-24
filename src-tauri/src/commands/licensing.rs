@@ -11,9 +11,16 @@ use generic_license_tauri::{
 use tauri::AppHandle;
 
 use crate::core::domain::license::{
-    AppMeta, LicenseRuntimeStatus, LicenseSettings, LicenseSnapshot, LicensedCompany,
-    LicensedDevice, LocalLicense, RegistrationDeviceInfo,
+    AppMeta, GenerateLocalLicenseRequest, GeneratedLocalLicense, LicenseRuntimeStatus,
+    LicenseSettings, LicenseSnapshot, LicensedCompany, LicensedDevice, LocalLicense,
+    LocalLicenseValidationResult, RegistrationDeviceInfo, StartupLicenseContext,
+    ValidateLocalLicenseRequest,
 };
+use crate::core::local_license::{
+    generate_local_license as generate_local_license_artifact,
+    validate_local_license as validate_local_license_artifact,
+};
+use crate::core::startup::parse_startup_license_args;
 
 const DEFAULT_LICENSE_BASE_URL: &str = "https://api.rest.wwsoftwares.com.br/api/v1";
 const DEFAULT_APP_INSTANCE: &str = "integra-desktop";
@@ -36,10 +43,10 @@ pub fn get_registration_device_info(
 ) -> Result<RegistrationDeviceInfo, String> {
     let base_settings = settings.unwrap_or_default();
     let normalized_settings = normalize_license_settings(base_settings);
-    let config = build_license_config(&normalized_settings);
+    let config = build_license_config(&normalized_settings, None);
     let device = collect_device_metadata();
     let registration = discover_registration_file(&config).map_err(|e| e.to_string())?;
-    let input = build_license_input(&normalized_settings, &device);
+    let input = build_license_input(&normalized_settings, &device, None);
     let device_key = generate_device_key(&input);
 
     Ok(RegistrationDeviceInfo {
@@ -80,6 +87,25 @@ pub fn get_app_meta() -> Result<AppMeta, String> {
 }
 
 #[tauri::command]
+pub fn get_startup_licensing_context() -> Result<StartupLicenseContext, String> {
+    Ok(parse_startup_license_args().public)
+}
+
+#[tauri::command]
+pub fn generate_local_license(
+    request: GenerateLocalLicenseRequest,
+) -> Result<GeneratedLocalLicense, String> {
+    generate_local_license_artifact(request)
+}
+
+#[tauri::command]
+pub fn validate_local_license(
+    request: ValidateLocalLicenseRequest,
+) -> Result<LocalLicenseValidationResult, String> {
+    validate_local_license_artifact(request)
+}
+
+#[tauri::command]
 pub fn load_license_settings(app: AppHandle) -> Result<Option<LicenseSettings>, String> {
     crate::storage::license::load_license_settings(&app).map_err(|e| e.to_string())
 }
@@ -99,14 +125,22 @@ pub async fn check_license_status(
     settings: LicenseSettings,
     app: AppHandle,
 ) -> Result<LicenseRuntimeStatus, String> {
-    let next_settings = normalize_license_settings(settings);
+    let startup = parse_startup_license_args();
+    let next_settings =
+        apply_startup_context(normalize_license_settings(settings), &startup.public);
+
+    if startup.public.licensing_disabled || next_settings.licensing_disabled {
+        return Ok(build_licensing_disabled_runtime(&next_settings));
+    }
+
     let company_document = only_digits(&next_settings.company_document);
     let station_name = resolve_station_name(&next_settings.station_name);
 
-    let service = GenericLicenseService::new(build_license_config(&next_settings));
     let device = collect_device_metadata();
-    let input = build_license_input(&next_settings, &device);
+    let input = build_license_input(&next_settings, &device, Some(&startup.public));
 
+    let service =
+        GenericLicenseService::new(build_license_config(&next_settings, Some(&startup.public)));
     let result = service.check(input).await;
     let (runtime, snapshot_devices, persisted_settings) = match result {
         Ok(decision) => {
@@ -158,7 +192,36 @@ pub async fn check_license_status(
     Ok(runtime)
 }
 
-fn build_license_config(settings: &LicenseSettings) -> LicenseConfig {
+fn build_licensing_disabled_runtime(settings: &LicenseSettings) -> LicenseRuntimeStatus {
+    LicenseRuntimeStatus {
+        online: false,
+        allowed: true,
+        blocked: false,
+        machine_registered: true,
+        machine_blocked: false,
+        seats_total: 0,
+        seats_used: 0,
+        expiry: None,
+        message: "licenciamento desabilitado por parâmetro de inicialização".to_string(),
+        block_reason: None,
+        technical_message: "source=startup | mode=licensing-disabled".to_string(),
+        company_name: settings.company_name.clone(),
+        company_document: settings.company_document.clone(),
+        machine_key: settings.machine_key.clone(),
+        status_code: 1,
+        local_license: None,
+        licensed_company: None,
+        licensed_device: None,
+    }
+}
+
+fn build_license_config(
+    settings: &LicenseSettings,
+    _startup: Option<&StartupLicenseContext>,
+) -> LicenseConfig {
+    let auto_register_company = settings.auto_register_machine;
+    let auto_register_device = settings.auto_register_machine;
+
     LicenseConfig {
         base_url: resolve_base_url(&settings.service_url),
         api_token: std::env::var("LICENSE_API_TOKEN").ok(),
@@ -185,8 +248,8 @@ fn build_license_config(settings: &LicenseSettings) -> LicenseConfig {
             }),
         offline_max_age_days: 15,
         warn_before_expiration_in_days: 5,
-        auto_register_company_on_missing: settings.auto_register_machine,
-        auto_register_device_on_missing: settings.auto_register_machine,
+        auto_register_company_on_missing: auto_register_company,
+        auto_register_device_on_missing: auto_register_device,
         auto_update_device_name: true,
         block_on_company_blocked: true,
         block_on_device_blocked: true,
@@ -275,6 +338,17 @@ fn normalize_license_settings(settings: LicenseSettings) -> LicenseSettings {
     next.company_name = next.company_name.trim().to_string();
     next.company_email = next.company_email.trim().to_string();
     next.station_name = next.station_name.trim().to_string();
+    next.auto_register_validation_mode = if next.auto_register_validation_mode.trim().is_empty() {
+        "standard".to_string()
+    } else {
+        next.auto_register_validation_mode.trim().to_string()
+    };
+    next.auto_register_interface_mode = if next.auto_register_interface_mode.trim().is_empty() {
+        "interactive".to_string()
+    } else {
+        next.auto_register_interface_mode.trim().to_string()
+    };
+    next.auto_register_device_identifier = next.auto_register_device_identifier.trim().to_string();
 
     next
 }
@@ -282,7 +356,16 @@ fn normalize_license_settings(settings: LicenseSettings) -> LicenseSettings {
 fn build_license_input(
     settings: &LicenseSettings,
     device: &generic_license_tauri::device::DeviceCollectedInfo,
+    startup: Option<&StartupLicenseContext>,
 ) -> LicenseCheckInput {
+    let requested_licenses = settings.auto_register_requested_licenses;
+    let validation_mode = optional_string(&settings.auto_register_validation_mode);
+    let interface_mode = optional_string(&settings.auto_register_interface_mode);
+    let device_identifier = optional_string(&settings.auto_register_device_identifier);
+    let startup_auto_register = startup
+        .map(|item| item.auto_register_enabled)
+        .unwrap_or(false);
+
     let mut input = LicenseCheckInput {
         company_document: only_digits(&settings.company_document),
         company_name: optional_string(&settings.company_name),
@@ -318,6 +401,11 @@ fn build_license_input(
         allow_company_auto_create: Some(settings.auto_register_machine),
         allow_device_auto_create: Some(settings.auto_register_machine),
         allow_device_auto_update: Some(true),
+        requested_licenses,
+        device_identifier: device_identifier.clone(),
+        validation_mode: validation_mode.clone(),
+        interface_mode: interface_mode.clone(),
+        local_license_mode: None,
         metadata: std::collections::BTreeMap::from([
             (
                 "app_product_name".to_string(),
@@ -332,6 +420,36 @@ fn build_license_input(
                     Some(device.hostname.as_str()),
                 ),
             ),
+            (
+                "validation_mode".to_string(),
+                validation_mode
+                    .clone()
+                    .unwrap_or_else(|| "standard".to_string()),
+            ),
+            (
+                "interface_mode".to_string(),
+                interface_mode
+                    .clone()
+                    .unwrap_or_else(|| "interactive".to_string()),
+            ),
+            (
+                "requested_licenses".to_string(),
+                requested_licenses
+                    .map(|item| item.to_string())
+                    .unwrap_or_default(),
+            ),
+            (
+                "device_identifier".to_string(),
+                device_identifier.clone().unwrap_or_default(),
+            ),
+            (
+                "startup_mode".to_string(),
+                if startup_auto_register {
+                    "startup-flag-disabled".to_string()
+                } else {
+                    "standard".to_string()
+                },
+            ),
         ]),
         login_context: false,
     };
@@ -341,6 +459,166 @@ fn build_license_input(
     }
 
     input
+}
+
+fn apply_startup_context(
+    mut settings: LicenseSettings,
+    startup: &StartupLicenseContext,
+) -> LicenseSettings {
+    if startup.licensing_disabled {
+        settings.licensing_disabled = true;
+    }
+    settings
+}
+
+#[allow(dead_code)]
+fn map_local_license_validation_to_runtime(
+    validation: &LocalLicenseValidationResult,
+    settings: &LicenseSettings,
+    device: &generic_license_tauri::device::DeviceCollectedInfo,
+) -> LicenseRuntimeStatus {
+    let payload = validation.payload.as_ref();
+    let company_name = payload
+        .map(|item| item.company_name.clone())
+        .filter(|item| !item.trim().is_empty())
+        .unwrap_or_else(|| settings.company_name.clone());
+    let company_document = payload
+        .map(|item| item.company_document.clone())
+        .filter(|item| !item.trim().is_empty())
+        .unwrap_or_else(|| settings.company_document.clone());
+    let machine_key = payload
+        .map(|item| item.machine_key.clone())
+        .filter(|item| !item.trim().is_empty())
+        .unwrap_or_else(|| settings.machine_key.clone());
+    let seats_total = payload
+        .and_then(|item| item.requested_licenses)
+        .unwrap_or(1);
+
+    let local_license = LocalLicense {
+        empresa: company_name.clone(),
+        cnpj: company_document.clone(),
+        serial: payload
+            .map(|item| item.serial_number.clone())
+            .unwrap_or_default(),
+        licencas: seats_total.to_string(),
+        ativo: true,
+        app: true,
+        terminal_ativo: true,
+        serial_key: machine_key.clone(),
+        usadas: 1,
+        ..LocalLicense::default()
+    };
+
+    let licensed_company = LicensedCompany {
+        cnpj: company_document.clone(),
+        emp_nomefantasia: company_name.clone(),
+        razaosocial: company_name.clone(),
+        emp_email: payload
+            .map(|item| item.company_email.clone())
+            .unwrap_or_default(),
+        emp_serie: settings.app_instance.clone(),
+        ativo: true,
+        bloqueado: false,
+        n_maquinas: seats_total as i64,
+        data_val_lic: payload
+            .and_then(|item| item.expires_at.clone())
+            .unwrap_or_default(),
+        emp_obs: "licença local validada".to_string(),
+        ..LicensedCompany::default()
+    };
+
+    let licensed_device = LicensedDevice {
+        cnpj: company_document.clone(),
+        chave: machine_key.clone(),
+        nome: company_name.clone(),
+        bloqueado: false,
+        modulos: settings.app_instance.clone(),
+        nome_compu: device.computer_name.clone(),
+        prog_acesso: device.logged_user.clone(),
+        cod_ace_remoto: device.domain_name.clone(),
+        versaoexe: env!("CARGO_PKG_VERSION").to_string(),
+        sistema_operacional: full_os_name(
+            Some(device.os_name.as_str()),
+            Some(device.os_version.as_str()),
+            Some(device.os_arch.as_str()),
+        ),
+        tipo: device.install_mode.clone(),
+        observacao: "licença local".to_string(),
+        tecnico_instalacao: device.logged_user.clone(),
+        serial_number: payload
+            .map(|item| item.serial_number.clone())
+            .unwrap_or_else(|| device.serial_number.clone()),
+        hostname: device.hostname.clone(),
+        station_name: payload
+            .map(|item| item.station_name.clone())
+            .unwrap_or_else(|| device.station_name.clone()),
+        machine_guid: device.machine_guid.clone(),
+        bios_serial: device.bios_serial.clone(),
+        motherboard_serial: device.motherboard_serial.clone(),
+        full_device_name: full_device_name(
+            Some(device.station_name.as_str()),
+            Some(device.computer_name.as_str()),
+            Some(device.hostname.as_str()),
+        ),
+        ..LicensedDevice::default()
+    };
+
+    LicenseRuntimeStatus {
+        online: false,
+        allowed: true,
+        blocked: false,
+        machine_registered: true,
+        machine_blocked: false,
+        seats_total,
+        seats_used: 1,
+        expiry: payload.and_then(|item| item.expires_at.clone()),
+        message: validation.message.clone(),
+        block_reason: None,
+        technical_message: format!(
+            "source=local-license | reason={} | file={} | otpauth={}",
+            validation.reason_code,
+            validation.file_path.clone().unwrap_or_default(),
+            validation.otpauth_uri.clone().unwrap_or_default()
+        ),
+        company_name,
+        company_document,
+        machine_key,
+        status_code: 1,
+        local_license: Some(local_license),
+        licensed_company: Some(licensed_company),
+        licensed_device: Some(licensed_device),
+    }
+}
+
+#[allow(dead_code)]
+fn map_local_license_validation_failure_to_runtime(
+    validation: &LocalLicenseValidationResult,
+    settings: &LicenseSettings,
+) -> LicenseRuntimeStatus {
+    LicenseRuntimeStatus {
+        online: false,
+        allowed: false,
+        blocked: true,
+        machine_registered: false,
+        machine_blocked: false,
+        seats_total: 0,
+        seats_used: 0,
+        expiry: None,
+        message: validation.message.clone(),
+        block_reason: Some(validation.reason_code.to_lowercase()),
+        technical_message: format!(
+            "source=local-license | reason={} | file={}",
+            validation.reason_code,
+            validation.file_path.clone().unwrap_or_default()
+        ),
+        company_name: settings.company_name.clone(),
+        company_document: settings.company_document.clone(),
+        machine_key: settings.machine_key.clone(),
+        status_code: 0,
+        local_license: None,
+        licensed_company: None,
+        licensed_device: None,
+    }
 }
 
 fn build_snapshot_devices(
@@ -887,7 +1165,7 @@ fn generate_machine_fingerprint(app_instance: &str) -> String {
         ..LicenseSettings::default()
     };
     let device = collect_device_metadata();
-    let input = build_license_input(&settings, &device);
+    let input = build_license_input(&settings, &device, None);
     generate_device_key(&input)
 }
 

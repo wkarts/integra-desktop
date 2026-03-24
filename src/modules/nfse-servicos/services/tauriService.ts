@@ -2,14 +2,19 @@ import { invoke } from '@tauri-apps/api/core';
 import type {
   AppMeta,
   ConversionProfile,
+  GenerateLocalLicenseRequest,
+  GeneratedLocalLicense,
   LicenseRuntimeStatus,
   LicenseSettings,
+  LocalLicenseValidationResult,
   NfseDocument,
   ProcessBatchInputItem,
   ProcessBatchResult,
   ProfileBundle,
   RegistrationDeviceInfo,
+  StartupLicenseContext,
   UploadInputItem,
+  ValidateLocalLicenseRequest,
 } from '../../../shared/types';
 
 export async function processNfseBatch(items: ProcessBatchInputItem[]): Promise<ProcessBatchResult> {
@@ -82,4 +87,21 @@ export async function getRegistrationDeviceInfo(
 
 export async function getAppMeta(): Promise<AppMeta> {
   return invoke<AppMeta>('get_app_meta');
+}
+
+
+export async function getStartupLicensingContext(): Promise<StartupLicenseContext> {
+  return invoke<StartupLicenseContext>('get_startup_licensing_context');
+}
+
+export async function generateLocalLicense(
+  request: GenerateLocalLicenseRequest,
+): Promise<GeneratedLocalLicense> {
+  return invoke<GeneratedLocalLicense>('generate_local_license', { request });
+}
+
+export async function validateLocalLicense(
+  request: ValidateLocalLicenseRequest,
+): Promise<LocalLicenseValidationResult> {
+  return invoke<LocalLicenseValidationResult>('validate_local_license', { request });
 }

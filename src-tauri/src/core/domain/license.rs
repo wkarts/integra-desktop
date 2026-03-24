@@ -10,6 +10,16 @@ pub struct LicenseSettings {
     pub machine_key: String,
     pub auto_register_machine: bool,
     pub app_instance: String,
+    #[serde(default)]
+    pub auto_register_requested_licenses: Option<u32>,
+    #[serde(default)]
+    pub auto_register_validation_mode: String,
+    #[serde(default)]
+    pub auto_register_interface_mode: String,
+    #[serde(default)]
+    pub auto_register_device_identifier: String,
+    #[serde(default)]
+    pub licensing_disabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -171,4 +181,96 @@ pub struct AppMeta {
     pub version: String,
     pub build_hash: String,
     pub app_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct StartupLicenseContext {
+    pub auto_register_enabled: bool,
+    pub auto_register_company: bool,
+    pub auto_register_device: bool,
+    pub requested_licenses: Option<u32>,
+    pub company_name: Option<String>,
+    pub company_document: Option<String>,
+    pub company_email: Option<String>,
+    pub station_name: Option<String>,
+    pub device_name: Option<String>,
+    pub device_identifier: Option<String>,
+    pub validation_mode: Option<String>,
+    pub interface_mode: Option<String>,
+    pub local_license_enabled: bool,
+    pub local_license_generate: bool,
+    pub local_license_file_path: Option<String>,
+    pub local_license_token_present: bool,
+    pub developer_secret_present: bool,
+    pub licensing_disabled: bool,
+    pub local_license_account: Option<String>,
+    pub local_license_issuer: Option<String>,
+    pub no_ui: bool,
+    pub args: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct GenerateLocalLicenseRequest {
+    pub company_name: String,
+    pub company_document: String,
+    pub company_email: String,
+    pub station_name: String,
+    pub machine_key: String,
+    pub serial_number: String,
+    pub requested_licenses: Option<u32>,
+    pub expires_at: Option<String>,
+    pub app_instance: String,
+    pub developer_token: Option<String>,
+    pub developer_secret: Option<String>,
+    pub output_path: Option<String>,
+    pub account_name: Option<String>,
+    pub issuer_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct LocalLicenseDocument {
+    pub version: u32,
+    pub issuer: String,
+    pub app_instance: String,
+    pub company_name: String,
+    pub company_document: String,
+    pub company_email: String,
+    pub station_name: String,
+    pub machine_key: String,
+    pub serial_number: String,
+    pub requested_licenses: Option<u32>,
+    pub issued_at: String,
+    pub expires_at: Option<String>,
+    pub signature: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct GeneratedLocalLicense {
+    pub file_content: String,
+    pub file_path: Option<String>,
+    pub signature: String,
+    pub otpauth_uri: Option<String>,
+    pub payload: LocalLicenseDocument,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ValidateLocalLicenseRequest {
+    pub file_path: Option<String>,
+    pub content_b64: Option<String>,
+    pub company_document: Option<String>,
+    pub machine_key: Option<String>,
+    pub developer_token: Option<String>,
+    pub developer_secret: Option<String>,
+    #[serde(default)]
+    pub enforce_machine_match: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct LocalLicenseValidationResult {
+    pub valid: bool,
+    pub reason_code: String,
+    pub message: String,
+    pub file_path: Option<String>,
+    pub otpauth_uri: Option<String>,
+    pub payload: Option<LocalLicenseDocument>,
 }

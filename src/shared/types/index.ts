@@ -80,6 +80,11 @@ export interface LicenseSettings {
   machine_key: string;
   auto_register_machine: boolean;
   app_instance: string;
+  auto_register_requested_licenses?: number | null;
+  auto_register_validation_mode?: string;
+  auto_register_interface_mode?: string;
+  auto_register_device_identifier?: string;
+  licensing_disabled?: boolean;
 }
 
 export interface LocalLicense {
@@ -228,6 +233,92 @@ export interface AppMeta {
   version: string;
   build_hash: string;
   app_id: string;
+}
+
+
+export interface StartupLicenseContext {
+  auto_register_enabled: boolean;
+  auto_register_company: boolean;
+  auto_register_device: boolean;
+  requested_licenses?: number | null;
+  company_name?: string | null;
+  company_document?: string | null;
+  company_email?: string | null;
+  station_name?: string | null;
+  device_name?: string | null;
+  device_identifier?: string | null;
+  validation_mode?: string | null;
+  interface_mode?: string | null;
+  local_license_enabled: boolean;
+  local_license_generate: boolean;
+  local_license_file_path?: string | null;
+  local_license_token_present: boolean;
+  developer_secret_present: boolean;
+  licensing_disabled: boolean;
+  local_license_account?: string | null;
+  local_license_issuer?: string | null;
+  no_ui: boolean;
+  args: string[];
+}
+
+export interface LocalLicenseDocument {
+  version: number;
+  issuer: string;
+  app_instance: string;
+  company_name: string;
+  company_document: string;
+  company_email: string;
+  station_name: string;
+  machine_key: string;
+  serial_number: string;
+  requested_licenses?: number | null;
+  issued_at: string;
+  expires_at?: string | null;
+  signature: string;
+}
+
+export interface GenerateLocalLicenseRequest {
+  company_name: string;
+  company_document: string;
+  company_email: string;
+  station_name: string;
+  machine_key: string;
+  serial_number: string;
+  requested_licenses?: number | null;
+  expires_at?: string | null;
+  app_instance: string;
+  developer_token?: string | null;
+  developer_secret?: string | null;
+  output_path?: string | null;
+  account_name?: string | null;
+  issuer_name?: string | null;
+}
+
+export interface GeneratedLocalLicense {
+  file_content: string;
+  file_path?: string | null;
+  signature: string;
+  otpauth_uri?: string | null;
+  payload: LocalLicenseDocument;
+}
+
+export interface ValidateLocalLicenseRequest {
+  file_path?: string | null;
+  content_b64?: string | null;
+  company_document?: string | null;
+  machine_key?: string | null;
+  developer_token?: string | null;
+  developer_secret?: string | null;
+  enforce_machine_match?: boolean;
+}
+
+export interface LocalLicenseValidationResult {
+  valid: boolean;
+  reason_code: string;
+  message: string;
+  file_path?: string | null;
+  otpauth_uri?: string | null;
+  payload?: LocalLicenseDocument | null;
 }
 
 export interface NfseParty {
