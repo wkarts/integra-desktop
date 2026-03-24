@@ -3,10 +3,10 @@ use base64::Engine;
 use directories::{BaseDirs, ProjectDirs};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::Value;
 use std::env;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::error::LicenseError;
 use crate::models::{LicenseCheckInput, LicenseConfig};

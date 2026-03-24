@@ -377,7 +377,7 @@ fn normalize_license(value: &Value) -> LicenseRecord {
         None => return LicenseRecord::default(),
     };
 
-    let devices = obj
+    let devices: Vec<DeviceRecord> = obj
         .get("devices")
         .or_else(|| obj.get("computers"))
         .or_else(|| obj.get("COMPUTADORES"))

@@ -193,9 +193,10 @@ impl GenericLicenseService {
                         .cache
                         .put_payload(&input.company_document, &registered_payload)
                         .await;
-                    return self
-                        .evaluate_legacy(registered_payload, input, used_offline_cache)
-                        .await;
+                    return Box::pin(
+                        self.evaluate_legacy(registered_payload, input, used_offline_cache),
+                    )
+                    .await;
                 }
             }
 
@@ -273,9 +274,10 @@ impl GenericLicenseService {
                         .cache
                         .put_payload(&input.company_document, &registered_payload)
                         .await;
-                    return self
-                        .evaluate_legacy(registered_payload, input, used_offline_cache)
-                        .await;
+                    return Box::pin(
+                        self.evaluate_legacy(registered_payload, input, used_offline_cache),
+                    )
+                    .await;
                 }
             }
 
