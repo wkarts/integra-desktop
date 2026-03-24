@@ -3,7 +3,6 @@ use sha2::{Digest, Sha256};
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::process::Command;
 
 use crate::models::LicenseCheckInput;
 
@@ -170,7 +169,7 @@ fn detect_install_mode() -> String {
 fn os_version() -> String {
     #[cfg(target_os = "windows")]
     {
-        return read_command_output("cmd", &["/C", "ver"]);
+        return env::var("OS").unwrap_or_default();
     }
     #[cfg(target_os = "linux")]
     {
@@ -183,11 +182,11 @@ fn os_version() -> String {
         if !pretty.is_empty() {
             return pretty;
         }
-        return read_command_output("uname", &["-r"]);
+        return String::new();
     }
     #[cfg(target_os = "macos")]
     {
-        return read_command_output("sw_vers", &["-productVersion"]);
+        return String::new();
     }
     #[allow(unreachable_code)]
     String::new()
@@ -196,16 +195,7 @@ fn os_version() -> String {
 fn machine_guid() -> String {
     #[cfg(target_os = "windows")]
     {
-        let output = read_command_output(
-            "reg",
-            &[
-                "query",
-                r"HKLM\SOFTWARE\Microsoft\Cryptography",
-                "/v",
-                "MachineGuid",
-            ],
-        );
-        return parse_last_token(output);
+        return String::new();
     }
     #[cfg(target_os = "linux")]
     {
@@ -222,18 +212,7 @@ fn machine_guid() -> String {
     }
     #[cfg(target_os = "macos")]
     {
-        let output = read_command_output("ioreg", &["-rd1", "-c", "IOPlatformExpertDevice"]);
-        for line in output.lines() {
-            if line.contains("IOPlatformUUID") {
-                return line
-                    .split('=')
-                    .nth(1)
-                    .unwrap_or("")
-                    .replace('"', "")
-                    .trim()
-                    .to_string();
-            }
-        }
+        return String::new();
     }
     String::new()
 }
@@ -241,10 +220,7 @@ fn machine_guid() -> String {
 fn bios_serial() -> String {
     #[cfg(target_os = "windows")]
     {
-        return parse_serial_lines(read_command_output(
-            "wmic",
-            &["bios", "get", "serialnumber"],
-        ));
+        return String::new();
     }
     #[cfg(target_os = "linux")]
     {
@@ -255,12 +231,7 @@ fn bios_serial() -> String {
     }
     #[cfg(target_os = "macos")]
     {
-        let output = read_command_output("system_profiler", &["SPHardwareDataType"]);
-        for line in output.lines() {
-            if line.contains("Serial Number") {
-                return line.split(':').nth(1).unwrap_or("").trim().to_string();
-            }
-        }
+        return String::new();
     }
     String::new()
 }
@@ -268,10 +239,7 @@ fn bios_serial() -> String {
 fn motherboard_serial() -> String {
     #[cfg(target_os = "windows")]
     {
-        return parse_serial_lines(read_command_output(
-            "wmic",
-            &["baseboard", "get", "serialnumber"],
-        ));
+        return String::new();
     }
     #[cfg(target_os = "linux")]
     {
@@ -290,7 +258,7 @@ fn motherboard_serial() -> String {
 fn system_serial_number() -> String {
     #[cfg(target_os = "windows")]
     {
-        return parse_serial_lines(read_command_output("wmic", &["csproduct", "get", "uuid"]));
+        return String::new();
     }
     #[cfg(target_os = "linux")]
     {
@@ -301,12 +269,7 @@ fn system_serial_number() -> String {
     }
     #[cfg(target_os = "macos")]
     {
-        let output = read_command_output("system_profiler", &["SPHardwareDataType"]);
-        for line in output.lines() {
-            if line.contains("Hardware UUID") {
-                return line.split(':').nth(1).unwrap_or("").trim().to_string();
-            }
-        }
+        return String::new();
     }
     String::new()
 }
@@ -320,78 +283,29 @@ fn domain_name() -> String {
 fn mac_addresses() -> Vec<String> {
     #[cfg(target_os = "windows")]
     {
-        let output = read_command_output("getmac", &["/fo", "csv", "/nh"]);
-        return output
-            .lines()
-            .filter_map(|line| {
-                let clean = line.replace('"', "");
-                clean.split(',').next().map(|v| v.trim().to_string())
-            })
-            .filter(|v| !v.is_empty() && v.contains('-'))
-            .collect();
+        return Vec::new();
     }
     #[cfg(target_os = "linux")]
     {
-        let output = read_command_output(
-            "sh",
-            &["-c", "ip link | grep link/ether | awk '{print $2}'"],
-        );
-        return output
-            .lines()
-            .map(|v| v.trim().to_string())
-            .filter(|v| !v.is_empty())
-            .collect();
+        let mut macs = Vec::new();
+        if let Ok(entries) = fs::read_dir("/sys/class/net") {
+            for entry in entries.flatten() {
+                let addr_path = entry.path().join("address");
+                let value = fs::read_to_string(addr_path).unwrap_or_default();
+                let mac = value.trim().to_string();
+                if !mac.is_empty() && mac != "00:00:00:00:00:00" {
+                    macs.push(mac);
+                }
+            }
+        }
+        return macs;
     }
     #[cfg(target_os = "macos")]
     {
-        let output = read_command_output(
-            "sh",
-            &[
-                "-c",
-                "networksetup -listallhardwareports | grep 'Ethernet Address' | awk '{print $3}'",
-            ],
-        );
-        return output
-            .lines()
-            .map(|v| v.trim().to_string())
-            .filter(|v| !v.is_empty())
-            .collect();
+        return Vec::new();
     }
     #[allow(unreachable_code)]
     Vec::new()
-}
-
-fn read_command_output(cmd: &str, args: &[&str]) -> String {
-    Command::new(cmd)
-        .args(args)
-        .output()
-        .ok()
-        .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_string())
-        .unwrap_or_default()
-}
-
-#[allow(dead_code)]
-fn parse_last_token(value: String) -> String {
-    value
-        .split_whitespace()
-        .last()
-        .unwrap_or("")
-        .trim()
-        .to_string()
-}
-
-#[allow(dead_code)]
-fn parse_serial_lines(value: String) -> String {
-    value
-        .lines()
-        .map(|v| v.trim())
-        .find(|v| {
-            !v.is_empty()
-                && !v.eq_ignore_ascii_case("serialnumber")
-                && !v.eq_ignore_ascii_case("uuid")
-        })
-        .unwrap_or("")
-        .to_string()
 }
 
 fn first_non_empty(values: Vec<String>) -> String {
