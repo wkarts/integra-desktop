@@ -362,7 +362,6 @@ fn build_license_input(
     let validation_mode = optional_string(&settings.auto_register_validation_mode);
     let interface_mode = optional_string(&settings.auto_register_interface_mode);
     let device_identifier = optional_string(&settings.auto_register_device_identifier);
-    let metadata_device_identifier = device_identifier.clone();
     let startup_auto_register = startup
         .map(|item| item.auto_register_enabled)
         .unwrap_or(false);
@@ -441,7 +440,7 @@ fn build_license_input(
             ),
             (
                 "device_identifier".to_string(),
-                metadata_device_identifier.unwrap_or_default(),
+                device_identifier.clone().unwrap_or_default(),
             ),
             (
                 "startup_mode".to_string(),
@@ -472,6 +471,7 @@ fn apply_startup_context(
     settings
 }
 
+#[allow(dead_code)]
 fn map_local_license_validation_to_runtime(
     validation: &LocalLicenseValidationResult,
     settings: &LicenseSettings,
@@ -590,6 +590,7 @@ fn map_local_license_validation_to_runtime(
     }
 }
 
+#[allow(dead_code)]
 fn map_local_license_validation_failure_to_runtime(
     validation: &LocalLicenseValidationResult,
     settings: &LicenseSettings,
