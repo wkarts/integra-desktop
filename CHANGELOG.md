@@ -1,3 +1,11 @@
+## [1.8.1](https://github.com/wkarts/integra-desktop/compare/v1.8.0...v1.8.1) (2026-03-24)
+
+
+### Bug Fixes
+
+* **licensing:** remove uso de startup por linha de comando no licenciamento ([9e9835a](https://github.com/wkarts/integra-desktop/commit/9e9835a1bf657c1bdd25e830caba24320866221e))
+* **licensing:** remove uso de startup por linha de comando no licenciamento ([f28b931](https://github.com/wkarts/integra-desktop/commit/f28b931fdc90e79429aa973060c6bc9080eac2f0))
+
 # [1.7.0](https://github.com/wkarts/integra-desktop/compare/v1.6.1...v1.7.0) (2026-03-24)
 
 
