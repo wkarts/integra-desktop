@@ -11,6 +11,7 @@
 - Nomes são tratados sem diferenciação entre maiúsculas/minúsculas.
 - Se um parâmetro for informado várias vezes, vale o último valor lido.
 - `--silent`, `--headless` e `--no-ui` também forçam `ui-mode=silent` quando `--ui-mode` não for informado.
+- Os parâmetros de startup são aplicados em tempo de execução mesmo quando já existe `license_settings.json` salvo (override em memória + persistência ao salvar configurações).
 
 ## Catálogo
 
@@ -66,4 +67,3 @@ integra-desktop --no-ui --auto-register --cnpj 12345678000199
 ```bash
 integra-desktop --no-license
 ```
-

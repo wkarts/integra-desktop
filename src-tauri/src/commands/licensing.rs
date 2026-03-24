@@ -41,8 +41,10 @@ pub fn get_default_station_name() -> Result<String, String> {
 pub fn get_registration_device_info(
     settings: Option<LicenseSettings>,
 ) -> Result<RegistrationDeviceInfo, String> {
+    let startup = parse_startup_licensing_context(std::env::args().collect());
     let base_settings = settings.unwrap_or_default();
-    let normalized_settings = normalize_license_settings(base_settings);
+    let normalized_settings =
+        normalize_license_settings(apply_startup_overrides(base_settings, &startup));
     let config = build_license_config(&normalized_settings, None);
     let device = collect_device_metadata();
     let registration = discover_registration_file(&config).map_err(|e| e.to_string())?;
@@ -107,7 +109,23 @@ pub fn validate_local_license(
 
 #[tauri::command]
 pub fn load_license_settings(app: AppHandle) -> Result<Option<LicenseSettings>, String> {
-    crate::storage::license::load_license_settings(&app).map_err(|e| e.to_string())
+    let startup = parse_startup_licensing_context(std::env::args().collect());
+    let saved = crate::storage::license::load_license_settings(&app).map_err(|e| e.to_string())?;
+
+    if let Some(settings) = saved {
+        return Ok(Some(normalize_license_settings(apply_startup_overrides(
+            settings, &startup,
+        ))));
+    }
+
+    if startup_has_runtime_overrides(&startup) {
+        return Ok(Some(normalize_license_settings(apply_startup_overrides(
+            LicenseSettings::default(),
+            &startup,
+        ))));
+    }
+
+    Ok(None)
 }
 
 #[tauri::command]
@@ -115,7 +133,8 @@ pub fn save_license_settings(
     settings: LicenseSettings,
     app: AppHandle,
 ) -> Result<LicenseSettings, String> {
-    let next = normalize_license_settings(settings);
+    let startup = parse_startup_licensing_context(std::env::args().collect());
+    let next = normalize_license_settings(apply_startup_overrides(settings, &startup));
     crate::storage::license::save_license_settings(&app, &next).map_err(|e| e.to_string())?;
     Ok(next)
 }
@@ -125,7 +144,8 @@ pub async fn check_license_status(
     settings: LicenseSettings,
     app: AppHandle,
 ) -> Result<LicenseRuntimeStatus, String> {
-    let next_settings = normalize_license_settings(settings);
+    let startup = parse_startup_licensing_context(std::env::args().collect());
+    let next_settings = normalize_license_settings(apply_startup_overrides(settings, &startup));
 
     if next_settings.licensing_disabled {
         return Ok(build_licensing_disabled_runtime(&next_settings));
@@ -365,6 +385,75 @@ fn parse_startup_licensing_context(args: Vec<String>) -> StartupLicenseContext {
     }
 
     context
+}
+
+fn startup_has_runtime_overrides(startup: &StartupLicenseContext) -> bool {
+    startup.licensing_disabled
+        || startup.auto_register_enabled
+        || startup.auto_register_company
+        || startup.auto_register_device
+        || startup.requested_licenses.is_some()
+        || startup.company_name.is_some()
+        || startup.company_document.is_some()
+        || startup.company_email.is_some()
+        || startup.station_name.is_some()
+        || startup.device_name.is_some()
+        || startup.device_identifier.is_some()
+        || startup.validation_mode.is_some()
+        || startup.interface_mode.is_some()
+        || startup.local_license_enabled
+        || startup.local_license_generate
+        || startup.local_license_file_path.is_some()
+        || startup.local_license_token_present
+        || startup.developer_secret_present
+        || startup.local_license_account.is_some()
+        || startup.local_license_issuer.is_some()
+        || startup.no_ui
+}
+
+fn apply_startup_overrides(
+    mut settings: LicenseSettings,
+    startup: &StartupLicenseContext,
+) -> LicenseSettings {
+    if let Some(company_name) = &startup.company_name {
+        settings.company_name = company_name.clone();
+    }
+    if let Some(company_document) = &startup.company_document {
+        settings.company_document = company_document.clone();
+    }
+    if let Some(company_email) = &startup.company_email {
+        settings.company_email = company_email.clone();
+    }
+    if let Some(station_name) = startup
+        .station_name
+        .as_ref()
+        .or(startup.device_name.as_ref())
+    {
+        settings.station_name = station_name.clone();
+    }
+    if let Some(requested_licenses) = startup.requested_licenses {
+        settings.auto_register_requested_licenses = Some(requested_licenses);
+    }
+    if let Some(validation_mode) = &startup.validation_mode {
+        settings.auto_register_validation_mode = validation_mode.clone();
+    }
+    if let Some(interface_mode) = &startup.interface_mode {
+        settings.auto_register_interface_mode = interface_mode.clone();
+    }
+    if let Some(device_identifier) = &startup.device_identifier {
+        settings.auto_register_device_identifier = device_identifier.clone();
+    }
+    if startup.auto_register_enabled
+        || startup.auto_register_company
+        || startup.auto_register_device
+    {
+        settings.auto_register_machine = true;
+    }
+    if startup.licensing_disabled {
+        settings.licensing_disabled = true;
+    }
+
+    settings
 }
 
 fn parse_startup_args(args: &[String]) -> HashMap<String, Option<String>> {
