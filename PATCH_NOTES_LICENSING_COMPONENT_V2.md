@@ -1,0 +1,8 @@
+- Componente generic-license-tauri atualizado para a versão mais recente anexada.
+- Ativação/licenciamento passa a priorizar o endpoint orquestrado /licensing/activation/resolve.
+- Fallback legado mantido para status/cadastro de empresa/dispositivo quando necessário.
+- Suporte habilitado para arquivo/certificado local de registro com busca automática.
+- Captura automática ampliada de metadados do dispositivo: hostname, computer_name, serial, machine_guid, BIOS, placa-mãe, usuário, SO, domínio, MACs e modo de instalação.
+- Persistência de settings hidratada com dados retornados pelo backend/licenciamento.
+- Modal de registro inicial atualizado para exibir o nome completo do dispositivo e o número de série completos, sem truncamento visual.
+- Novo comando Tauri: get_registration_device_info.

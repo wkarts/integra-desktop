@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { LicenseRuntimeStatus, LicenseSettings } from '../../../shared/types';
+import type {
+  LicenseRuntimeStatus,
+  LicenseSettings,
+  RegistrationDeviceInfo,
+} from '../../../shared/types';
 import {
   checkLicenseStatus,
-  getDefaultStationName,
-  getMachineFingerprint,
+  getAppMeta,
+  getRegistrationDeviceInfo,
   loadLicenseSettings,
   saveLicenseSettings,
 } from '../../nfse-servicos/services/tauriService';
@@ -19,42 +23,111 @@ const defaultLicenseSettings: LicenseSettings = {
   app_instance: 'integra-desktop',
 };
 
+const emptyDeviceInfo: RegistrationDeviceInfo = {
+  station_name: '',
+  device_display_name: '',
+  hostname: '',
+  computer_name: '',
+  serial_number: '',
+  machine_guid: '',
+  bios_serial: '',
+  motherboard_serial: '',
+  logged_user: '',
+  os_name: '',
+  os_version: '',
+  os_arch: '',
+  domain_name: '',
+  install_mode: '',
+  mac_addresses: [],
+  device_key: '',
+  registration_file_found: false,
+  registration_file_path: null,
+  registration_file_verified: null,
+};
+
 export function StartupRegistrationGate() {
   const [booting, setBooting] = useState(true);
   const [required, setRequired] = useState(false);
   const [busy, setBusy] = useState(false);
   const [settings, setSettings] = useState<LicenseSettings>(defaultLicenseSettings);
   const [result, setResult] = useState<LicenseRuntimeStatus | null>(null);
+  const [deviceInfo, setDeviceInfo] = useState<RegistrationDeviceInfo>(emptyDeviceInfo);
   const [error, setError] = useState('');
+  const [bootMessage, setBootMessage] = useState('');
 
   useEffect(() => {
-    Promise.all([
-      loadLicenseSettings(),
-      getMachineFingerprint(),
-      getDefaultStationName(),
-    ])
-      .then(([savedSettings, machineKey, stationName]) => {
-        const nextSettings = {
+    async function bootstrap() {
+      try {
+        const savedSettings = await loadLicenseSettings();
+        const nextSettings: LicenseSettings = {
           ...defaultLicenseSettings,
           ...savedSettings,
-          machine_key: savedSettings?.machine_key || machineKey,
-          station_name: savedSettings?.station_name || stationName,
           auto_register_machine: true,
         };
 
-        setSettings(nextSettings);
-        setRequired(!nextSettings.company_name.trim() || !nextSettings.company_document.trim());
-      })
-      .catch(() => {
+        const device = await getRegistrationDeviceInfo(nextSettings);
+        const meta = await getAppMeta();
+        const hydratedSettings: LicenseSettings = {
+          ...nextSettings,
+          machine_key: nextSettings.machine_key || device.device_key,
+          station_name: nextSettings.station_name || device.station_name,
+        };
+
+        setDeviceInfo(device);
+        setSettings(hydratedSettings);
+
+        const hasUserInput = Boolean(
+          hydratedSettings.company_name.trim() ||
+            hydratedSettings.company_document.trim() ||
+            hydratedSettings.company_email.trim(),
+        );
+        const mayAutoRegister = device.registration_file_found || hasUserInput;
+
+        if (mayAutoRegister) {
+          const status = await checkLicenseStatus(hydratedSettings);
+          setResult(status);
+
+          if (status.allowed && status.machine_registered) {
+            setRequired(false);
+            return;
+          }
+
+          setBootMessage(status.message || 'Não foi possível concluir o registro automático.');
+          setRequired(true);
+          if (!hasUserInput && !device.registration_file_found) {
+            setError('Informe a empresa licenciada para concluir a ativação desta instalação.');
+          }
+          return;
+        }
+
+        setBootMessage(
+          `Informe a empresa licenciada do ${meta.product_name}. O dispositivo será cadastrado automaticamente.`,
+        );
         setRequired(true);
-      })
-      .finally(() => setBooting(false));
+      } catch (err) {
+        setRequired(true);
+        setError(err instanceof Error ? err.message : 'Falha ao preparar o registro inicial.');
+      } finally {
+        setBooting(false);
+      }
+    }
+
+    void bootstrap();
   }, []);
 
-  const canSubmit = useMemo(
-    () => Boolean(settings.company_name.trim() && settings.company_document.trim()),
-    [settings.company_document, settings.company_name],
-  );
+  const canSubmit = useMemo(() => {
+    if (busy) {
+      return false;
+    }
+
+    if (deviceInfo.registration_file_found) {
+      return true;
+    }
+
+    return Boolean(
+      settings.company_document.trim() || settings.company_name.trim() || settings.company_email.trim(),
+    );
+  }, [busy, deviceInfo.registration_file_found, settings.company_document, settings.company_email, settings.company_name]);
 
   async function handleSubmit() {
     setBusy(true);
@@ -91,8 +164,18 @@ export function StartupRegistrationGate() {
       <div className="startup-gate-card card">
         <h2>Registro inicial da aplicação</h2>
         <p className="muted">
-          Informe a empresa licenciada. O nome da estação já foi capturado automaticamente e o sistema vai registrar esta instalação na licença disponível.
+          {bootMessage || 'Informe a empresa licenciada. O nome da estação já foi capturado automaticamente e o sistema vai registrar esta instalação na licença disponível.'}
         </p>
+
+        {deviceInfo.registration_file_found && (
+          <div className="alert-strip startup-gate-info">
+            Arquivo/certificado local de registro localizado automaticamente.
+            {deviceInfo.registration_file_path ? ` Caminho: ${deviceInfo.registration_file_path}` : ''}
+            {typeof deviceInfo.registration_file_verified === 'boolean'
+              ? ` | Assinatura ${deviceInfo.registration_file_verified ? 'válida' : 'não validada'}`
+              : ''}
+          </div>
+        )}
 
         <div className="form-grid cols-4">
           <div>
@@ -100,6 +183,7 @@ export function StartupRegistrationGate() {
             <input
               value={settings.company_name}
               onChange={(e) => setSettings({ ...settings, company_name: e.target.value })}
+              placeholder="Empresa licenciada"
             />
           </div>
           <div>
@@ -107,6 +191,7 @@ export function StartupRegistrationGate() {
             <input
               value={settings.company_document}
               onChange={(e) => setSettings({ ...settings, company_document: e.target.value })}
+              placeholder="Documento da empresa"
             />
           </div>
           <div>
@@ -114,15 +199,54 @@ export function StartupRegistrationGate() {
             <input
               value={settings.company_email}
               onChange={(e) => setSettings({ ...settings, company_email: e.target.value })}
+              placeholder="E-mail da empresa"
             />
           </div>
           <div>
             <label>Nome da estação</label>
-            <input value={settings.station_name} readOnly />
+            <input value={settings.station_name || deviceInfo.station_name} readOnly />
+          </div>
+          <div className="span-2">
+            <label>Nome completo do dispositivo</label>
+            <textarea
+              value={deviceInfo.device_display_name || settings.station_name}
+              readOnly
+              rows={2}
+              className="readonly-textarea mono-text"
+            />
+          </div>
+          <div className="span-2">
+            <label>Número de série completo</label>
+            <textarea
+              value={deviceInfo.serial_number || 'Não identificado automaticamente'}
+              readOnly
+              rows={2}
+              className="readonly-textarea mono-text"
+            />
           </div>
           <div>
             <label>Chave da máquina</label>
-            <input value={settings.machine_key} readOnly />
+            <textarea
+              value={settings.machine_key || deviceInfo.device_key}
+              readOnly
+              rows={2}
+              className="readonly-textarea mono-text"
+            />
+          </div>
+          <div>
+            <label>Usuário logado</label>
+            <input value={deviceInfo.logged_user || 'Não identificado'} readOnly />
+          </div>
+          <div>
+            <label>Sistema operacional</label>
+            <input
+              value={[deviceInfo.os_name, deviceInfo.os_version, deviceInfo.os_arch].filter(Boolean).join(' | ')}
+              readOnly
+            />
+          </div>
+          <div>
+            <label>Modo de instalação</label>
+            <input value={deviceInfo.install_mode || 'workstation'} readOnly />
           </div>
         </div>
 
@@ -150,7 +274,7 @@ export function StartupRegistrationGate() {
         {error && <div className="alert-strip startup-gate-error">{error}</div>}
 
         <div className="actions-row">
-          <button className="btn primary" onClick={handleSubmit} disabled={busy || !canSubmit}>
+          <button className="btn primary" onClick={handleSubmit} disabled={!canSubmit}>
             {busy ? 'Registrando...' : 'Registrar aplicação'}
           </button>
         </div>

@@ -5,7 +5,7 @@ use directories::ProjectDirs;
 use tokio::fs;
 
 use crate::error::LicenseError;
-use crate::models::{CachedLicenseFile, LicenseApiResponse};
+use crate::models::{CachedLicenseFile, LicenseApiResponse, LicenseDecision};
 
 pub struct OfflineCache {
     namespace: String,
@@ -18,31 +18,36 @@ impl OfflineCache {
         }
     }
 
-    pub async fn put(
+    pub async fn put_payload(
         &self,
         document: &str,
         payload: &LicenseApiResponse,
     ) -> Result<(), LicenseError> {
-        let path = self.file_path(document)?;
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent)
-                .await
-                .map_err(|e| LicenseError::Io(e.to_string()))?;
-        }
+        self.write(
+            document,
+            CachedLicenseFile {
+                cached_at: Utc::now().with_timezone(&FixedOffset::east_opt(0).unwrap()),
+                decision: None,
+                payload: Some(payload.clone()),
+            },
+        )
+        .await
+    }
 
-        let cached = CachedLicenseFile {
-            cached_at: Utc::now().with_timezone(&FixedOffset::east_opt(0).unwrap()),
-            payload: payload.clone(),
-        };
-
-        let json = serde_json::to_string_pretty(&cached)
-            .map_err(|e| LicenseError::Serde(e.to_string()))?;
-
-        fs::write(path, json)
-            .await
-            .map_err(|e| LicenseError::Io(e.to_string()))?;
-
-        Ok(())
+    pub async fn put_decision(
+        &self,
+        document: &str,
+        decision: &LicenseDecision,
+    ) -> Result<(), LicenseError> {
+        self.write(
+            document,
+            CachedLicenseFile {
+                cached_at: Utc::now().with_timezone(&FixedOffset::east_opt(0).unwrap()),
+                decision: Some(decision.clone()),
+                payload: None,
+            },
+        )
+        .await
     }
 
     pub async fn get(&self, document: &str) -> Result<Option<CachedLicenseFile>, LicenseError> {
@@ -62,6 +67,24 @@ impl OfflineCache {
         Ok(Some(decoded))
     }
 
+    async fn write(&self, document: &str, cached: CachedLicenseFile) -> Result<(), LicenseError> {
+        let path = self.file_path(document)?;
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)
+                .await
+                .map_err(|e| LicenseError::Io(e.to_string()))?;
+        }
+
+        let json = serde_json::to_string_pretty(&cached)
+            .map_err(|e| LicenseError::Serde(e.to_string()))?;
+
+        fs::write(path, json)
+            .await
+            .map_err(|e| LicenseError::Io(e.to_string()))?;
+
+        Ok(())
+    }
+
     fn file_path(&self, document: &str) -> Result<PathBuf, LicenseError> {
         let dirs = ProjectDirs::from("br", "wkarts", "generic-license").ok_or_else(|| {
             LicenseError::Io("não foi possível resolver o diretório de dados do app".to_string())
@@ -70,25 +93,14 @@ impl OfflineCache {
         let mut path = dirs.data_local_dir().to_path_buf();
         path.push("offline");
         path.push(&self.namespace);
-        path.push(format!("{}.json", sha1::Sha1::from(document).hexdigest()));
+        path.push(format!("{}.json", sha_file_name(document)));
         Ok(path)
     }
 }
 
-mod sha1 {
+fn sha_file_name(document: &str) -> String {
     use sha2::{Digest, Sha256};
-
-    pub struct Sha1(String);
-
-    impl Sha1 {
-        pub fn from(input: &str) -> Self {
-            let mut hasher = Sha256::new();
-            hasher.update(input.as_bytes());
-            Self(hex::encode(hasher.finalize()))
-        }
-
-        pub fn hexdigest(self) -> String {
-            self.0
-        }
-    }
+    let mut hasher = Sha256::new();
+    hasher.update(document.as_bytes());
+    hex::encode(hasher.finalize())
 }

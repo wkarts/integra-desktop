@@ -6,7 +6,7 @@ use tauri::State;
 
 #[cfg(feature = "tauri-commands")]
 use crate::{
-    error::LicenseError,
+    error::{LicenseError, SerializableLicenseError},
     models::{LicenseCheckInput, LicenseDecision},
     service::GenericLicenseService,
 };
@@ -21,6 +21,15 @@ pub async fn license_check(
     input: LicenseCheckInput,
 ) -> Result<LicenseDecision, String> {
     service.check(input).await.map_err(map_error)
+}
+
+#[cfg(feature = "tauri-commands")]
+#[tauri::command]
+pub async fn license_check_structured(
+    service: State<'_, SharedLicenseService>,
+    input: LicenseCheckInput,
+) -> Result<LicenseDecision, SerializableLicenseError> {
+    service.check(input).await.map_err(Into::into)
 }
 
 #[cfg(feature = "tauri-commands")]
