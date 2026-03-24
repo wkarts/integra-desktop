@@ -20,6 +20,7 @@ use crate::core::local_license::{
     generate_local_license as generate_local_license_artifact,
     validate_local_license as validate_local_license_artifact,
 };
+use std::collections::HashMap;
 
 const DEFAULT_LICENSE_BASE_URL: &str = "https://api.rest.wwsoftwares.com.br/api/v1";
 const DEFAULT_APP_INSTANCE: &str = "integra-desktop";
@@ -87,10 +88,7 @@ pub fn get_app_meta() -> Result<AppMeta, String> {
 
 #[tauri::command]
 pub fn get_startup_licensing_context() -> Result<StartupLicenseContext, String> {
-    Ok(StartupLicenseContext {
-        args: Vec::new(),
-        ..StartupLicenseContext::default()
-    })
+    Ok(parse_startup_licensing_context(std::env::args().collect()))
 }
 
 #[tauri::command]
@@ -320,6 +318,114 @@ fn resolve_station_name(input: &str) -> String {
         return default_device_name();
     }
     input.trim().to_string()
+}
+
+fn parse_startup_licensing_context(args: Vec<String>) -> StartupLicenseContext {
+    let mut context = StartupLicenseContext {
+        args: args.iter().skip(1).cloned().collect(),
+        ..StartupLicenseContext::default()
+    };
+    let parsed = parse_startup_args(&args);
+
+    context.auto_register_enabled = has_any_flag(
+        &parsed,
+        &[
+            "auto-register",
+            "auto-register-company",
+            "auto-register-device",
+        ],
+    );
+    context.auto_register_company = has_any_flag(&parsed, &["auto-register-company"]);
+    context.auto_register_device = has_any_flag(&parsed, &["auto-register-device"]);
+    context.requested_licenses = parse_u32_arg(&parsed, &["licenses", "lic"]);
+    context.company_document = parse_string_arg(&parsed, &["company-document", "document", "cnpj"]);
+    context.company_name = parse_string_arg(&parsed, &["company-name", "empresa"]);
+    context.company_email = parse_string_arg(&parsed, &["company-email", "email"]);
+    context.station_name = parse_string_arg(&parsed, &["station-name", "station"]);
+    context.device_name = parse_string_arg(&parsed, &["device-name"]);
+    context.device_identifier =
+        parse_string_arg(&parsed, &["device", "device-id", "device-identifier"]);
+    context.validation_mode = parse_string_arg(&parsed, &["validation-mode"]);
+    context.interface_mode = parse_string_arg(&parsed, &["ui-mode"]);
+    context.local_license_enabled = has_any_flag(&parsed, &["local-license"]);
+    context.local_license_generate = has_any_flag(&parsed, &["local-license-generate"]);
+    context.local_license_file_path = parse_string_arg(&parsed, &["local-license-file"]);
+    context.local_license_token_present = has_non_empty_arg(&parsed, &["local-license-token"]);
+    context.developer_secret_present = has_non_empty_arg(&parsed, &["local-license-secret"]);
+    context.local_license_account = parse_string_arg(&parsed, &["local-license-account"]);
+    context.local_license_issuer = parse_string_arg(&parsed, &["local-license-issuer"]);
+    context.no_ui = has_any_flag(&parsed, &["silent", "headless", "no-ui"]);
+    context.licensing_disabled = has_any_flag(
+        &parsed,
+        &["disable-licensing", "licensing-disabled", "no-license"],
+    );
+
+    if context.no_ui && context.interface_mode.is_none() {
+        context.interface_mode = Some("silent".to_string());
+    }
+
+    context
+}
+
+fn parse_startup_args(args: &[String]) -> HashMap<String, Option<String>> {
+    let mut parsed: HashMap<String, Option<String>> = HashMap::new();
+    let mut index = 1usize;
+
+    while index < args.len() {
+        let current = args[index].trim();
+        if !current.starts_with("--") {
+            index += 1;
+            continue;
+        }
+
+        let raw = &current[2..];
+        if raw.is_empty() {
+            index += 1;
+            continue;
+        }
+
+        if let Some((key, value)) = raw.split_once('=') {
+            parsed.insert(key.trim().to_ascii_lowercase(), optional_string(value));
+            index += 1;
+            continue;
+        }
+
+        let key = raw.trim().to_ascii_lowercase();
+        let mut value: Option<String> = None;
+        if index + 1 < args.len() {
+            let next = args[index + 1].trim();
+            if !next.starts_with("--") {
+                value = optional_string(next);
+                index += 1;
+            }
+        }
+
+        parsed.insert(key, value);
+        index += 1;
+    }
+
+    parsed
+}
+
+fn has_any_flag(parsed: &HashMap<String, Option<String>>, keys: &[&str]) -> bool {
+    keys.iter().any(|key| parsed.contains_key(*key))
+}
+
+fn parse_string_arg(parsed: &HashMap<String, Option<String>>, keys: &[&str]) -> Option<String> {
+    for key in keys {
+        if let Some(value) = parsed.get(*key).and_then(|v| v.clone()) {
+            return optional_string(&value);
+        }
+    }
+    None
+}
+
+fn parse_u32_arg(parsed: &HashMap<String, Option<String>>, keys: &[&str]) -> Option<u32> {
+    parse_string_arg(parsed, keys).and_then(|value| value.parse::<u32>().ok())
+}
+
+fn has_non_empty_arg(parsed: &HashMap<String, Option<String>>, keys: &[&str]) -> bool {
+    parse_string_arg(parsed, keys).is_some()
 }
 
 fn normalize_license_settings(settings: LicenseSettings) -> LicenseSettings {
