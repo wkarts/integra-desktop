@@ -1,3 +1,17 @@
+# [1.7.0](https://github.com/wkarts/integra-desktop/compare/v1.6.1...v1.7.0) (2026-03-24)
+
+
+### Bug Fixes
+
+* **licensing:** corrige autoativação, cadastro automático e falhas de validação ([402da84](https://github.com/wkarts/integra-desktop/commit/402da84327b532a9a85991dda8f9830c254612ab))
+* **licensing:** corrige erros de clippy no componente de licenciamento ([fb70901](https://github.com/wkarts/integra-desktop/commit/fb70901d3b848a0f588399b84a98e50fcf818589))
+* **licensing:** corrige integração do licenciamento automático e falhas de validação ([ac593cd](https://github.com/wkarts/integra-desktop/commit/ac593cdd1ada14ed96ae6d9fd98c33f7b985ff35))
+
+
+### Features
+
+* **licensing:** integra componente genérico com autoativação de empresa e dispositivo ([bc47f7f](https://github.com/wkarts/integra-desktop/commit/bc47f7f329c77554b02d1b55145166bf1ac31ff1))
+
 ## [1.6.1](https://github.com/wkarts/integra-desktop/compare/v1.6.0...v1.6.1) (2026-03-23)
 
 
