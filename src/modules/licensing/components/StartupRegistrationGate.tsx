@@ -9,6 +9,7 @@ import {
   checkLicenseStatus,
   getAppMeta,
   getRegistrationDeviceInfo,
+  getStartupLicensingContext,
   loadLicenseSettings,
   saveLicenseSettings,
 } from '../../nfse-servicos/services/tauriService';
@@ -98,12 +99,18 @@ export function StartupRegistrationGate() {
     async function bootstrap() {
       try {
         const savedSettings = await loadLicenseSettings();
-        setStartupContext(emptyStartupContext);
+        const startup = await getStartupLicensingContext();
+        setStartupContext(startup);
 
         const nextSettings: LicenseSettings = {
           ...defaultLicenseSettings,
           ...savedSettings,
-          auto_register_machine: Boolean(savedSettings?.auto_register_machine),
+          auto_register_machine: Boolean(
+            savedSettings?.auto_register_machine ||
+              startup.auto_register_enabled ||
+              startup.auto_register_company ||
+              startup.auto_register_device,
+          ),
           company_name: savedSettings?.company_name || '',
           company_document: savedSettings?.company_document || '',
           company_email: savedSettings?.company_email || '',
@@ -115,18 +122,43 @@ export function StartupRegistrationGate() {
             savedSettings?.auto_register_interface_mode || 'interactive',
           auto_register_device_identifier:
             savedSettings?.auto_register_device_identifier || '',
+          licensing_disabled: Boolean(
+            savedSettings?.licensing_disabled || startup.licensing_disabled,
+          ),
         };
+
+        if (startup.company_name) nextSettings.company_name = startup.company_name;
+        if (startup.company_document) nextSettings.company_document = startup.company_document;
+        if (startup.company_email) nextSettings.company_email = startup.company_email;
+        if (startup.station_name) nextSettings.station_name = startup.station_name;
+        if (startup.requested_licenses !== null && startup.requested_licenses !== undefined) {
+          nextSettings.auto_register_requested_licenses = startup.requested_licenses;
+        }
+        if (startup.validation_mode) {
+          nextSettings.auto_register_validation_mode = startup.validation_mode;
+        }
+        if (startup.interface_mode) {
+          nextSettings.auto_register_interface_mode = startup.interface_mode;
+        }
+        if (startup.device_identifier) {
+          nextSettings.auto_register_device_identifier = startup.device_identifier;
+        }
 
         const device = await getRegistrationDeviceInfo(nextSettings);
         const meta = await getAppMeta();
         const hydratedSettings: LicenseSettings = {
           ...nextSettings,
           machine_key: nextSettings.machine_key || device.device_key,
-          station_name: nextSettings.station_name || device.station_name,
+          station_name: nextSettings.station_name || startup.device_name || device.station_name,
         };
 
         setDeviceInfo(device);
         setSettings(hydratedSettings);
+
+        if (startup.no_ui) {
+          setRequired(false);
+          return;
+        }
 
         if (hydratedSettings.licensing_disabled) {
           setResult({
