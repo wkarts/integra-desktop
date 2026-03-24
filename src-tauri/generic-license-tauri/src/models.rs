@@ -180,7 +180,11 @@ pub struct LicenseDecision {
 }
 
 impl LicenseDecision {
-    pub fn deny(message: impl Into<String>, reason_code: impl Into<String>, step: impl Into<String>) -> Self {
+    pub fn deny(
+        message: impl Into<String>,
+        reason_code: impl Into<String>,
+        step: impl Into<String>,
+    ) -> Self {
         Self {
             allowed: false,
             decision: "denied".to_string(),

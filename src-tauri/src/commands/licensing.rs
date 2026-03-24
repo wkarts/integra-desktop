@@ -116,17 +116,10 @@ pub async fn check_license_status(
                 &company_document,
                 &station_name,
             );
-            let snapshot_devices = build_snapshot_devices(
-                &decision,
-                &company_document,
-                &station_name,
-                &next_settings,
-            );
-            let persisted_settings = hydrate_settings_from_decision(
-                next_settings.clone(),
-                &decision,
-                &station_name,
-            );
+            let snapshot_devices =
+                build_snapshot_devices(&decision, &company_document, &station_name, &next_settings);
+            let persisted_settings =
+                hydrate_settings_from_decision(next_settings.clone(), &decision, &station_name);
             (runtime, snapshot_devices, persisted_settings)
         }
         Err(error) => {
@@ -326,13 +319,19 @@ fn build_license_input(
         allow_device_auto_create: Some(settings.auto_register_machine),
         allow_device_auto_update: Some(true),
         metadata: std::collections::BTreeMap::from([
-            ("app_product_name".to_string(), DEFAULT_PRODUCT_NAME.to_string()),
+            (
+                "app_product_name".to_string(),
+                DEFAULT_PRODUCT_NAME.to_string(),
+            ),
             ("app_instance".to_string(), settings.app_instance.clone()),
-            ("device_display_name".to_string(), full_device_name(
-                Some(device.station_name.as_str()),
-                Some(device.computer_name.as_str()),
-                Some(device.hostname.as_str()),
-            )),
+            (
+                "device_display_name".to_string(),
+                full_device_name(
+                    Some(device.station_name.as_str()),
+                    Some(device.computer_name.as_str()),
+                    Some(device.hostname.as_str()),
+                ),
+            ),
         ]),
         login_context: false,
     };
@@ -363,7 +362,14 @@ fn build_snapshot_devices(
     decision
         .device
         .as_ref()
-        .map(|item| vec![map_licensed_device(item, company_document, station_name, settings)])
+        .map(|item| {
+            vec![map_licensed_device(
+                item,
+                company_document,
+                station_name,
+                settings,
+            )]
+        })
         .unwrap_or_default()
 }
 
@@ -386,11 +392,12 @@ fn hydrate_settings_from_decision(
 
     if settings.company_name.trim().is_empty() {
         if let Some(company) = &decision.company {
-            if let Some(name) = company
-                .legal_name
-                .clone()
-                .or_else(|| decision.license.as_ref().and_then(|item| item.company_name.clone()))
-            {
+            if let Some(name) = company.legal_name.clone().or_else(|| {
+                decision
+                    .license
+                    .as_ref()
+                    .and_then(|item| item.company_name.clone())
+            }) {
                 settings.company_name = name;
             }
         } else if let Some(license) = &decision.license {
@@ -446,7 +453,12 @@ fn map_decision_to_runtime(
         .application_license
         .as_ref()
         .and_then(|item| item.devices_in_use)
-        .or_else(|| decision.license.as_ref().and_then(|item| item.devices_in_use))
+        .or_else(|| {
+            decision
+                .license
+                .as_ref()
+                .and_then(|item| item.devices_in_use)
+        })
         .unwrap_or_else(|| {
             decision
                 .license
@@ -791,7 +803,10 @@ fn map_licensed_device(
             device.os_arch.as_deref(),
         ),
         memoria_ram: String::new(),
-        tipo: device.install_mode.clone().unwrap_or_else(|| settings.app_instance.clone()),
+        tipo: device
+            .install_mode
+            .clone()
+            .unwrap_or_else(|| settings.app_instance.clone()),
         observacao: DEFAULT_PRODUCT_NAME.to_string(),
         tecnico_instalacao: device.logged_user.clone().unwrap_or_default(),
         serial_number: device.serial_number.clone().unwrap_or_default(),
@@ -808,11 +823,7 @@ fn map_licensed_device(
     }
 }
 
-fn full_os_name(
-    os_name: Option<&str>,
-    os_version: Option<&str>,
-    os_arch: Option<&str>,
-) -> String {
+fn full_os_name(os_name: Option<&str>, os_version: Option<&str>, os_arch: Option<&str>) -> String {
     let mut parts = Vec::new();
 
     if let Some(value) = os_name {

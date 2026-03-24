@@ -211,7 +211,10 @@ fn machine_guid() -> String {
     {
         let candidates = ["/etc/machine-id", "/var/lib/dbus/machine-id"];
         for path in candidates {
-            let content = fs::read_to_string(path).unwrap_or_default().trim().to_string();
+            let content = fs::read_to_string(path)
+                .unwrap_or_default()
+                .trim()
+                .to_string();
             if !content.is_empty() {
                 return content;
             }
@@ -219,10 +222,7 @@ fn machine_guid() -> String {
     }
     #[cfg(target_os = "macos")]
     {
-        let output = read_command_output(
-            "ioreg",
-            &["-rd1", "-c", "IOPlatformExpertDevice"],
-        );
+        let output = read_command_output("ioreg", &["-rd1", "-c", "IOPlatformExpertDevice"]);
         for line in output.lines() {
             if line.contains("IOPlatformUUID") {
                 return line
@@ -241,7 +241,10 @@ fn machine_guid() -> String {
 fn bios_serial() -> String {
     #[cfg(target_os = "windows")]
     {
-        return parse_serial_lines(read_command_output("wmic", &["bios", "get", "serialnumber"]));
+        return parse_serial_lines(read_command_output(
+            "wmic",
+            &["bios", "get", "serialnumber"],
+        ));
     }
     #[cfg(target_os = "linux")]
     {
@@ -265,7 +268,10 @@ fn bios_serial() -> String {
 fn motherboard_serial() -> String {
     #[cfg(target_os = "windows")]
     {
-        return parse_serial_lines(read_command_output("wmic", &["baseboard", "get", "serialnumber"]));
+        return parse_serial_lines(read_command_output(
+            "wmic",
+            &["baseboard", "get", "serialnumber"],
+        ));
     }
     #[cfg(target_os = "linux")]
     {
@@ -326,7 +332,10 @@ fn mac_addresses() -> Vec<String> {
     }
     #[cfg(target_os = "linux")]
     {
-        let output = read_command_output("sh", &["-c", "ip link | grep link/ether | awk '{print $2}'"]);
+        let output = read_command_output(
+            "sh",
+            &["-c", "ip link | grep link/ether | awk '{print $2}'"],
+        );
         return output
             .lines()
             .map(|v| v.trim().to_string())
@@ -335,7 +344,13 @@ fn mac_addresses() -> Vec<String> {
     }
     #[cfg(target_os = "macos")]
     {
-        let output = read_command_output("sh", &["-c", "networksetup -listallhardwareports | grep 'Ethernet Address' | awk '{print $3}'"]);
+        let output = read_command_output(
+            "sh",
+            &[
+                "-c",
+                "networksetup -listallhardwareports | grep 'Ethernet Address' | awk '{print $3}'",
+            ],
+        );
         return output
             .lines()
             .map(|v| v.trim().to_string())
@@ -368,13 +383,20 @@ fn parse_serial_lines(value: String) -> String {
     value
         .lines()
         .map(|v| v.trim())
-        .find(|v| !v.is_empty() && !v.eq_ignore_ascii_case("serialnumber") && !v.eq_ignore_ascii_case("uuid"))
+        .find(|v| {
+            !v.is_empty()
+                && !v.eq_ignore_ascii_case("serialnumber")
+                && !v.eq_ignore_ascii_case("uuid")
+        })
         .unwrap_or("")
         .to_string()
 }
 
 fn first_non_empty(values: Vec<String>) -> String {
-    values.into_iter().find(|v| !v.trim().is_empty()).unwrap_or_default()
+    values
+        .into_iter()
+        .find(|v| !v.trim().is_empty())
+        .unwrap_or_default()
 }
 
 fn non_empty_or_none(value: String) -> Option<String> {

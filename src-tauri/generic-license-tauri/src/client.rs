@@ -28,7 +28,10 @@ impl LicenseApiClient {
         self.guard()?;
 
         let response = self
-            .with_auth(self.http.post(self.url(&self.config.resolve_activation_endpoint)))
+            .with_auth(
+                self.http
+                    .post(self.url(&self.config.resolve_activation_endpoint)),
+            )
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")
             .json(&self.resolve_payload(input))
@@ -36,7 +39,10 @@ impl LicenseApiClient {
             .await
             .map_err(|e| LicenseError::Http(e.to_string()))?;
 
-        if matches!(response.status(), StatusCode::NOT_FOUND | StatusCode::METHOD_NOT_ALLOWED) {
+        if matches!(
+            response.status(),
+            StatusCode::NOT_FOUND | StatusCode::METHOD_NOT_ALLOWED
+        ) {
             return Err(LicenseError::EndpointUnavailable(format!(
                 "endpoint {} não disponível",
                 self.config.resolve_activation_endpoint
@@ -115,7 +121,8 @@ impl LicenseApiClient {
             "BLOQUEADO": "N",
         });
 
-        self.post_legacy(&self.config.register_company_endpoint, payload).await
+        self.post_legacy(&self.config.register_company_endpoint, payload)
+            .await
     }
 
     pub async fn register_device(&self, input: &LicenseCheckInput) -> Result<(), LicenseError> {
@@ -137,7 +144,8 @@ impl LicenseApiClient {
             "tecnico_instalacao": input.logged_user.clone().unwrap_or_default(),
         });
 
-        self.post_legacy(&self.config.register_device_endpoint, payload).await
+        self.post_legacy(&self.config.register_device_endpoint, payload)
+            .await
     }
 
     pub async fn update_device_name(
@@ -282,21 +290,39 @@ fn normalize_activation_decision(value: Value) -> Result<LicenseDecision, Licens
         .ok_or_else(|| LicenseError::Serde("resposta inválida da API de ativação".to_string()))?;
 
     Ok(LicenseDecision {
-        allowed: obj.get("success").map(parse_bool).unwrap_or_else(|| obj.get("allowed").map(parse_bool).unwrap_or(false)),
+        allowed: obj
+            .get("success")
+            .map(parse_bool)
+            .unwrap_or_else(|| obj.get("allowed").map(parse_bool).unwrap_or(false)),
         decision: obj
             .get("decision")
             .and_then(|v| v.as_str())
-            .unwrap_or_else(|| if obj.get("allowed").map(parse_bool).unwrap_or(false) { "allowed" } else { "denied" })
+            .unwrap_or_else(|| {
+                if obj.get("allowed").map(parse_bool).unwrap_or(false) {
+                    "allowed"
+                } else {
+                    "denied"
+                }
+            })
             .to_string(),
-        reason_code: obj.get("reason_code").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        step: obj.get("step").and_then(|v| v.as_str()).map(|v| v.to_string()),
+        reason_code: obj
+            .get("reason_code")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        step: obj
+            .get("step")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
         message: obj
             .get("message")
             .and_then(|v| v.as_str())
             .unwrap_or("resposta recebida da API de ativação")
             .to_string(),
         used_offline_cache: false,
-        warning: obj.get("warning").and_then(|v| v.as_str()).map(|v| v.to_string()),
+        warning: obj
+            .get("warning")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
         license: obj.get("license").map(normalize_license),
         application_license: obj
             .get("application_license")
@@ -365,8 +391,16 @@ fn normalize_license(value: &Value) -> LicenseRecord {
         .get("max_devices")
         .and_then(|v| v.as_u64())
         .map(|v| v as u32)
-        .or_else(|| obj.get("QTD_MAQ").and_then(|v| v.as_u64()).map(|v| v as u32))
-        .or_else(|| obj.get("n_maquinas").and_then(|v| v.as_u64()).map(|v| v as u32));
+        .or_else(|| {
+            obj.get("QTD_MAQ")
+                .and_then(|v| v.as_u64())
+                .map(|v| v as u32)
+        })
+        .or_else(|| {
+            obj.get("n_maquinas")
+                .and_then(|v| v.as_u64())
+                .map(|v| v as u32)
+        });
 
     let devices_in_use = obj
         .get("devices_in_use")
@@ -446,10 +480,7 @@ fn normalize_company(value: &Value) -> CompanyRecord {
             .or_else(|| obj.get("EMP_EMAIL"))
             .and_then(|v| v.as_str())
             .map(|v| v.to_string()),
-        reused_existing: obj
-            .get("reused_existing")
-            .map(parse_bool)
-            .unwrap_or(false),
+        reused_existing: obj.get("reused_existing").map(parse_bool).unwrap_or(false),
     }
 }
 
@@ -465,8 +496,14 @@ fn normalize_application_license(value: &Value) -> ApplicationLicenseRecord {
             .or_else(|| obj.get("slug"))
             .and_then(|v| v.as_str())
             .map(|v| v.to_string()),
-        status: obj.get("status").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        max_devices: obj.get("max_devices").and_then(|v| v.as_u64()).map(|v| v as u32),
+        status: obj
+            .get("status")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        max_devices: obj
+            .get("max_devices")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32),
         devices_in_use: obj
             .get("devices_in_use")
             .and_then(|v| v.as_u64())
@@ -486,9 +523,7 @@ fn normalize_offline(value: &Value) -> OfflineDecision {
     };
 
     OfflineDecision {
-        cache_allowed_until: obj
-            .get("cache_allowed_until")
-            .and_then(parse_datetime),
+        cache_allowed_until: obj.get("cache_allowed_until").and_then(parse_datetime),
     }
 }
 
@@ -520,24 +555,68 @@ fn normalize_device(value: &Value) -> DeviceRecord {
             .or_else(|| obj.get("nome_compu"))
             .and_then(|v| v.as_str())
             .map(|v| v.to_string()),
-        station_name: obj.get("station_name").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        hostname: obj.get("hostname").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        computer_name: obj.get("computer_name").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        serial_number: obj.get("serial_number").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        machine_guid: obj.get("machine_guid").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        bios_serial: obj.get("bios_serial").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        motherboard_serial: obj.get("motherboard_serial").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        logged_user: obj.get("logged_user").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        os_name: obj.get("os_name").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        os_version: obj.get("os_version").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        os_arch: obj.get("os_arch").and_then(|v| v.as_str()).map(|v| v.to_string()),
-        domain_name: obj.get("domain_name").and_then(|v| v.as_str()).map(|v| v.to_string()),
+        station_name: obj
+            .get("station_name")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        hostname: obj
+            .get("hostname")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        computer_name: obj
+            .get("computer_name")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        serial_number: obj
+            .get("serial_number")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        machine_guid: obj
+            .get("machine_guid")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        bios_serial: obj
+            .get("bios_serial")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        motherboard_serial: obj
+            .get("motherboard_serial")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        logged_user: obj
+            .get("logged_user")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        os_name: obj
+            .get("os_name")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        os_version: obj
+            .get("os_version")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        os_arch: obj
+            .get("os_arch")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
+        domain_name: obj
+            .get("domain_name")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
         mac_addresses: obj
             .get("mac_addresses")
             .and_then(|v| v.as_array())
-            .map(|items| items.iter().filter_map(|item| item.as_str().map(|v| v.to_string())).collect())
+            .map(|items| {
+                items
+                    .iter()
+                    .filter_map(|item| item.as_str().map(|v| v.to_string()))
+                    .collect()
+            })
             .unwrap_or_default(),
-        install_mode: obj.get("install_mode").and_then(|v| v.as_str()).map(|v| v.to_string()),
+        install_mode: obj
+            .get("install_mode")
+            .and_then(|v| v.as_str())
+            .map(|v| v.to_string()),
         blocked: obj
             .get("blocked")
             .map(parse_bool)

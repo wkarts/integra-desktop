@@ -41,12 +41,17 @@ impl GenericLicenseService {
         if self.config.prefer_resolve_activation {
             match self.api.resolve_activation(&input).await {
                 Ok(decision) => {
-                    let _ = self.cache.put_decision(&input.company_document, &decision).await;
+                    let _ = self
+                        .cache
+                        .put_decision(&input.company_document, &decision)
+                        .await;
                     return Ok(decision);
                 }
                 Err(err) => {
                     if !self.config.allow_legacy_fallback {
-                        return self.try_offline_cache_or_fail(&input.company_document, err).await;
+                        return self
+                            .try_offline_cache_or_fail(&input.company_document, err)
+                            .await;
                     }
                 }
             }
@@ -54,12 +59,21 @@ impl GenericLicenseService {
 
         match self.api.company_status(&input.company_document).await {
             Ok(payload) => {
-                let _ = self.cache.put_payload(&input.company_document, &payload).await;
+                let _ = self
+                    .cache
+                    .put_payload(&input.company_document, &payload)
+                    .await;
                 let decision = self.evaluate_legacy(payload, &input, false).await?;
-                let _ = self.cache.put_decision(&input.company_document, &decision).await;
+                let _ = self
+                    .cache
+                    .put_decision(&input.company_document, &decision)
+                    .await;
                 Ok(decision)
             }
-            Err(err) => self.try_offline_cache_or_fail(&input.company_document, err).await,
+            Err(err) => {
+                self.try_offline_cache_or_fail(&input.company_document, err)
+                    .await
+            }
         }
     }
 
@@ -167,9 +181,18 @@ impl GenericLicenseService {
                 .unwrap_or(self.config.auto_register_company_on_missing)
             {
                 if let Err(err) = self.api.register_company(input).await {
-                    diagnostics.push(diag("register_company", "COMPANY_AUTO_CREATE_FAILED", err.to_string()));
-                } else if let Ok(registered_payload) = self.api.company_status(&input.company_document).await {
-                    let _ = self.cache.put_payload(&input.company_document, &registered_payload).await;
+                    diagnostics.push(diag(
+                        "register_company",
+                        "COMPANY_AUTO_CREATE_FAILED",
+                        err.to_string(),
+                    ));
+                } else if let Ok(registered_payload) =
+                    self.api.company_status(&input.company_document).await
+                {
+                    let _ = self
+                        .cache
+                        .put_payload(&input.company_document, &registered_payload)
+                        .await;
                     return self
                         .evaluate_legacy(registered_payload, input, used_offline_cache)
                         .await;
@@ -225,7 +248,11 @@ impl GenericLicenseService {
         }
 
         let device_key = input.device_key.clone().unwrap_or_default();
-        let device_name = input.station_name.clone().or_else(|| input.device_name.clone()).unwrap_or_default();
+        let device_name = input
+            .station_name
+            .clone()
+            .or_else(|| input.device_name.clone())
+            .unwrap_or_default();
         let device = find_device(&license, &device_key);
 
         if device.is_none() {
@@ -234,9 +261,18 @@ impl GenericLicenseService {
                 .unwrap_or(self.config.auto_register_device_on_missing)
             {
                 if let Err(err) = self.api.register_device(input).await {
-                    diagnostics.push(diag("register_device", "DEVICE_AUTO_CREATE_FAILED", err.to_string()));
-                } else if let Ok(registered_payload) = self.api.company_status(&input.company_document).await {
-                    let _ = self.cache.put_payload(&input.company_document, &registered_payload).await;
+                    diagnostics.push(diag(
+                        "register_device",
+                        "DEVICE_AUTO_CREATE_FAILED",
+                        err.to_string(),
+                    ));
+                } else if let Ok(registered_payload) =
+                    self.api.company_status(&input.company_document).await
+                {
+                    let _ = self
+                        .cache
+                        .put_payload(&input.company_document, &registered_payload)
+                        .await;
                     return self
                         .evaluate_legacy(registered_payload, input, used_offline_cache)
                         .await;
@@ -276,7 +312,11 @@ impl GenericLicenseService {
                 if let (Some(id), Some(name)) = (&current_device.id, &current_device.device_name) {
                     if name != &device_name {
                         if let Err(err) = self.api.update_device_name(id, input).await {
-                            diagnostics.push(diag("update_device", "DEVICE_AUTO_UPDATE_FAILED", err.to_string()));
+                            diagnostics.push(diag(
+                                "update_device",
+                                "DEVICE_AUTO_UPDATE_FAILED",
+                                err.to_string(),
+                            ));
                         }
                     }
                 }
@@ -353,7 +393,16 @@ fn deny(
 fn application_from_legacy(license: &LicenseRecord) -> ApplicationLicenseRecord {
     ApplicationLicenseRecord {
         application_slug: license.application_slug.clone(),
-        status: Some(if license.blocked { "blocked" } else if license.active { "active" } else { "inactive" }.to_string()),
+        status: Some(
+            if license.blocked {
+                "blocked"
+            } else if license.active {
+                "active"
+            } else {
+                "inactive"
+            }
+            .to_string(),
+        ),
         max_devices: license.max_devices,
         devices_in_use: license.devices_in_use,
         devices_available: license.devices_available,
