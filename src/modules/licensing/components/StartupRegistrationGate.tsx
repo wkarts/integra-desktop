@@ -9,7 +9,6 @@ import {
   checkLicenseStatus,
   getAppMeta,
   getRegistrationDeviceInfo,
-  getStartupLicensingContext,
   loadLicenseSettings,
   saveLicenseSettings,
 } from '../../nfse-servicos/services/tauriService';
@@ -99,25 +98,23 @@ export function StartupRegistrationGate() {
     async function bootstrap() {
       try {
         const savedSettings = await loadLicenseSettings();
-        const cliContext = await getStartupLicensingContext();
-        setStartupContext(cliContext);
+        setStartupContext(emptyStartupContext);
 
         const nextSettings: LicenseSettings = {
           ...defaultLicenseSettings,
           ...savedSettings,
           auto_register_machine: Boolean(savedSettings?.auto_register_machine),
-          company_name: cliContext.company_name || savedSettings?.company_name || '',
-          company_document: cliContext.company_document || savedSettings?.company_document || '',
-          company_email: cliContext.company_email || savedSettings?.company_email || '',
-          station_name: cliContext.station_name || savedSettings?.station_name || '',
-          auto_register_requested_licenses:
-            cliContext.requested_licenses ?? savedSettings?.auto_register_requested_licenses ?? null,
+          company_name: savedSettings?.company_name || '',
+          company_document: savedSettings?.company_document || '',
+          company_email: savedSettings?.company_email || '',
+          station_name: savedSettings?.station_name || '',
+          auto_register_requested_licenses: savedSettings?.auto_register_requested_licenses ?? null,
           auto_register_validation_mode:
-            cliContext.validation_mode || savedSettings?.auto_register_validation_mode || 'standard',
+            savedSettings?.auto_register_validation_mode || 'standard',
           auto_register_interface_mode:
-            cliContext.interface_mode || savedSettings?.auto_register_interface_mode || 'interactive',
+            savedSettings?.auto_register_interface_mode || 'interactive',
           auto_register_device_identifier:
-            cliContext.device_identifier || savedSettings?.auto_register_device_identifier || '',
+            savedSettings?.auto_register_device_identifier || '',
         };
 
         const device = await getRegistrationDeviceInfo(nextSettings);
@@ -131,7 +128,7 @@ export function StartupRegistrationGate() {
         setDeviceInfo(device);
         setSettings(hydratedSettings);
 
-        if (cliContext.licensing_disabled) {
+        if (hydratedSettings.licensing_disabled) {
           setResult({
             online: false,
             allowed: true,
@@ -141,9 +138,9 @@ export function StartupRegistrationGate() {
             seats_total: 0,
             seats_used: 0,
             expiry: null,
-            message: 'Licenciamento desabilitado por parâmetro de inicialização.',
+            message: 'Licenciamento desabilitado na configuração da aplicação.',
             block_reason: null,
-            technical_message: 'source=startup | mode=licensing-disabled',
+            technical_message: 'source=settings | mode=licensing-disabled',
             company_name: hydratedSettings.company_name,
             company_document: hydratedSettings.company_document,
             machine_key: hydratedSettings.machine_key,

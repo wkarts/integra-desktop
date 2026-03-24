@@ -1,18 +1,3 @@
-# [1.8.0](https://github.com/wkarts/integra-desktop/compare/v1.7.0...v1.8.0) (2026-03-24)
-
-
-### Bug Fixes
-
-* **licensing:** remove auto-registro via startup e adiciona modo de desabilitar licenciamento ([5ef2dfa](https://github.com/wkarts/integra-desktop/commit/5ef2dfae65b6863a8c908987fabf827e3ff69bb2))
-* **licensing:** remove auto-registro via startup e adiciona modo de desabilitar licenciamento ([96f49d5](https://github.com/wkarts/integra-desktop/commit/96f49d582fc50ac5089cf13b509fca42900b30ec))
-* **licensing:** remove auto-registro via startup e adiciona modo de desabilitar licenciamento ([e676e58](https://github.com/wkarts/integra-desktop/commit/e676e58f0fe00dfaba99bf31952dd7d07ed39b75))
-* **licensing:** remove auto-registro via startup e adiciona modo de desabilitar licenciamento ([517440c](https://github.com/wkarts/integra-desktop/commit/517440cb24a0dca3794e6dce5fa6708e35b4240e))
-
-
-### Features
-
-* **licensing:** adiciona auto-registro opcional, novos parâmetros e licença local ([6e08816](https://github.com/wkarts/integra-desktop/commit/6e08816bada11eddf3a99edc8b220d5d8e622ae2))
-
 # [1.7.0](https://github.com/wkarts/integra-desktop/compare/v1.6.1...v1.7.0) (2026-03-24)
 
 

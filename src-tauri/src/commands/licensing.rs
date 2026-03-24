@@ -20,7 +20,6 @@ use crate::core::local_license::{
     generate_local_license as generate_local_license_artifact,
     validate_local_license as validate_local_license_artifact,
 };
-use crate::core::startup::parse_startup_license_args;
 
 const DEFAULT_LICENSE_BASE_URL: &str = "https://api.rest.wwsoftwares.com.br/api/v1";
 const DEFAULT_APP_INSTANCE: &str = "integra-desktop";
@@ -88,7 +87,10 @@ pub fn get_app_meta() -> Result<AppMeta, String> {
 
 #[tauri::command]
 pub fn get_startup_licensing_context() -> Result<StartupLicenseContext, String> {
-    Ok(parse_startup_license_args().public)
+    Ok(StartupLicenseContext {
+        args: Vec::new(),
+        ..StartupLicenseContext::default()
+    })
 }
 
 #[tauri::command]
@@ -125,11 +127,9 @@ pub async fn check_license_status(
     settings: LicenseSettings,
     app: AppHandle,
 ) -> Result<LicenseRuntimeStatus, String> {
-    let startup = parse_startup_license_args();
-    let next_settings =
-        apply_startup_context(normalize_license_settings(settings), &startup.public);
+    let next_settings = normalize_license_settings(settings);
 
-    if startup.public.licensing_disabled || next_settings.licensing_disabled {
+    if next_settings.licensing_disabled {
         return Ok(build_licensing_disabled_runtime(&next_settings));
     }
 
@@ -137,10 +137,9 @@ pub async fn check_license_status(
     let station_name = resolve_station_name(&next_settings.station_name);
 
     let device = collect_device_metadata();
-    let input = build_license_input(&next_settings, &device, Some(&startup.public));
+    let input = build_license_input(&next_settings, &device, None);
 
-    let service =
-        GenericLicenseService::new(build_license_config(&next_settings, Some(&startup.public)));
+    let service = GenericLicenseService::new(build_license_config(&next_settings, None));
     let result = service.check(input).await;
     let (runtime, snapshot_devices, persisted_settings) = match result {
         Ok(decision) => {
@@ -202,9 +201,9 @@ fn build_licensing_disabled_runtime(settings: &LicenseSettings) -> LicenseRuntim
         seats_total: 0,
         seats_used: 0,
         expiry: None,
-        message: "licenciamento desabilitado por parâmetro de inicialização".to_string(),
+        message: "licenciamento desabilitado na configuração da aplicação".to_string(),
         block_reason: None,
-        technical_message: "source=startup | mode=licensing-disabled".to_string(),
+        technical_message: "source=settings | mode=licensing-disabled".to_string(),
         company_name: settings.company_name.clone(),
         company_document: settings.company_document.clone(),
         machine_key: settings.machine_key.clone(),
@@ -356,15 +355,12 @@ fn normalize_license_settings(settings: LicenseSettings) -> LicenseSettings {
 fn build_license_input(
     settings: &LicenseSettings,
     device: &generic_license_tauri::device::DeviceCollectedInfo,
-    startup: Option<&StartupLicenseContext>,
+    _startup: Option<&StartupLicenseContext>,
 ) -> LicenseCheckInput {
     let requested_licenses = settings.auto_register_requested_licenses;
     let validation_mode = optional_string(&settings.auto_register_validation_mode);
     let interface_mode = optional_string(&settings.auto_register_interface_mode);
     let device_identifier = optional_string(&settings.auto_register_device_identifier);
-    let startup_auto_register = startup
-        .map(|item| item.auto_register_enabled)
-        .unwrap_or(false);
 
     let mut input = LicenseCheckInput {
         company_document: only_digits(&settings.company_document),
@@ -442,14 +438,7 @@ fn build_license_input(
                 "device_identifier".to_string(),
                 device_identifier.clone().unwrap_or_default(),
             ),
-            (
-                "startup_mode".to_string(),
-                if startup_auto_register {
-                    "startup-flag-disabled".to_string()
-                } else {
-                    "standard".to_string()
-                },
-            ),
+            ("startup_mode".to_string(), "disabled".to_string()),
         ]),
         login_context: false,
     };
@@ -459,16 +448,6 @@ fn build_license_input(
     }
 
     input
-}
-
-fn apply_startup_context(
-    mut settings: LicenseSettings,
-    startup: &StartupLicenseContext,
-) -> LicenseSettings {
-    if startup.licensing_disabled {
-        settings.licensing_disabled = true;
-    }
-    settings
 }
 
 #[allow(dead_code)]
