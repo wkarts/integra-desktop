@@ -155,6 +155,16 @@ pub struct LicenseCheckInput {
     #[serde(default)]
     pub allow_device_auto_update: Option<bool>,
     #[serde(default)]
+    pub requested_licenses: Option<u32>,
+    #[serde(default)]
+    pub device_identifier: Option<String>,
+    #[serde(default)]
+    pub validation_mode: Option<String>,
+    #[serde(default)]
+    pub interface_mode: Option<String>,
+    #[serde(default)]
+    pub local_license_mode: Option<String>,
+    #[serde(default)]
     pub metadata: BTreeMap<String, String>,
     #[serde(default)]
     pub login_context: bool,

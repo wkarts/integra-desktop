@@ -119,6 +119,10 @@ impl LicenseApiClient {
             "EMP_NOMEFANTASIA": input.company_name.clone().unwrap_or_default(),
             "ATIVO": "S",
             "BLOQUEADO": "N",
+            "QTD_MAQ": input.requested_licenses.unwrap_or(0),
+            "N_MAQUINAS": input.requested_licenses.unwrap_or(0),
+            "APP_INSTANCE": input.app_slug.clone().unwrap_or_else(|| input.app_id.clone()),
+            "MODO_VALIDACAO": input.validation_mode.clone().unwrap_or_default(),
         });
 
         self.post_legacy(&self.config.register_company_endpoint, payload)
@@ -142,6 +146,16 @@ impl LicenseApiClient {
             "Cod_ace_Remoto": input.domain_name.clone().unwrap_or_default(),
             "Prog_acesso": input.logged_user.clone().unwrap_or_default(),
             "tecnico_instalacao": input.logged_user.clone().unwrap_or_default(),
+            "serial_number": input.serial_number.clone().unwrap_or_default(),
+            "machine_guid": input.machine_guid.clone().unwrap_or_default(),
+            "bios_serial": input.bios_serial.clone().unwrap_or_default(),
+            "motherboard_serial": input.motherboard_serial.clone().unwrap_or_default(),
+            "hostname": input.hostname.clone().unwrap_or_default(),
+            "station_name": input.station_name.clone().unwrap_or_default(),
+            "device_identifier": input.device_identifier.clone().unwrap_or_default(),
+            "full_device_name": input.device_name.clone().unwrap_or_default(),
+            "app_slug": input.app_slug.clone().unwrap_or_default(),
+            "validation_mode": input.validation_mode.clone().unwrap_or_default(),
         });
 
         self.post_legacy(&self.config.register_device_endpoint, payload)
@@ -166,6 +180,11 @@ impl LicenseApiClient {
             "nome_compu": input.computer_name.clone().or_else(|| input.hostname.clone()).unwrap_or_default(),
             "versaoexe": input.app_version,
             "sistema_operacional": input.os_version.clone().or_else(|| input.os_name.clone()).unwrap_or_default(),
+            "serial_number": input.serial_number.clone().unwrap_or_default(),
+            "hostname": input.hostname.clone().unwrap_or_default(),
+            "machine_guid": input.machine_guid.clone().unwrap_or_default(),
+            "bios_serial": input.bios_serial.clone().unwrap_or_default(),
+            "motherboard_serial": input.motherboard_serial.clone().unwrap_or_default(),
         });
 
         let response = self
@@ -248,6 +267,11 @@ impl LicenseApiClient {
                 "allow_device_auto_update": input
                     .allow_device_auto_update
                     .unwrap_or(self.config.auto_update_device_name),
+                "requested_licenses": input.requested_licenses,
+                "validation_mode": input.validation_mode,
+                "interface_mode": input.interface_mode,
+                "local_license_mode": input.local_license_mode,
+                "device_identifier": input.device_identifier,
             },
             "metadata": input.metadata,
         })

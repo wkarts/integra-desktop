@@ -3,11 +3,13 @@ import type {
   LicenseRuntimeStatus,
   LicenseSettings,
   RegistrationDeviceInfo,
+  StartupLicenseContext,
 } from '../../../shared/types';
 import {
   checkLicenseStatus,
   getAppMeta,
   getRegistrationDeviceInfo,
+  getStartupLicensingContext,
   loadLicenseSettings,
   saveLicenseSettings,
 } from '../../nfse-servicos/services/tauriService';
@@ -21,6 +23,35 @@ const defaultLicenseSettings: LicenseSettings = {
   machine_key: '',
   auto_register_machine: true,
   app_instance: 'integra-desktop',
+  auto_register_requested_licenses: null,
+  auto_register_validation_mode: 'standard',
+  auto_register_interface_mode: 'interactive',
+  auto_register_device_identifier: '',
+};
+
+
+const emptyStartupContext: StartupLicenseContext = {
+  auto_register_enabled: false,
+  auto_register_company: false,
+  auto_register_device: false,
+  requested_licenses: null,
+  company_name: null,
+  company_document: null,
+  company_email: null,
+  station_name: null,
+  device_name: null,
+  device_identifier: null,
+  validation_mode: 'standard',
+  interface_mode: 'interactive',
+  local_license_enabled: false,
+  local_license_generate: false,
+  local_license_file_path: null,
+  local_license_token_present: false,
+  developer_secret_present: false,
+  local_license_account: null,
+  local_license_issuer: null,
+  no_ui: false,
+  args: [],
 };
 
 const emptyDeviceInfo: RegistrationDeviceInfo = {
@@ -52,6 +83,7 @@ export function StartupRegistrationGate() {
   const [settings, setSettings] = useState<LicenseSettings>(defaultLicenseSettings);
   const [result, setResult] = useState<LicenseRuntimeStatus | null>(null);
   const [deviceInfo, setDeviceInfo] = useState<RegistrationDeviceInfo>(emptyDeviceInfo);
+  const [startupContext, setStartupContext] = useState<StartupLicenseContext>(emptyStartupContext);
   const [error, setError] = useState('');
   const [bootMessage, setBootMessage] = useState('');
 
@@ -59,10 +91,25 @@ export function StartupRegistrationGate() {
     async function bootstrap() {
       try {
         const savedSettings = await loadLicenseSettings();
+        const cliContext = await getStartupLicensingContext();
+        setStartupContext(cliContext);
+
         const nextSettings: LicenseSettings = {
           ...defaultLicenseSettings,
           ...savedSettings,
-          auto_register_machine: true,
+          auto_register_machine: cliContext.auto_register_enabled || true,
+          company_name: cliContext.company_name || savedSettings?.company_name || '',
+          company_document: cliContext.company_document || savedSettings?.company_document || '',
+          company_email: cliContext.company_email || savedSettings?.company_email || '',
+          station_name: cliContext.station_name || savedSettings?.station_name || '',
+          auto_register_requested_licenses:
+            cliContext.requested_licenses ?? savedSettings?.auto_register_requested_licenses ?? null,
+          auto_register_validation_mode:
+            cliContext.validation_mode || savedSettings?.auto_register_validation_mode || 'standard',
+          auto_register_interface_mode:
+            cliContext.interface_mode || savedSettings?.auto_register_interface_mode || 'interactive',
+          auto_register_device_identifier:
+            cliContext.device_identifier || savedSettings?.auto_register_device_identifier || '',
         };
 
         const device = await getRegistrationDeviceInfo(nextSettings);
@@ -81,7 +128,11 @@ export function StartupRegistrationGate() {
             hydratedSettings.company_document.trim() ||
             hydratedSettings.company_email.trim(),
         );
-        const mayAutoRegister = device.registration_file_found || hasUserInput;
+        const mayAutoRegister =
+          cliContext.auto_register_enabled ||
+          cliContext.local_license_enabled ||
+          device.registration_file_found ||
+          hasUserInput;
 
         if (mayAutoRegister) {
           const status = await checkLicenseStatus(hydratedSettings);
@@ -101,7 +152,9 @@ export function StartupRegistrationGate() {
         }
 
         setBootMessage(
-          `Informe a empresa licenciada do ${meta.product_name}. O dispositivo será cadastrado automaticamente.`,
+          cliContext.auto_register_enabled
+            ? `Modo de auto-registro habilitado para o ${meta.product_name}. Complete os dados faltantes para concluir o cadastro automático.`
+            : `Informe a empresa licenciada do ${meta.product_name}. O dispositivo será cadastrado automaticamente.`,
         );
         setRequired(true);
       } catch (err) {
@@ -120,14 +173,21 @@ export function StartupRegistrationGate() {
       return false;
     }
 
-    if (deviceInfo.registration_file_found) {
+    if (deviceInfo.registration_file_found || startupContext.local_license_enabled) {
       return true;
     }
 
     return Boolean(
       settings.company_document.trim() || settings.company_name.trim() || settings.company_email.trim(),
     );
-  }, [busy, deviceInfo.registration_file_found, settings.company_document, settings.company_email, settings.company_name]);
+  }, [
+    busy,
+    deviceInfo.registration_file_found,
+    settings.company_document,
+    settings.company_email,
+    settings.company_name,
+    startupContext.local_license_enabled,
+  ]);
 
   async function handleSubmit() {
     setBusy(true);
@@ -135,7 +195,7 @@ export function StartupRegistrationGate() {
     try {
       const persisted = await saveLicenseSettings({
         ...settings,
-        auto_register_machine: true,
+        auto_register_machine: startupContext.auto_register_enabled || true,
       });
       setSettings(persisted);
 
@@ -176,6 +236,24 @@ export function StartupRegistrationGate() {
               : ''}
           </div>
         )}
+        {startupContext.auto_register_enabled && (
+          <div className="alert-strip startup-gate-info">
+            Modo opcional de auto-registro habilitado por parâmetro de execução.
+            {typeof startupContext.requested_licenses === 'number'
+              ? ` Licenças solicitadas: ${startupContext.requested_licenses}.`
+              : ''}
+            {startupContext.validation_mode ? ` Validação: ${startupContext.validation_mode}.` : ''}
+            {startupContext.interface_mode ? ` Interface: ${startupContext.interface_mode}.` : ''}
+          </div>
+        )}
+
+        {startupContext.local_license_enabled && (
+          <div className="alert-strip startup-gate-info">
+            Modo opcional de licença local habilitado.
+            {startupContext.local_license_file_path ? ` Arquivo: ${startupContext.local_license_file_path}.` : ''}
+            {startupContext.local_license_generate ? ' Geração local solicitada.' : ' Validação local solicitada.'}
+          </div>
+        )}
 
         <div className="form-grid cols-4">
           <div>
@@ -205,6 +283,52 @@ export function StartupRegistrationGate() {
           <div>
             <label>Nome da estação</label>
             <input value={settings.station_name || deviceInfo.station_name} readOnly />
+          </div>
+          <div>
+            <label>Licenças a liberar (opcional)</label>
+            <input
+              type="number"
+              min={0}
+              value={settings.auto_register_requested_licenses ?? ''}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  auto_register_requested_licenses:
+                    e.target.value.trim() === '' ? null : Number(e.target.value),
+                })
+              }
+              placeholder="Ex.: 5"
+            />
+          </div>
+          <div>
+            <label>Modo de validação</label>
+            <input
+              value={settings.auto_register_validation_mode || startupContext.validation_mode || 'standard'}
+              onChange={(e) =>
+                setSettings({ ...settings, auto_register_validation_mode: e.target.value })
+              }
+              placeholder="standard | local-only | online-only"
+            />
+          </div>
+          <div>
+            <label>Comportamento da interface</label>
+            <input
+              value={settings.auto_register_interface_mode || startupContext.interface_mode || 'interactive'}
+              onChange={(e) =>
+                setSettings({ ...settings, auto_register_interface_mode: e.target.value })
+              }
+              placeholder="interactive | silent | assisted"
+            />
+          </div>
+          <div>
+            <label>Identificador do dispositivo</label>
+            <input
+              value={settings.auto_register_device_identifier || startupContext.device_identifier || ''}
+              onChange={(e) =>
+                setSettings({ ...settings, auto_register_device_identifier: e.target.value })
+              }
+              placeholder="Etiqueta, ativo ou código interno"
+            />
           </div>
           <div className="span-2">
             <label>Nome completo do dispositivo</label>
