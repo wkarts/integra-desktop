@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/wkarts/integra-desktop/compare/v1.8.1...v1.8.2) (2026-03-24)
+
+
+### Bug Fixes
+
+* **license:** remove command-shell execution from device metadata collection ([689afdb](https://github.com/wkarts/integra-desktop/commit/689afdb7e31ec2720a189bc29c2ac0425dcbae22))
+
 ## [1.8.1](https://github.com/wkarts/integra-desktop/compare/v1.8.0...v1.8.1) (2026-03-24)
 
 
