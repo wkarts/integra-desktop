@@ -102,6 +102,36 @@ pub struct LicensedDevice {
     pub tipo: String,
     pub observacao: String,
     pub tecnico_instalacao: String,
+    pub serial_number: String,
+    pub hostname: String,
+    pub station_name: String,
+    pub machine_guid: String,
+    pub bios_serial: String,
+    pub motherboard_serial: String,
+    pub full_device_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct RegistrationDeviceInfo {
+    pub station_name: String,
+    pub device_display_name: String,
+    pub hostname: String,
+    pub computer_name: String,
+    pub serial_number: String,
+    pub machine_guid: String,
+    pub bios_serial: String,
+    pub motherboard_serial: String,
+    pub logged_user: String,
+    pub os_name: String,
+    pub os_version: String,
+    pub os_arch: String,
+    pub domain_name: String,
+    pub install_mode: String,
+    pub mac_addresses: Vec<String>,
+    pub device_key: String,
+    pub registration_file_found: bool,
+    pub registration_file_path: Option<String>,
+    pub registration_file_verified: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

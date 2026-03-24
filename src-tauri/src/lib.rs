@@ -11,11 +11,11 @@ use commands::{
     dialog_pick_nfe_faturas_legacy_file, dialog_pick_nfe_faturas_output_dir,
     dialog_save_nfe_faturas_file, export_nfe_faturas_csv, export_nfe_faturas_sped,
     export_nfe_faturas_txt, export_nfse_csv, export_nfse_txt, get_app_meta,
-    get_default_station_name, get_machine_fingerprint, guess_nfe_faturas_cnpj_filial,
-    import_nfe_faturas_legacy, list_runtime_logs, load_conversion_profile, load_license_settings,
-    load_nfe_faturas_settings, load_profile_bundle, process_nfe_faturas_selection,
-    process_nfse_upload_batch, process_nfse_xml_batch, save_conversion_profile,
-    save_license_settings, save_nfe_faturas_settings, save_profile_bundle,
+    get_default_station_name, get_machine_fingerprint, get_registration_device_info,
+    guess_nfe_faturas_cnpj_filial, import_nfe_faturas_legacy, list_runtime_logs,
+    load_conversion_profile, load_license_settings, load_nfe_faturas_settings, load_profile_bundle,
+    process_nfe_faturas_selection, process_nfse_upload_batch, process_nfse_xml_batch,
+    save_conversion_profile, save_license_settings, save_nfe_faturas_settings, save_profile_bundle,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -55,6 +55,7 @@ pub fn run() {
             check_license_status,
             get_machine_fingerprint,
             get_default_station_name,
+            get_registration_device_info,
             get_app_meta,
             append_runtime_log,
             list_runtime_logs,

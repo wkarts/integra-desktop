@@ -251,3 +251,25 @@ textarea { min-height: 82px; resize: vertical; }
   border-color: #fecdd3;
   background: #fff1f2;
 }
+
+.startup-gate-info {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+.readonly-textarea {
+  width: 100%;
+  resize: none;
+  min-height: 64px;
+  line-height: 1.35;
+}
+.mono-text {
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.form-grid .span-2 {
+  grid-column: span 2;
+}

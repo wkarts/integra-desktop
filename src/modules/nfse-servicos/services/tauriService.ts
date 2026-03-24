@@ -8,6 +8,7 @@ import type {
   ProcessBatchInputItem,
   ProcessBatchResult,
   ProfileBundle,
+  RegistrationDeviceInfo,
   UploadInputItem,
 } from '../../../shared/types';
 
@@ -69,6 +70,14 @@ export async function getMachineFingerprint(): Promise<string> {
 
 export async function getDefaultStationName(): Promise<string> {
   return invoke<string>('get_default_station_name');
+}
+
+export async function getRegistrationDeviceInfo(
+  settings?: LicenseSettings | null,
+): Promise<RegistrationDeviceInfo> {
+  return invoke<RegistrationDeviceInfo>('get_registration_device_info', {
+    settings: settings ?? null,
+  });
 }
 
 export async function getAppMeta(): Promise<AppMeta> {

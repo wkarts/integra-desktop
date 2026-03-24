@@ -169,6 +169,13 @@ export interface LicensedDevice {
   tipo: string;
   observacao: string;
   tecnico_instalacao: string;
+  serial_number: string;
+  hostname: string;
+  station_name: string;
+  machine_guid: string;
+  bios_serial: string;
+  motherboard_serial: string;
+  full_device_name: string;
 }
 
 export interface LicenseRuntimeStatus {
@@ -193,6 +200,28 @@ export interface LicenseRuntimeStatus {
 }
 
 export type LicenseCheckResult = LicenseRuntimeStatus;
+
+export interface RegistrationDeviceInfo {
+  station_name: string;
+  device_display_name: string;
+  hostname: string;
+  computer_name: string;
+  serial_number: string;
+  machine_guid: string;
+  bios_serial: string;
+  motherboard_serial: string;
+  logged_user: string;
+  os_name: string;
+  os_version: string;
+  os_arch: string;
+  domain_name: string;
+  install_mode: string;
+  mac_addresses: string[];
+  device_key: string;
+  registration_file_found: boolean;
+  registration_file_path?: string | null;
+  registration_file_verified?: boolean | null;
+}
 
 export interface AppMeta {
   product_name: string;
