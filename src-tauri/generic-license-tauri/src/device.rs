@@ -370,28 +370,6 @@ fn read_command_output(cmd: &str, args: &[&str]) -> String {
         .unwrap_or_default()
 }
 
-fn parse_last_token(value: String) -> String {
-    value
-        .split_whitespace()
-        .last()
-        .unwrap_or("")
-        .trim()
-        .to_string()
-}
-
-fn parse_serial_lines(value: String) -> String {
-    value
-        .lines()
-        .map(|v| v.trim())
-        .find(|v| {
-            !v.is_empty()
-                && !v.eq_ignore_ascii_case("serialnumber")
-                && !v.eq_ignore_ascii_case("uuid")
-        })
-        .unwrap_or("")
-        .to_string()
-}
-
 fn first_non_empty(values: Vec<String>) -> String {
     values
         .into_iter()
