@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
   LicenseRuntimeStatus,
   LicenseSettings,
@@ -27,6 +27,7 @@ const defaultLicenseSettings: LicenseSettings = {
   auto_register_validation_mode: 'standard',
   auto_register_interface_mode: 'interactive',
   auto_register_device_identifier: '',
+  licensing_disabled: false,
 };
 
 
@@ -48,6 +49,7 @@ const emptyStartupContext: StartupLicenseContext = {
   local_license_file_path: null,
   local_license_token_present: false,
   developer_secret_present: false,
+  licensing_disabled: false,
   local_license_account: null,
   local_license_issuer: null,
   no_ui: false,
@@ -77,6 +79,7 @@ const emptyDeviceInfo: RegistrationDeviceInfo = {
 };
 
 export function StartupRegistrationGate() {
+  const bootstrappedRef = useRef(false);
   const [booting, setBooting] = useState(true);
   const [required, setRequired] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -88,6 +91,11 @@ export function StartupRegistrationGate() {
   const [bootMessage, setBootMessage] = useState('');
 
   useEffect(() => {
+    if (bootstrappedRef.current) {
+      return;
+    }
+    bootstrappedRef.current = true;
+
     async function bootstrap() {
       try {
         const savedSettings = await loadLicenseSettings();
@@ -97,7 +105,7 @@ export function StartupRegistrationGate() {
         const nextSettings: LicenseSettings = {
           ...defaultLicenseSettings,
           ...savedSettings,
-          auto_register_machine: cliContext.auto_register_enabled || true,
+          auto_register_machine: Boolean(savedSettings?.auto_register_machine),
           company_name: cliContext.company_name || savedSettings?.company_name || '',
           company_document: cliContext.company_document || savedSettings?.company_document || '',
           company_email: cliContext.company_email || savedSettings?.company_email || '',
@@ -123,18 +131,41 @@ export function StartupRegistrationGate() {
         setDeviceInfo(device);
         setSettings(hydratedSettings);
 
+        if (cliContext.licensing_disabled) {
+          setResult({
+            online: false,
+            allowed: true,
+            blocked: false,
+            machine_registered: true,
+            machine_blocked: false,
+            seats_total: 0,
+            seats_used: 0,
+            expiry: null,
+            message: 'Licenciamento desabilitado por parâmetro de inicialização.',
+            block_reason: null,
+            technical_message: 'source=startup | mode=licensing-disabled',
+            company_name: hydratedSettings.company_name,
+            company_document: hydratedSettings.company_document,
+            machine_key: hydratedSettings.machine_key,
+            status_code: 1,
+            local_license: null,
+            licensed_company: null,
+            licensed_device: null,
+          });
+          setRequired(false);
+          return;
+        }
+
         const hasUserInput = Boolean(
           hydratedSettings.company_name.trim() ||
             hydratedSettings.company_document.trim() ||
             hydratedSettings.company_email.trim(),
         );
-        const mayAutoRegister =
-          cliContext.auto_register_enabled ||
-          cliContext.local_license_enabled ||
+        const mayValidateAutomatically =
           device.registration_file_found ||
-          hasUserInput;
+          (hydratedSettings.auto_register_machine && hasUserInput);
 
-        if (mayAutoRegister) {
+        if (mayValidateAutomatically) {
           const status = await checkLicenseStatus(hydratedSettings);
           setResult(status);
 
@@ -152,9 +183,7 @@ export function StartupRegistrationGate() {
         }
 
         setBootMessage(
-          cliContext.auto_register_enabled
-            ? `Modo de auto-registro habilitado para o ${meta.product_name}. Complete os dados faltantes para concluir o cadastro automático.`
-            : `Informe a empresa licenciada do ${meta.product_name}. O dispositivo será cadastrado automaticamente.`,
+          `Informe a empresa licenciada do ${meta.product_name}. O dispositivo será cadastrado automaticamente quando você confirmar o registro.`,
         );
         setRequired(true);
       } catch (err) {
@@ -195,7 +224,7 @@ export function StartupRegistrationGate() {
     try {
       const persisted = await saveLicenseSettings({
         ...settings,
-        auto_register_machine: startupContext.auto_register_enabled || true,
+        auto_register_machine: true,
       });
       setSettings(persisted);
 
@@ -236,24 +265,12 @@ export function StartupRegistrationGate() {
               : ''}
           </div>
         )}
-        {startupContext.auto_register_enabled && (
+        {startupContext.licensing_disabled && (
           <div className="alert-strip startup-gate-info">
-            Modo opcional de auto-registro habilitado por parâmetro de execução.
-            {typeof startupContext.requested_licenses === 'number'
-              ? ` Licenças solicitadas: ${startupContext.requested_licenses}.`
-              : ''}
-            {startupContext.validation_mode ? ` Validação: ${startupContext.validation_mode}.` : ''}
-            {startupContext.interface_mode ? ` Interface: ${startupContext.interface_mode}.` : ''}
+            O licenciamento foi desabilitado por parâmetro de inicialização.
           </div>
         )}
 
-        {startupContext.local_license_enabled && (
-          <div className="alert-strip startup-gate-info">
-            Modo opcional de licença local habilitado.
-            {startupContext.local_license_file_path ? ` Arquivo: ${startupContext.local_license_file_path}.` : ''}
-            {startupContext.local_license_generate ? ' Geração local solicitada.' : ' Validação local solicitada.'}
-          </div>
-        )}
 
         <div className="form-grid cols-4">
           <div>
@@ -285,7 +302,7 @@ export function StartupRegistrationGate() {
             <input value={settings.station_name || deviceInfo.station_name} readOnly />
           </div>
           <div>
-            <label>Licenças a liberar (opcional)</label>
+            <label>Licenças a liberar (recurso adicional)</label>
             <input
               type="number"
               min={0}

@@ -32,6 +32,7 @@ const defaultLicenseSettings: LicenseSettings = {
   machine_key: '',
   auto_register_machine: true,
   app_instance: 'integra-desktop',
+  licensing_disabled: false,
 };
 
 const defaultMeta: AppMeta = {

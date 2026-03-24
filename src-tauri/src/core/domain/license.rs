@@ -18,6 +18,8 @@ pub struct LicenseSettings {
     pub auto_register_interface_mode: String,
     #[serde(default)]
     pub auto_register_device_identifier: String,
+    #[serde(default)]
+    pub licensing_disabled: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -181,7 +183,6 @@ pub struct AppMeta {
     pub app_id: String,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct StartupLicenseContext {
     pub auto_register_enabled: bool,
@@ -201,6 +202,7 @@ pub struct StartupLicenseContext {
     pub local_license_file_path: Option<String>,
     pub local_license_token_present: bool,
     pub developer_secret_present: bool,
+    pub licensing_disabled: bool,
     pub local_license_account: Option<String>,
     pub local_license_issuer: Option<String>,
     pub no_ui: bool,

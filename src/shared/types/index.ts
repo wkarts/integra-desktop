@@ -84,6 +84,7 @@ export interface LicenseSettings {
   auto_register_validation_mode?: string;
   auto_register_interface_mode?: string;
   auto_register_device_identifier?: string;
+  licensing_disabled?: boolean;
 }
 
 export interface LocalLicense {
@@ -253,6 +254,7 @@ export interface StartupLicenseContext {
   local_license_file_path?: string | null;
   local_license_token_present: boolean;
   developer_secret_present: boolean;
+  licensing_disabled: boolean;
   local_license_account?: string | null;
   local_license_issuer?: string | null;
   no_ui: boolean;

@@ -19,7 +19,6 @@ use crate::core::domain::license::{
 use crate::core::local_license::{
     generate_local_license as generate_local_license_artifact,
     validate_local_license as validate_local_license_artifact,
-    validate_local_license_from_startup,
 };
 use crate::core::startup::parse_startup_license_args;
 
@@ -127,67 +126,21 @@ pub async fn check_license_status(
     app: AppHandle,
 ) -> Result<LicenseRuntimeStatus, String> {
     let startup = parse_startup_license_args();
-    let next_settings = apply_startup_context(normalize_license_settings(settings), &startup.public);
+    let next_settings =
+        apply_startup_context(normalize_license_settings(settings), &startup.public);
+
+    if startup.public.licensing_disabled || next_settings.licensing_disabled {
+        return Ok(build_licensing_disabled_runtime(&next_settings));
+    }
+
     let company_document = only_digits(&next_settings.company_document);
     let station_name = resolve_station_name(&next_settings.station_name);
 
     let device = collect_device_metadata();
     let input = build_license_input(&next_settings, &device, Some(&startup.public));
 
-    match validate_local_license_from_startup(
-        &startup,
-        &next_settings.app_instance,
-        Some(&company_document),
-        input.device_key.as_deref(),
-    ) {
-        Ok(Some(local_result)) => {
-            if local_result.valid {
-                let runtime = map_local_license_validation_to_runtime(&local_result, &next_settings, &device);
-                let snapshot = LicenseSnapshot {
-                    last_sync_at: Utc::now().to_rfc3339(),
-                    local_license: runtime.local_license.clone(),
-                    licensed_company: runtime.licensed_company.clone(),
-                    licensed_devices: runtime.licensed_device.clone().map(|item| vec![item]).unwrap_or_default(),
-                    runtime_status: runtime.clone(),
-                };
-                crate::storage::license::save_license_snapshot(&app, &snapshot).map_err(|e| e.to_string())?;
-                crate::storage::license::save_license_settings(&app, &next_settings)
-                    .map_err(|e| e.to_string())?;
-                return Ok(runtime);
-            }
-
-            if startup.public.validation_mode.as_deref() == Some("local-only") {
-                return Ok(map_local_license_validation_failure_to_runtime(&local_result, &next_settings));
-            }
-        }
-        Ok(None) => {}
-        Err(local_error) => {
-            if startup.public.validation_mode.as_deref() == Some("local-only") {
-                return Ok(LicenseRuntimeStatus {
-                    online: false,
-                    allowed: false,
-                    blocked: true,
-                    machine_registered: false,
-                    machine_blocked: false,
-                    seats_total: 0,
-                    seats_used: 0,
-                    expiry: None,
-                    message: "falha ao validar licença local".to_string(),
-                    block_reason: Some("local_license_error".to_string()),
-                    technical_message: format!("source=local-license | error={}", local_error),
-                    company_name: next_settings.company_name.clone(),
-                    company_document: next_settings.company_document.clone(),
-                    machine_key: next_settings.machine_key.clone(),
-                    status_code: 0,
-                    local_license: None,
-                    licensed_company: None,
-                    licensed_device: None,
-                });
-            }
-        }
-    }
-
-    let service = GenericLicenseService::new(build_license_config(&next_settings, Some(&startup.public)));
+    let service =
+        GenericLicenseService::new(build_license_config(&next_settings, Some(&startup.public)));
     let result = service.check(input).await;
     let (runtime, snapshot_devices, persisted_settings) = match result {
         Ok(decision) => {
@@ -239,17 +192,35 @@ pub async fn check_license_status(
     Ok(runtime)
 }
 
+fn build_licensing_disabled_runtime(settings: &LicenseSettings) -> LicenseRuntimeStatus {
+    LicenseRuntimeStatus {
+        online: false,
+        allowed: true,
+        blocked: false,
+        machine_registered: true,
+        machine_blocked: false,
+        seats_total: 0,
+        seats_used: 0,
+        expiry: None,
+        message: "licenciamento desabilitado por parâmetro de inicialização".to_string(),
+        block_reason: None,
+        technical_message: "source=startup | mode=licensing-disabled".to_string(),
+        company_name: settings.company_name.clone(),
+        company_document: settings.company_document.clone(),
+        machine_key: settings.machine_key.clone(),
+        status_code: 1,
+        local_license: None,
+        licensed_company: None,
+        licensed_device: None,
+    }
+}
+
 fn build_license_config(
     settings: &LicenseSettings,
-    startup: Option<&StartupLicenseContext>,
+    _startup: Option<&StartupLicenseContext>,
 ) -> LicenseConfig {
-    let startup_auto_register = startup.map(|item| item.auto_register_enabled).unwrap_or(false);
-    let auto_register_company = startup
-        .map(|item| item.auto_register_company)
-        .unwrap_or(settings.auto_register_machine);
-    let auto_register_device = startup
-        .map(|item| item.auto_register_device)
-        .unwrap_or(settings.auto_register_machine);
+    let auto_register_company = settings.auto_register_machine;
+    let auto_register_device = settings.auto_register_machine;
 
     LicenseConfig {
         base_url: resolve_base_url(&settings.service_url),
@@ -277,8 +248,8 @@ fn build_license_config(
             }),
         offline_max_age_days: 15,
         warn_before_expiration_in_days: 5,
-        auto_register_company_on_missing: if startup_auto_register { auto_register_company } else { settings.auto_register_machine },
-        auto_register_device_on_missing: if startup_auto_register { auto_register_device } else { settings.auto_register_machine },
+        auto_register_company_on_missing: auto_register_company,
+        auto_register_device_on_missing: auto_register_device,
         auto_update_device_name: true,
         block_on_company_blocked: true,
         block_on_device_blocked: true,
@@ -387,19 +358,13 @@ fn build_license_input(
     device: &generic_license_tauri::device::DeviceCollectedInfo,
     startup: Option<&StartupLicenseContext>,
 ) -> LicenseCheckInput {
-    let requested_licenses = startup
-        .and_then(|item| item.requested_licenses)
-        .or(settings.auto_register_requested_licenses);
-    let validation_mode = startup
-        .and_then(|item| item.validation_mode.clone())
-        .or(optional_string(&settings.auto_register_validation_mode));
-    let interface_mode = startup
-        .and_then(|item| item.interface_mode.clone())
-        .or(optional_string(&settings.auto_register_interface_mode));
-    let device_identifier = startup
-        .and_then(|item| item.device_identifier.clone())
-        .or(optional_string(&settings.auto_register_device_identifier));
-    let startup_auto_register = startup.map(|item| item.auto_register_enabled).unwrap_or(false);
+    let requested_licenses = settings.auto_register_requested_licenses;
+    let validation_mode = optional_string(&settings.auto_register_validation_mode);
+    let interface_mode = optional_string(&settings.auto_register_interface_mode);
+    let device_identifier = optional_string(&settings.auto_register_device_identifier);
+    let startup_auto_register = startup
+        .map(|item| item.auto_register_enabled)
+        .unwrap_or(false);
 
     let mut input = LicenseCheckInput {
         company_document: only_digits(&settings.company_document),
@@ -433,32 +398,14 @@ fn build_license_input(
         registration_file_content_b64: None,
         registration_file_path: None,
         registration_file_verified: None,
-        allow_company_auto_create: Some(if startup_auto_register {
-            startup.map(|item| item.auto_register_company).unwrap_or(true)
-        } else {
-            settings.auto_register_machine
-        }),
-        allow_device_auto_create: Some(if startup_auto_register {
-            startup.map(|item| item.auto_register_device).unwrap_or(true)
-        } else {
-            settings.auto_register_machine
-        }),
+        allow_company_auto_create: Some(settings.auto_register_machine),
+        allow_device_auto_create: Some(settings.auto_register_machine),
         allow_device_auto_update: Some(true),
         requested_licenses,
         device_identifier,
         validation_mode: validation_mode.clone(),
         interface_mode: interface_mode.clone(),
-        local_license_mode: startup.and_then(|item| {
-            if item.local_license_enabled {
-                Some(if item.local_license_generate {
-                    "generate".to_string()
-                } else {
-                    "validate".to_string()
-                })
-            } else {
-                None
-            }
-        }),
+        local_license_mode: None,
         metadata: std::collections::BTreeMap::from([
             (
                 "app_product_name".to_string(),
@@ -475,15 +422,21 @@ fn build_license_input(
             ),
             (
                 "validation_mode".to_string(),
-                validation_mode.clone().unwrap_or_else(|| "standard".to_string()),
+                validation_mode
+                    .clone()
+                    .unwrap_or_else(|| "standard".to_string()),
             ),
             (
                 "interface_mode".to_string(),
-                interface_mode.clone().unwrap_or_else(|| "interactive".to_string()),
+                interface_mode
+                    .clone()
+                    .unwrap_or_else(|| "interactive".to_string()),
             ),
             (
                 "requested_licenses".to_string(),
-                requested_licenses.map(|item| item.to_string()).unwrap_or_default(),
+                requested_licenses
+                    .map(|item| item.to_string())
+                    .unwrap_or_default(),
             ),
             (
                 "device_identifier".to_string(),
@@ -492,7 +445,7 @@ fn build_license_input(
             (
                 "startup_mode".to_string(),
                 if startup_auto_register {
-                    "auto-register".to_string()
+                    "startup-flag-disabled".to_string()
                 } else {
                     "standard".to_string()
                 },
@@ -512,32 +465,8 @@ fn apply_startup_context(
     mut settings: LicenseSettings,
     startup: &StartupLicenseContext,
 ) -> LicenseSettings {
-    if let Some(value) = startup.company_name.as_ref().filter(|v| !v.trim().is_empty()) {
-        settings.company_name = value.trim().to_string();
-    }
-    if let Some(value) = startup.company_document.as_ref().filter(|v| !v.trim().is_empty()) {
-        settings.company_document = only_digits(value);
-    }
-    if let Some(value) = startup.company_email.as_ref().filter(|v| !v.trim().is_empty()) {
-        settings.company_email = value.trim().to_string();
-    }
-    if let Some(value) = startup.station_name.as_ref().filter(|v| !v.trim().is_empty()) {
-        settings.station_name = value.trim().to_string();
-    }
-    if startup.auto_register_enabled {
-        settings.auto_register_machine = true;
-    }
-    if startup.requested_licenses.is_some() {
-        settings.auto_register_requested_licenses = startup.requested_licenses;
-    }
-    if let Some(value) = startup.validation_mode.as_ref().filter(|v| !v.trim().is_empty()) {
-        settings.auto_register_validation_mode = value.trim().to_string();
-    }
-    if let Some(value) = startup.interface_mode.as_ref().filter(|v| !v.trim().is_empty()) {
-        settings.auto_register_interface_mode = value.trim().to_string();
-    }
-    if let Some(value) = startup.device_identifier.as_ref().filter(|v| !v.trim().is_empty()) {
-        settings.auto_register_device_identifier = value.trim().to_string();
+    if startup.licensing_disabled {
+        settings.licensing_disabled = true;
     }
     settings
 }
@@ -560,12 +489,16 @@ fn map_local_license_validation_to_runtime(
         .map(|item| item.machine_key.clone())
         .filter(|item| !item.trim().is_empty())
         .unwrap_or_else(|| settings.machine_key.clone());
-    let seats_total = payload.and_then(|item| item.requested_licenses).unwrap_or(1);
+    let seats_total = payload
+        .and_then(|item| item.requested_licenses)
+        .unwrap_or(1);
 
     let local_license = LocalLicense {
         empresa: company_name.clone(),
         cnpj: company_document.clone(),
-        serial: payload.map(|item| item.serial_number.clone()).unwrap_or_default(),
+        serial: payload
+            .map(|item| item.serial_number.clone())
+            .unwrap_or_default(),
         licencas: seats_total.to_string(),
         ativo: true,
         app: true,
@@ -579,12 +512,16 @@ fn map_local_license_validation_to_runtime(
         cnpj: company_document.clone(),
         emp_nomefantasia: company_name.clone(),
         razaosocial: company_name.clone(),
-        emp_email: payload.map(|item| item.company_email.clone()).unwrap_or_default(),
+        emp_email: payload
+            .map(|item| item.company_email.clone())
+            .unwrap_or_default(),
         emp_serie: settings.app_instance.clone(),
         ativo: true,
         bloqueado: false,
         n_maquinas: seats_total as i64,
-        data_val_lic: payload.and_then(|item| item.expires_at.clone()).unwrap_or_default(),
+        data_val_lic: payload
+            .and_then(|item| item.expires_at.clone())
+            .unwrap_or_default(),
         emp_obs: "licença local validada".to_string(),
         ..LicensedCompany::default()
     };
@@ -607,9 +544,13 @@ fn map_local_license_validation_to_runtime(
         tipo: device.install_mode.clone(),
         observacao: "licença local".to_string(),
         tecnico_instalacao: device.logged_user.clone(),
-        serial_number: payload.map(|item| item.serial_number.clone()).unwrap_or_else(|| device.serial_number.clone()),
+        serial_number: payload
+            .map(|item| item.serial_number.clone())
+            .unwrap_or_else(|| device.serial_number.clone()),
         hostname: device.hostname.clone(),
-        station_name: payload.map(|item| item.station_name.clone()).unwrap_or_else(|| device.station_name.clone()),
+        station_name: payload
+            .map(|item| item.station_name.clone())
+            .unwrap_or_else(|| device.station_name.clone()),
         machine_guid: device.machine_guid.clone(),
         bios_serial: device.bios_serial.clone(),
         motherboard_serial: device.motherboard_serial.clone(),

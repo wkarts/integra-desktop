@@ -84,11 +84,7 @@ pub fn generate_local_license(
         .clone()
         .filter(|v| !v.trim().is_empty())
         .unwrap_or_else(|| unsigned.company_document.clone());
-    let otpauth_uri = Some(build_otpauth_uri(
-        &issuer,
-        &account,
-        &secret,
-    ));
+    let otpauth_uri = Some(build_otpauth_uri(&issuer, &account, &secret));
 
     Ok(GeneratedLocalLicense {
         file_content,
@@ -105,7 +101,8 @@ pub fn validate_local_license(
     validate_developer_token(request.developer_token.as_deref())?;
     let secret = resolve_secret(request.developer_secret.as_deref())?;
     let (content, file_path) = read_license_content(&request)?;
-    let payload: LocalLicenseDocument = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+    let payload: LocalLicenseDocument =
+        serde_json::from_str(&content).map_err(|e| e.to_string())?;
 
     let unsigned = LocalLicenseUnsignedDocument {
         version: payload.version,
@@ -129,7 +126,11 @@ pub fn validate_local_license(
             reason_code: "LOCAL_LICENSE_SIGNATURE_INVALID".to_string(),
             message: "a assinatura da licença local é inválida".to_string(),
             file_path,
-            otpauth_uri: Some(build_otpauth_uri(&payload.issuer, &payload.company_document, &secret)),
+            otpauth_uri: Some(build_otpauth_uri(
+                &payload.issuer,
+                &payload.company_document,
+                &secret,
+            )),
             payload: Some(payload),
         });
     }
@@ -142,34 +143,55 @@ pub fn validate_local_license(
                 reason_code: "LOCAL_LICENSE_EXPIRED".to_string(),
                 message: "a licença local expirou".to_string(),
                 file_path,
-                otpauth_uri: Some(build_otpauth_uri(&payload.issuer, &payload.company_document, &secret)),
+                otpauth_uri: Some(build_otpauth_uri(
+                    &payload.issuer,
+                    &payload.company_document,
+                    &secret,
+                )),
                 payload: Some(payload),
             });
         }
     }
 
-    if let Some(document) = request.company_document.as_ref().filter(|v| !v.trim().is_empty()) {
+    if let Some(document) = request
+        .company_document
+        .as_ref()
+        .filter(|v| !v.trim().is_empty())
+    {
         if only_digits(document) != only_digits(&payload.company_document) {
             return Ok(LocalLicenseValidationResult {
                 valid: false,
                 reason_code: "LOCAL_LICENSE_COMPANY_MISMATCH".to_string(),
-                message: "o documento da licença local não corresponde à empresa informada".to_string(),
+                message: "o documento da licença local não corresponde à empresa informada"
+                    .to_string(),
                 file_path,
-                otpauth_uri: Some(build_otpauth_uri(&payload.issuer, &payload.company_document, &secret)),
+                otpauth_uri: Some(build_otpauth_uri(
+                    &payload.issuer,
+                    &payload.company_document,
+                    &secret,
+                )),
                 payload: Some(payload),
             });
         }
     }
 
     if request.enforce_machine_match {
-        if let Some(machine_key) = request.machine_key.as_ref().filter(|v| !v.trim().is_empty()) {
+        if let Some(machine_key) = request
+            .machine_key
+            .as_ref()
+            .filter(|v| !v.trim().is_empty())
+        {
             if machine_key.trim() != payload.machine_key.trim() {
                 return Ok(LocalLicenseValidationResult {
                     valid: false,
                     reason_code: "LOCAL_LICENSE_MACHINE_MISMATCH".to_string(),
                     message: "a licença local não corresponde à máquina atual".to_string(),
                     file_path,
-                    otpauth_uri: Some(build_otpauth_uri(&payload.issuer, &payload.company_document, &secret)),
+                    otpauth_uri: Some(build_otpauth_uri(
+                        &payload.issuer,
+                        &payload.company_document,
+                        &secret,
+                    )),
                     payload: Some(payload),
                 });
             }
@@ -181,11 +203,16 @@ pub fn validate_local_license(
         reason_code: "LOCAL_LICENSE_VALID".to_string(),
         message: "licença local validada com sucesso".to_string(),
         file_path,
-        otpauth_uri: Some(build_otpauth_uri(&payload.issuer, &payload.company_document, &secret)),
+        otpauth_uri: Some(build_otpauth_uri(
+            &payload.issuer,
+            &payload.company_document,
+            &secret,
+        )),
         payload: Some(payload),
     })
 }
 
+#[allow(dead_code)]
 pub fn validate_local_license_from_startup(
     startup: &ParsedStartupLicenseArgs,
     app_instance: &str,
@@ -197,7 +224,11 @@ pub fn validate_local_license_from_startup(
     }
 
     let request = ValidateLocalLicenseRequest {
-        file_path: startup.public.local_license_file_path.clone().or_else(|| default_local_license_path(app_instance)),
+        file_path: startup
+            .public
+            .local_license_file_path
+            .clone()
+            .or_else(|| default_local_license_path(app_instance)),
         content_b64: None,
         company_document: company_document.map(|v| v.to_string()),
         machine_key: machine_key.map(|v| v.to_string()),
@@ -210,10 +241,15 @@ pub fn validate_local_license_from_startup(
     Ok(Some(result))
 }
 
+#[allow(dead_code)]
 pub fn default_local_license_path(app_instance: &str) -> Option<String> {
     let exe = std::env::current_exe().ok()?;
     let dir = exe.parent()?;
-    Some(dir.join(format!("{}.local.lic.json", app_instance)).to_string_lossy().to_string())
+    Some(
+        dir.join(format!("{}.local.lic.json", app_instance))
+            .to_string_lossy()
+            .to_string(),
+    )
 }
 
 fn sign_document(document: &LocalLicenseUnsignedDocument, secret: &str) -> Result<String, String> {
@@ -225,8 +261,14 @@ fn sign_document(document: &LocalLicenseUnsignedDocument, secret: &str) -> Resul
     Ok(BASE64.encode(hasher.finalize()))
 }
 
-fn read_license_content(request: &ValidateLocalLicenseRequest) -> Result<(String, Option<String>), String> {
-    if let Some(content_b64) = request.content_b64.as_ref().filter(|v| !v.trim().is_empty()) {
+fn read_license_content(
+    request: &ValidateLocalLicenseRequest,
+) -> Result<(String, Option<String>), String> {
+    if let Some(content_b64) = request
+        .content_b64
+        .as_ref()
+        .filter(|v| !v.trim().is_empty())
+    {
         let bytes = BASE64.decode(content_b64).map_err(|e| e.to_string())?;
         let content = String::from_utf8(bytes).map_err(|e| e.to_string())?;
         return Ok((content, request.file_path.clone()));
@@ -246,8 +288,10 @@ fn resolve_secret(input: Option<&str>) -> Result<String, String> {
         return Ok(value.trim().to_string());
     }
 
-    std::env::var("LICENSE_LOCAL_DEV_SECRET")
-        .map_err(|_| "secret do desenvolvedor não informado (use --local-license-secret ou LICENSE_LOCAL_DEV_SECRET)".to_string())
+    std::env::var("LICENSE_LOCAL_DEV_SECRET").map_err(|_| {
+        "secret do desenvolvedor não informado (use --local-license-secret ou LICENSE_LOCAL_DEV_SECRET)"
+            .to_string()
+    })
 }
 
 fn validate_developer_token(token: Option<&str>) -> Result<(), String> {
@@ -258,7 +302,9 @@ fn validate_developer_token(token: Option<&str>) -> Result<(), String> {
 
         let provided = token.unwrap_or("").trim();
         if provided != expected.trim() {
-            return Err("token do desenvolvedor inválido para operação de licença local".to_string());
+            return Err(
+                "token do desenvolvedor inválido para operação de licença local".to_string(),
+            );
         }
     }
 

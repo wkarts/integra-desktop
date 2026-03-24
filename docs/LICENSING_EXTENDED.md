@@ -230,3 +230,29 @@ O arquivo local gerado/validado segue JSON assinado:
 - o objetivo desta ampliação é oferecer mais flexibilidade operacional ao desenvolvedor, implantação e suporte técnico;
 - o fluxo atual permanece compatível;
 - os novos recursos só entram em ação quando explicitamente habilitados.
+
+## Atualização de compatibilidade operacional
+
+A partir desta revisão, os recursos de registro e auto-registro **não são mais acionados por parâmetros de linha de comando no startup**.
+
+Motivo:
+- evitar travamentos e múltiplos ciclos de carregamento do modal de licenciamento na inicialização
+- preservar a experiência do usuário e a estabilidade do app
+
+Os recursos continuam existindo como funcionalidades adicionais do módulo de licenciamento, acessíveis pelo fluxo normal da aplicação e pela persistência local de configurações.
+
+### Parâmetro mantido no startup
+
+O startup continua aceitando apenas o parâmetro opcional para desabilitar totalmente o licenciamento:
+
+- `--disable-licensing`
+- `--licensing-disabled`
+- `--no-license`
+
+Exemplo:
+
+```bash
+integra.exe --disable-licensing
+```
+
+Nesse modo, a aplicação ignora a validação de licença e libera a execução imediatamente.
