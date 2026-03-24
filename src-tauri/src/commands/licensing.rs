@@ -402,7 +402,7 @@ fn build_license_input(
         allow_device_auto_create: Some(settings.auto_register_machine),
         allow_device_auto_update: Some(true),
         requested_licenses,
-        device_identifier,
+        device_identifier: device_identifier.clone(),
         validation_mode: validation_mode.clone(),
         interface_mode: interface_mode.clone(),
         local_license_mode: None,
