@@ -1,3 +1,10 @@
+## [1.8.3](https://github.com/wkarts/integra-desktop/compare/v1.8.2...v1.8.3) (2026-03-24)
+
+
+### Bug Fixes
+
+* **licensing:** restaura parâmetros de startup e documenta catálogo ([a0ab87a](https://github.com/wkarts/integra-desktop/commit/a0ab87ababfe77e9390e40cbfaab62081760053f))
+
 ## [1.8.2](https://github.com/wkarts/integra-desktop/compare/v1.8.1...v1.8.2) (2026-03-24)
 
 
