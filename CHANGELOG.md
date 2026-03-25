@@ -1,3 +1,11 @@
+## [1.8.12](https://github.com/wkarts/integra-desktop/compare/v1.8.11...v1.8.12) (2026-03-25)
+
+
+### Bug Fixes
+
+* **nfse-converter:** corrige tipagem do tomador na tela de conversão XML ([810737f](https://github.com/wkarts/integra-desktop/commit/810737f0066bd6f928a250fd578cf60ff2b81944))
+* **nfse:** corrige persistência de perfis, loop de logs e adiciona menu do conversor XML ([2128357](https://github.com/wkarts/integra-desktop/commit/21283575dd7a53fc45a5d4dc9f9adc6619291ce1))
+
 ## [1.8.11](https://github.com/wkarts/integra-desktop/compare/v1.8.10...v1.8.11) (2026-03-25)
 
 
