@@ -65,7 +65,7 @@ export default function NfseXmlConverterPage() {
       ['Provider', result.provider],
       ['Número', result.document.numero],
       ['Município', result.document.municipio_nome || result.document.municipio_codigo || '—'],
-      ['Tomador', result.document.tomador.razao_social || result.document.tomador.nome_fantasia || '—'],
+      ['Tomador', result.document.tomador.nome || '—'],
     ];
   }, [result]);
 
