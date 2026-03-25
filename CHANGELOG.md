@@ -1,3 +1,10 @@
+## [1.8.8](https://github.com/wkarts/integra-desktop/compare/v1.8.7...v1.8.8) (2026-03-25)
+
+
+### Bug Fixes
+
+* resolver alerta clippy manual-strip no parser de startup ([1704b29](https://github.com/wkarts/integra-desktop/commit/1704b29ce4d03c0c649853afdd066b0ba372287c))
+
 ## [1.8.7](https://github.com/wkarts/integra-desktop/compare/v1.8.6...v1.8.7) (2026-03-25)
 
 
