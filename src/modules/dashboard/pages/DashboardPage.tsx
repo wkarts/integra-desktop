@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '../../../shared/components/PageHeader';
-import type { AppMeta, LicenseRuntimeStatus, ProfileBundle } from '../../../shared/types';
+import type { AppMeta, ProfileBundle } from '../../../shared/types';
 import {
   checkLicenseStatus,
   getAppMeta,
   loadLicenseSettings,
   loadProfileBundle,
 } from '../../nfse-servicos/services/tauriService';
+import { useLicenseRuntime } from '../../licensing/context/LicenseRuntimeContext';
 
 const defaultMeta: AppMeta = {
   product_name: 'Integra Desktop',
@@ -17,7 +18,7 @@ const defaultMeta: AppMeta = {
 
 export default function DashboardPage() {
   const [bundle, setBundle] = useState<ProfileBundle | null>(null);
-  const [license, setLicense] = useState<LicenseRuntimeStatus | null>(null);
+  const { status: license, setStatus } = useLicenseRuntime();
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
   const [now, setNow] = useState(() => new Date());
 
@@ -27,11 +28,12 @@ export default function DashboardPage() {
     loadLicenseSettings()
       .then(async (settings) => {
         if (settings?.company_document && settings?.service_url) {
-          setLicense(await checkLicenseStatus(settings));
+          const runtime = await checkLicenseStatus(settings);
+          setStatus(runtime);
         }
       })
-      .catch(() => setLicense(null));
-  }, []);
+      .catch(() => setStatus(null));
+  }, [setStatus]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);

@@ -16,12 +16,12 @@ import {
 import type {
   AppMeta,
   ConversionProfile,
-  LicenseRuntimeStatus,
   LicenseSettings,
   ProfileBundle,
 } from '../../../shared/types';
 import { defaultProfile, defaultProfileBundle } from '../../../shared/mappers/defaultProfile';
 import { validateProfile } from '../../../shared/validators/profiles';
+import { useLicenseRuntime } from '../../licensing/context/LicenseRuntimeContext';
 
 const defaultLicenseSettings: LicenseSettings = {
   service_url: 'https://api.rest.wwsoftwares.com.br/api/v1',
@@ -63,8 +63,8 @@ function getSelectedProfile(bundle: ProfileBundle): ConversionProfile {
 
 export default function SettingsPage() {
   const { profile, setProfile, pushLog } = useNfseStore();
+  const { status: licenseStatus, setStatus } = useLicenseRuntime();
   const [licenseSettings, setLicenseSettings] = useState<LicenseSettings>(defaultLicenseSettings);
-  const [licenseStatus, setLicenseStatus] = useState<LicenseRuntimeStatus | null>(null);
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
   const [profileBundle, setProfileBundle] = useState<ProfileBundle>(defaultProfileBundle);
   const [busyLicense, setBusyLicense] = useState(false);
@@ -208,7 +208,7 @@ export default function SettingsPage() {
       setLicenseSettings(persisted);
 
       const result = await checkLicenseStatus(persisted);
-      setLicenseStatus(result);
+      setStatus(result);
 
       if (result.allowed && result.machine_registered) {
         pushLog('Licenciamento da aplicação validado e estação registrada com sucesso.');
