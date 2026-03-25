@@ -265,23 +265,9 @@ fn build_main_line_and_observation(
     put(&mut chars, 255, 14, &format_money(valor_irrf), true, ' ');
     put(&mut chars, 269, 14, &format_money(valor_inss), true, ' ');
     put(&mut chars, 283, 14, "", false, ' ');
-    put(
-        &mut chars,
-        297,
-        14,
-        &valor_iss_retido_fmt,
-        true,
-        ' ',
-    );
+    put(&mut chars, 297, 14, &valor_iss_retido_fmt, true, ' ');
     put(&mut chars, 311, 5, &especie_documento, false, ' ');
-    put(
-        &mut chars,
-        316,
-        1,
-        &situacao_documento_first,
-        false,
-        ' ',
-    );
+    put(&mut chars, 316, 1, &situacao_documento_first, false, ' ');
     put(&mut chars, 317, 5, "", false, ' ');
     put(&mut chars, 322, 200, "", false, ' ');
     put(&mut chars, 522, 100, "", false, ' ');
@@ -305,30 +291,9 @@ fn build_main_line_and_observation(
     put(&mut chars, 683, 2, "", false, ' ');
     put(&mut chars, 685, 18, &tomador_ie, false, ' ');
     put(&mut chars, 703, 2, &tomador_uf, false, ' ');
-    put(
-        &mut chars,
-        705,
-        6,
-        &emissao_retencao_fmt,
-        false,
-        ' ',
-    );
-    put(
-        &mut chars,
-        711,
-        14,
-        &base_calculo_retido_fmt,
-        true,
-        ' ',
-    );
-    put(
-        &mut chars,
-        725,
-        5,
-        &aliquota_retido_fmt,
-        true,
-        ' ',
-    );
+    put(&mut chars, 705, 6, &emissao_retencao_fmt, false, ' ');
+    put(&mut chars, 711, 14, &base_calculo_retido_fmt, true, ' ');
+    put(&mut chars, 725, 5, &aliquota_retido_fmt, true, ' ');
     put(&mut chars, 730, 12, &code_12, false, ' ');
     put(&mut chars, 742, 5, modelo_nf, false, ' ');
     put(&mut chars, 747, 2, motivo_retencao, false, ' ');
@@ -420,30 +385,9 @@ fn build_main_line_and_observation(
         true,
         ' ',
     );
-    put(
-        &mut chars,
-        1049,
-        8,
-        &aliquota_inss_fmt,
-        true,
-        ' ',
-    );
-    put(
-        &mut chars,
-        1057,
-        12,
-        &valor_inss_small_fmt,
-        true,
-        ' ',
-    );
-    put(
-        &mut chars,
-        1069,
-        12,
-        &valor_inss_small_fmt,
-        true,
-        ' ',
-    );
+    put(&mut chars, 1049, 8, &aliquota_inss_fmt, true, ' ');
+    put(&mut chars, 1057, 12, &valor_inss_small_fmt, true, ' ');
+    put(&mut chars, 1069, 12, &valor_inss_small_fmt, true, ' ');
     put(&mut chars, 1081, 12, "", true, ' ');
     put(&mut chars, 1093, 12, "", true, ' ');
     put(&mut chars, 1105, 12, "", true, ' ');
