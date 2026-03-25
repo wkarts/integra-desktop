@@ -1,3 +1,17 @@
+## [1.8.7](https://github.com/wkarts/integra-desktop/compare/v1.8.6...v1.8.7) (2026-03-25)
+
+
+### Bug Fixes
+
+* ajustar serial e layout da sidebar de licenciamento ([b85ab8b](https://github.com/wkarts/integra-desktop/commit/b85ab8bb78495ebe97dcb67fe5d1866554b6825f))
+
+## [1.8.6](https://github.com/wkarts/integra-desktop/compare/v1.8.5...v1.8.6) (2026-03-25)
+
+
+### Bug Fixes
+
+* alinhar integração de licenciamento no fluxo Tauri ([e2fe4b1](https://github.com/wkarts/integra-desktop/commit/e2fe4b1caf8a6d09470a195e449750166164e935))
+
 ## [1.8.5](https://github.com/wkarts/integra-desktop/compare/v1.8.4...v1.8.5) (2026-03-25)
 
 
