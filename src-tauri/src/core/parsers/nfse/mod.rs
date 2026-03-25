@@ -18,23 +18,44 @@ pub fn parse_nfse_xml_with_layout(
     file_name: &str,
     configured_layout: Option<&str>,
 ) -> Result<NfseDocument> {
+    let normalized_xml = normalize_xml_for_parsing(xml);
     let provider = configured_layout
         .and_then(provider_from_layout)
         .map(Ok)
-        .unwrap_or_else(|| detector::detect_provider(xml))?;
+        .unwrap_or_else(|| detector::detect_provider(&normalized_xml))?;
 
     match provider {
         detector::ProviderKind::WebissAbrasf202 | detector::ProviderKind::GenericCompNfse => {
-            abrasf_v2::parse(xml, file_name)
+            abrasf_v2::parse(&normalized_xml, file_name)
         }
-        detector::ProviderKind::UbairaCustom => generic_fallback::parse_ubaira(xml, file_name),
+        detector::ProviderKind::UbairaCustom => {
+            generic_fallback::parse_ubaira(&normalized_xml, file_name)
+        }
         detector::ProviderKind::Ginfes | detector::ProviderKind::Saj => {
-            ginfes::parse(xml, file_name)
+            ginfes::parse(&normalized_xml, file_name)
         }
-        detector::ProviderKind::Betha => betha::parse(xml, file_name),
-        detector::ProviderKind::AbrasfV1 => abrasf_v1::parse(xml, file_name),
+        detector::ProviderKind::Betha => betha::parse(&normalized_xml, file_name),
+        detector::ProviderKind::AbrasfV1 => abrasf_v1::parse(&normalized_xml, file_name),
         detector::ProviderKind::Unknown => Err(anyhow!("Layout de XML NFS-e não suportado.")),
     }
+}
+
+fn normalize_xml_for_parsing(xml: &str) -> String {
+    let trimmed = xml.trim_start_matches('\u{feff}').trim_start();
+
+    if let Some(rest) = trimmed.strip_prefix("?<?xml") {
+        return format!("<?xml{}", rest);
+    }
+
+    if trimmed.starts_with("<?xml") || trimmed.starts_with('<') {
+        return trimmed.to_string();
+    }
+
+    if let Some(start) = trimmed.find('<') {
+        return trimmed[start..].to_string();
+    }
+
+    trimmed.to_string()
 }
 
 fn provider_from_layout(layout: &str) -> Option<detector::ProviderKind> {
