@@ -43,8 +43,9 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
         <div>
           <label>Layout de saída</label>
           <select value={value.output_layout} onChange={(e) => set('output_layout', e.target.value as ConversionProfile['output_layout'])}>
-            <option value="ba_prestados">Serviços prestados</option>
-            <option value="ba_tomados">Serviços tomados</option>
+            <option value="ba_prestados">Bahia - Serviços prestados</option>
+            <option value="ba_tomados">Bahia - Serviços tomados</option>
+            <option value="sp_prestados">São Paulo - Serviços prestados (Prosoft 1674)</option>
             <option value="prosoft_faturas">Faturas</option>
           </select>
         </div>

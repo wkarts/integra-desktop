@@ -54,6 +54,10 @@ function buildDeterministicTxtFileName(outputLayout: string): string {
     return `LFSSERBA._${date}_${time}_${seq}.txt`;
   }
 
+  if (outputLayout === 'sp_prestados') {
+    return `LFSSERSP._${date}_${time}_${seq}.txt`;
+  }
+
   return `${outputLayout.toUpperCase()}_${date}_${time}_${seq}.txt`;
 }
 

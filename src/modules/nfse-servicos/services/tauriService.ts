@@ -15,6 +15,8 @@ import type {
   StartupLicenseContext,
   UploadInputItem,
   ValidateLocalLicenseRequest,
+  StandardizeXmlOptions,
+  StandardizedXmlResult,
 } from '../../../shared/types';
 
 export async function processNfseBatch(items: ProcessBatchInputItem[]): Promise<ProcessBatchResult> {
@@ -104,4 +106,14 @@ export async function validateLocalLicense(
   request: ValidateLocalLicenseRequest,
 ): Promise<LocalLicenseValidationResult> {
   return invoke<LocalLicenseValidationResult>('validate_local_license', { request });
+}
+
+
+export async function convertNfseXmlToStandard(
+  xml: string,
+  fileName: string,
+  profile: ConversionProfile | null,
+  options: StandardizeXmlOptions,
+): Promise<StandardizedXmlResult> {
+  return invoke<StandardizedXmlResult>('convert_nfse_xml_to_standard', { xml, fileName, profile, options });
 }

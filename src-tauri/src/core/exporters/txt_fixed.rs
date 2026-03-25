@@ -5,6 +5,9 @@ use crate::core::mappers::prosoft_faturas::map_document_to_fatura_line;
 use crate::core::mappers::prosoft_servicos_prestados::{
     map_document_to_ba_prestados_line, map_document_to_ba_prestados_record,
 };
+use crate::core::mappers::prosoft_servicos_prestados_sp::{
+    map_document_to_sp_prestados_line, map_document_to_sp_prestados_record,
+};
 use crate::core::mappers::prosoft_servicos_tomados::map_document_to_ba_tomados_line;
 
 pub fn export_documents_to_txt(
@@ -14,11 +17,15 @@ pub fn export_documents_to_txt(
     if profile.output_layout == "ba_prestados" {
         return export_ba_prestados(documents, profile);
     }
+    if profile.output_layout == "sp_prestados" {
+        return export_sp_prestados(documents, profile);
+    }
 
     let mut lines = Vec::new();
     for document in documents {
         let line = match profile.output_layout.as_str() {
             "ba_tomados" => map_document_to_ba_tomados_line(document, profile)?,
+            "sp_prestados" => map_document_to_sp_prestados_line(document, profile)?,
             "prosoft_faturas" => map_document_to_fatura_line(document, profile)?,
             _ => map_document_to_ba_prestados_line(document, profile)?,
         };
@@ -28,6 +35,35 @@ pub fn export_documents_to_txt(
                 .map(|item| item.to_string()),
         );
     }
+    Ok(lines.join("\r\n"))
+}
+
+
+fn export_sp_prestados(documents: &[NfseDocument], profile: &ConversionProfile) -> Result<String> {
+    let mut ordered = documents.to_vec();
+    ordered.sort_by_key(|item| {
+        (
+            emissao_sort_key(&item.emissao),
+            nota_sort_key(&item.numero),
+            item.id.clone(),
+        )
+    });
+
+    let mut lines = Vec::new();
+    for document in &ordered {
+        let record = map_document_to_sp_prestados_record(document, profile)?;
+        validate_main_line_size(&record.main_line, document, 1674, "sp_prestados")?;
+        validate_obs_rule(&record.main_line, record.obs_line.as_deref(), document, 1024)?;
+        lines.push(record.main_line);
+        if let Some(obs) = record.obs_line {
+            lines.push(obs);
+        }
+    }
+
+    if lines.iter().any(|item| item.trim().is_empty()) {
+        anyhow::bail!("arquivo final contém linhas vazias no layout sp_prestados");
+    }
+
     Ok(lines.join("\r\n"))
 }
 
@@ -44,8 +80,8 @@ fn export_ba_prestados(documents: &[NfseDocument], profile: &ConversionProfile) 
     let mut lines = Vec::new();
     for document in &ordered {
         let record = map_document_to_ba_prestados_record(document, profile)?;
-        validate_main_line(&record.main_line, document)?;
-        validate_obs_rule(&record.main_line, record.obs_line.as_deref(), document)?;
+        validate_main_line_size(&record.main_line, document, 1172, "ba_prestados")?;
+        validate_obs_rule(&record.main_line, record.obs_line.as_deref(), document, 910)?;
         lines.push(record.main_line);
         if let Some(obs) = record.obs_line {
             lines.push(obs);
@@ -59,17 +95,24 @@ fn export_ba_prestados(documents: &[NfseDocument], profile: &ConversionProfile) 
     Ok(lines.join("\r\n"))
 }
 
-fn validate_main_line(line: &str, document: &NfseDocument) -> Result<()> {
+fn validate_main_line_size(
+    line: &str,
+    document: &NfseDocument,
+    expected: usize,
+    layout: &str,
+) -> Result<()> {
     if line.contains('\n') || line.contains('\r') {
         anyhow::bail!(
             "NF {} contém quebra de linha indevida no registro principal",
             document.numero
         );
     }
-    if line.chars().count() != 1172 {
+    if line.chars().count() != expected {
         anyhow::bail!(
-            "NF {} possui linha principal com tamanho inválido: esperado 1172, obtido {}",
+            "NF {} possui linha principal com tamanho inválido no layout {}: esperado {}, obtido {}",
             document.numero,
+            layout,
+            expected,
             line.chars().count()
         );
     }
@@ -80,20 +123,23 @@ fn validate_obs_rule(
     main_line: &str,
     obs_line: Option<&str>,
     document: &NfseDocument,
+    obs_position: usize,
 ) -> Result<()> {
-    let obs_flag = main_line.chars().nth(909).unwrap_or('0');
+    let obs_flag = main_line.chars().nth(obs_position.saturating_sub(1)).unwrap_or('0');
     let has_obs = obs_line.is_some();
 
     if has_obs && obs_flag != '1' {
         anyhow::bail!(
-            "NF {} possui *OBS, mas campo 910 não está marcado com 1",
-            document.numero
+            "NF {} possui *OBS, mas o campo de observação estendida na posição {} não está marcado com 1",
+            document.numero,
+            obs_position
         );
     }
     if !has_obs && obs_flag == '1' {
         anyhow::bail!(
-            "NF {} está com campo 910=1 sem linha *OBS correspondente",
-            document.numero
+            "NF {} está com o campo de observação estendida na posição {} marcado com 1 sem linha *OBS correspondente",
+            document.numero,
+            obs_position
         );
     }
 

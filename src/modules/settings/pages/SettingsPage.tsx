@@ -63,12 +63,13 @@ function getSelectedProfile(bundle: ProfileBundle): ConversionProfile {
 
 export default function SettingsPage() {
   const { profile, setProfile, pushLog } = useNfseStore();
-  const { status: licenseStatus, setStatus } = useLicenseRuntime();
+  const { status: licenseStatus, setStatus, startupContext } = useLicenseRuntime();
   const [licenseSettings, setLicenseSettings] = useState<LicenseSettings>(defaultLicenseSettings);
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
   const [profileBundle, setProfileBundle] = useState<ProfileBundle>(defaultProfileBundle);
   const [busyLicense, setBusyLicense] = useState(false);
   const [busyProfiles, setBusyProfiles] = useState(false);
+  const bypassActive = Boolean(startupContext?.licensing_disabled || licenseSettings.licensing_disabled);
 
   useEffect(() => {
     Promise.all([
@@ -207,6 +208,31 @@ export default function SettingsPage() {
       });
       setLicenseSettings(persisted);
 
+      if (bypassActive) {
+        setStatus({
+          online: false,
+          allowed: true,
+          blocked: false,
+          machine_registered: true,
+          machine_blocked: false,
+          seats_total: 0,
+          seats_used: 0,
+          expiry: null,
+          message: 'Licenciamento em bypass ativo. Restrições desabilitadas.',
+          block_reason: null,
+          technical_message: 'source=settings | mode=licensing-disabled',
+          company_name: persisted.company_name,
+          company_document: persisted.company_document,
+          machine_key: persisted.machine_key,
+          status_code: 1,
+          local_license: null,
+          licensed_company: null,
+          licensed_device: null,
+        });
+        pushLog('Bypass ativo: licença/registro não bloqueiam perfis de empresa nem exportações.');
+        return;
+      }
+
       const result = await checkLicenseStatus(persisted);
       setStatus(result);
 
@@ -269,6 +295,11 @@ export default function SettingsPage() {
       />
 
       <div className="card">
+        {bypassActive && (
+          <div className="alert-strip" style={{ marginBottom: 12 }}>
+            Bypass ativo: licenciamento/registro não bloqueiam criação, edição e salvamento de perfis de empresa.
+          </div>
+        )}
         <div className="section-title-row">
           <div>
             <h3>Licenciamento da aplicação</h3>
