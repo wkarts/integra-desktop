@@ -1,3 +1,10 @@
+## [1.8.9](https://github.com/wkarts/integra-desktop/compare/v1.8.8...v1.8.9) (2026-03-25)
+
+
+### Bug Fixes
+
+* atender regras do clippy no exportador e mapper ([68f1ef7](https://github.com/wkarts/integra-desktop/commit/68f1ef78112990baf70460f6b31778952157bf99))
+
 ## [1.8.8](https://github.com/wkarts/integra-desktop/compare/v1.8.7...v1.8.8) (2026-03-25)
 
 
