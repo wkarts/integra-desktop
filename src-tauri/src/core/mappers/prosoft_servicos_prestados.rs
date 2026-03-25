@@ -85,7 +85,10 @@ fn build_main_line_and_observation(
         format!("{} {}", observacao_base, competencia).trim(),
         &profile.field_rules.observacao,
     ));
-    let observacao_curta = sanitize_obs_line(&observacao).chars().take(40).collect::<String>();
+    let observacao_curta = sanitize_obs_line(&observacao)
+        .chars()
+        .take(40)
+        .collect::<String>();
     let municipio_nome = sanitize_text(&apply_string_rule(
         &document.municipio_nome,
         &profile.field_rules.municipio,
@@ -118,7 +121,11 @@ fn build_main_line_and_observation(
         &profile.field_rules.valor_liquido,
     );
     let iss_retido = apply_bool_rule(document.taxes.iss_retido, &profile.field_rules.iss_retido);
-    let modelo_iss = if profile.modelo_iss.trim() == "53" { "53" } else { "51" };
+    let modelo_iss = if profile.modelo_iss.trim() == "53" {
+        "53"
+    } else {
+        "51"
+    };
     let tipo_livro = if modelo_iss == "53" { "2" } else { "1" };
 
     put(&mut chars, 1, 1, tipo_livro, false, ' ');
@@ -189,7 +196,11 @@ fn build_main_line_and_observation(
         &mut chars,
         637,
         5,
-        if matches!(tipo_livro, "1" | "2") { "" } else { &profile.modelo_nf },
+        if matches!(tipo_livro, "1" | "2") {
+            ""
+        } else {
+            &profile.modelo_nf
+        },
         false,
         ' ',
     );
