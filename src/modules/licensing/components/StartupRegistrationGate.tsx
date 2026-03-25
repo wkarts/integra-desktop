@@ -13,6 +13,7 @@ import {
   loadLicenseSettings,
   saveLicenseSettings,
 } from '../../nfse-servicos/services/tauriService';
+import { useLicenseRuntime } from '../context/LicenseRuntimeContext';
 
 const defaultLicenseSettings: LicenseSettings = {
   service_url: 'https://api.rest.wwsoftwares.com.br/api/v1',
@@ -79,6 +80,7 @@ const emptyDeviceInfo: RegistrationDeviceInfo = {
 };
 
 export function StartupRegistrationGate() {
+  const { setStatus, setStartupContext: setRuntimeStartupContext } = useLicenseRuntime();
   const bootstrappedRef = useRef(false);
   const [booting, setBooting] = useState(true);
   const [required, setRequired] = useState(false);
@@ -100,7 +102,7 @@ export function StartupRegistrationGate() {
       try {
         const savedSettings = await loadLicenseSettings();
         const startup = await getStartupLicensingContext();
-        setStartupContext(startup);
+        setRuntimeStartupContext(startup);
 
         const nextSettings: LicenseSettings = {
           ...defaultLicenseSettings,
@@ -181,6 +183,26 @@ export function StartupRegistrationGate() {
             licensed_company: null,
             licensed_device: null,
           });
+          setStatus({
+            online: false,
+            allowed: true,
+            blocked: false,
+            machine_registered: true,
+            machine_blocked: false,
+            seats_total: 0,
+            seats_used: 0,
+            expiry: null,
+            message: 'Licenciamento desabilitado na configuração da aplicação.',
+            block_reason: null,
+            technical_message: 'source=settings | mode=licensing-disabled',
+            company_name: hydratedSettings.company_name,
+            company_document: hydratedSettings.company_document,
+            machine_key: hydratedSettings.machine_key,
+            status_code: 1,
+            local_license: null,
+            licensed_company: null,
+            licensed_device: null,
+          });
           setRequired(false);
           return;
         }
@@ -197,6 +219,7 @@ export function StartupRegistrationGate() {
         if (mayValidateAutomatically) {
           const status = await checkLicenseStatus(hydratedSettings);
           setResult(status);
+          setStatus(status);
 
           if (status.allowed && status.machine_registered) {
             setRequired(false);
@@ -217,6 +240,7 @@ export function StartupRegistrationGate() {
         setRequired(true);
       } catch (err) {
         setRequired(true);
+        setStatus(null);
         setError(err instanceof Error ? err.message : 'Falha ao preparar o registro inicial.');
       } finally {
         setBooting(false);
@@ -259,6 +283,7 @@ export function StartupRegistrationGate() {
 
       const status = await checkLicenseStatus(persisted);
       setResult(status);
+      setStatus(status);
 
       if (status.allowed && status.machine_registered) {
         setRequired(false);
@@ -388,7 +413,13 @@ export function StartupRegistrationGate() {
           <div className="span-2">
             <label>Número de série completo</label>
             <textarea
-              value={deviceInfo.serial_number || 'Não identificado automaticamente'}
+              value={
+                deviceInfo.serial_number ||
+                deviceInfo.bios_serial ||
+                deviceInfo.motherboard_serial ||
+                deviceInfo.machine_guid ||
+                'Não identificado automaticamente'
+              }
               readOnly
               rows={2}
               className="readonly-textarea mono-text"
