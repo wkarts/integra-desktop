@@ -103,6 +103,7 @@ export function StartupRegistrationGate() {
         const savedSettings = await loadLicenseSettings();
         const startup = await getStartupLicensingContext();
         setRuntimeStartupContext(startup);
+        setStartupContext(startup);
 
         const nextSettings: LicenseSettings = {
           ...defaultLicenseSettings,
@@ -418,6 +419,7 @@ export function StartupRegistrationGate() {
                 deviceInfo.bios_serial ||
                 deviceInfo.motherboard_serial ||
                 deviceInfo.machine_guid ||
+                deviceInfo.device_key ||
                 'Não identificado automaticamente'
               }
               readOnly

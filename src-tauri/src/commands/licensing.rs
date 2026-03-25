@@ -51,6 +51,12 @@ pub fn get_registration_device_info(
     let input = build_license_input(&normalized_settings, &device, None);
     let device_key = generate_device_key(&input);
 
+    let serial_number = optional_string(&device.serial_number)
+        .or_else(|| optional_string(&device.bios_serial))
+        .or_else(|| optional_string(&device.motherboard_serial))
+        .or_else(|| optional_string(&device.machine_guid))
+        .unwrap_or_default();
+
     Ok(RegistrationDeviceInfo {
         station_name: device.station_name.clone(),
         device_display_name: full_device_name(
@@ -60,7 +66,7 @@ pub fn get_registration_device_info(
         ),
         hostname: device.hostname,
         computer_name: device.computer_name,
-        serial_number: device.serial_number,
+        serial_number,
         machine_guid: device.machine_guid,
         bios_serial: device.bios_serial,
         motherboard_serial: device.motherboard_serial,
@@ -514,12 +520,15 @@ fn parse_startup_args(args: &[String]) -> HashMap<String, Option<String>> {
 
     while index < args.len() {
         let current = args[index].trim();
-        if !current.starts_with("--") {
+        let normalized_flag = current
+            .strip_prefix("--")
+            .or_else(|| current.strip_prefix('-'))
+            .or_else(|| current.strip_prefix('/'));
+
+        let Some(raw) = normalized_flag else {
             index += 1;
             continue;
-        }
-
-        let raw = &current[2..];
+        };
         if raw.is_empty() {
             index += 1;
             continue;
