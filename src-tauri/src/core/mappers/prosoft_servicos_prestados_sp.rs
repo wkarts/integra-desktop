@@ -369,7 +369,7 @@ fn build_main_line_and_observation(
         &mut chars,
         1008,
         8,
-        &municipio_export_code(profile, document),
+        &municipality_export_code(profile, document),
         false,
         ' ',
     );
