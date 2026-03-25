@@ -10,6 +10,7 @@ const menu = [
   { to: '/', label: 'Dashboard' },
   { to: '/nfse-servicos', label: 'NFS-e → Prosoft' },
   { to: '/nfe-faturas', label: 'NFe / Faturas' },
+  { to: '/nfse-converter', label: 'Conversor XML NFS-e' },
   { to: '/settings', label: 'Configurações' },
   { to: '/logs', label: 'Logs' },
 ];
