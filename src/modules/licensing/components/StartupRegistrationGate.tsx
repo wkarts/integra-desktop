@@ -413,7 +413,13 @@ export function StartupRegistrationGate() {
           <div className="span-2">
             <label>Número de série completo</label>
             <textarea
-              value={deviceInfo.serial_number || 'Não identificado automaticamente'}
+              value={
+                deviceInfo.serial_number ||
+                deviceInfo.bios_serial ||
+                deviceInfo.motherboard_serial ||
+                deviceInfo.machine_guid ||
+                'Não identificado automaticamente'
+              }
               readOnly
               rows={2}
               className="readonly-textarea mono-text"
