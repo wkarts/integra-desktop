@@ -5,13 +5,12 @@ pub mod core;
 pub mod storage;
 
 use commands::{
-    append_runtime_log, check_license_status, clipboard_write_text, dialog_confirm,
-    dialog_message_error, dialog_message_info, dialog_message_warning,
+    append_runtime_log, check_license_status, clipboard_write_text, convert_nfse_xml_to_standard,
+    dialog_confirm, dialog_message_error, dialog_message_info, dialog_message_warning,
     dialog_pick_nfe_faturas_directory, dialog_pick_nfe_faturas_files,
     dialog_pick_nfe_faturas_legacy_file, dialog_pick_nfe_faturas_output_dir,
     dialog_save_nfe_faturas_file, export_nfe_faturas_csv, export_nfe_faturas_legacy_txt,
     export_nfe_faturas_sped, export_nfe_faturas_txt, export_nfse_csv, export_nfse_txt,
-    convert_nfse_xml_to_standard,
     generate_local_license, get_app_meta, get_default_station_name, get_machine_fingerprint,
     get_registration_device_info, get_startup_licensing_context, guess_nfe_faturas_cnpj_filial,
     import_nfe_faturas_legacy, list_runtime_logs, load_conversion_profile, load_license_settings,

@@ -52,8 +52,14 @@ fn build_main_line_and_observation(
     let len = 1674usize;
     let mut chars = vec![' '; len];
 
-    let serie = sanitize_serie(&apply_string_rule(&document.serie, &profile.field_rules.serie));
-    let numero = only_digits(&apply_string_rule(&document.numero, &profile.field_rules.numero));
+    let serie = sanitize_serie(&apply_string_rule(
+        &document.serie,
+        &profile.field_rules.serie,
+    ));
+    let numero = only_digits(&apply_string_rule(
+        &document.numero,
+        &profile.field_rules.numero,
+    ));
     let service_code = apply_string_rule(
         &document.item_lista_servico,
         &profile.field_rules.codigo_servico,
@@ -128,12 +134,20 @@ fn build_main_line_and_observation(
     };
     let tipo_livro = if modelo_iss == "53" { "2" } else { "1" };
     let tipo_recolhimento = if profile.tipo_recolhimento.trim().is_empty() {
-        if iss_retido { "11" } else { "10" }
+        if iss_retido {
+            "11"
+        } else {
+            "10"
+        }
     } else {
         profile.tipo_recolhimento.trim()
     };
     let motivo_retencao = if profile.motivo_retencao.trim().is_empty() {
-        if iss_retido { "T" } else { "" }
+        if iss_retido {
+            "T"
+        } else {
+            ""
+        }
     } else {
         profile.motivo_retencao.trim()
     };
@@ -142,8 +156,12 @@ fn build_main_line_and_observation(
     } else {
         profile.operacao_nota.trim()
     };
-    let tipo_documento = apply_string_rule(&profile.tipo_documento, &profile.field_rules.tipo_documento);
-    let especie_documento = apply_string_rule(&profile.especie_documento, &profile.field_rules.especie_documento);
+    let tipo_documento =
+        apply_string_rule(&profile.tipo_documento, &profile.field_rules.tipo_documento);
+    let especie_documento = apply_string_rule(
+        &profile.especie_documento,
+        &profile.field_rules.especie_documento,
+    );
     let situacao_documento = sanitize_text_ascii(&profile.situacao_documento)
         .chars()
         .take(10)
@@ -161,7 +179,14 @@ fn build_main_line_and_observation(
     put(&mut chars, 17, 6, "", true, ' ');
     put(&mut chars, 23, 4, &code_4, true, ' ');
     put(&mut chars, 27, 1, "0", false, ' ');
-    put(&mut chars, 28, 14, &format_money(document.taxes.valor_servicos), true, ' ');
+    put(
+        &mut chars,
+        28,
+        14,
+        &format_money(document.taxes.valor_servicos),
+        true,
+        ' ',
+    );
     put(&mut chars, 42, 5, &format_money_short(aliquota), true, ' ');
     put(&mut chars, 47, 14, &format_money(valor_iss), true, ' ');
     put(&mut chars, 61, 40, &observacao_curta, false, ' ');
@@ -181,7 +206,14 @@ fn build_main_line_and_observation(
         put(&mut chars, 109, 14, "", true, ' ');
         put(&mut chars, 123, 14, "", true, ' ');
         put(&mut chars, 137, 14, "", true, ' ');
-        put(&mut chars, 151, 14, &format_money(document.taxes.valor_servicos), true, ' ');
+        put(
+            &mut chars,
+            151,
+            14,
+            &format_money(document.taxes.valor_servicos),
+            true,
+            ' ',
+        );
         put(&mut chars, 165, 14, &format_money(base_calculo), true, ' ');
         put(&mut chars, 179, 14, "", true, ' ');
         put(&mut chars, 193, 14, "", true, ' ');
@@ -193,9 +225,31 @@ fn build_main_line_and_observation(
     put(&mut chars, 255, 14, &format_money(valor_irrf), true, ' ');
     put(&mut chars, 269, 14, &format_money(valor_inss), true, ' ');
     put(&mut chars, 283, 14, "", false, ' ');
-    put(&mut chars, 297, 14, if iss_retido { &format_money(valor_iss) } else { "" }, true, ' ');
+    put(
+        &mut chars,
+        297,
+        14,
+        if iss_retido {
+            &format_money(valor_iss)
+        } else {
+            ""
+        },
+        true,
+        ' ',
+    );
     put(&mut chars, 311, 5, &especie_documento, false, ' ');
-    put(&mut chars, 316, 1, &profile.situacao_documento.chars().take(1).collect::<String>(), false, ' ');
+    put(
+        &mut chars,
+        316,
+        1,
+        &profile
+            .situacao_documento
+            .chars()
+            .take(1)
+            .collect::<String>(),
+        false,
+        ' ',
+    );
     put(&mut chars, 317, 5, "", false, ' ');
     put(&mut chars, 322, 200, "", false, ' ');
     put(&mut chars, 522, 100, "", false, ' ');
@@ -205,16 +259,52 @@ fn build_main_line_and_observation(
     put(&mut chars, 643, 6, "", false, ' ');
     put(&mut chars, 649, 4, "", false, ' ');
     put(&mut chars, 653, 6, "", false, ' ');
-    put(&mut chars, 659, 1, &profile.responsavel_retencao, false, ' ');
+    put(
+        &mut chars,
+        659,
+        1,
+        &profile.responsavel_retencao,
+        false,
+        ' ',
+    );
     put(&mut chars, 660, 10, "", true, '0');
     put(&mut chars, 670, 10, "", true, '0');
     put(&mut chars, 680, 3, "", false, ' ');
     put(&mut chars, 683, 2, "", false, ' ');
     put(&mut chars, 685, 18, &tomador_ie, false, ' ');
     put(&mut chars, 703, 2, &tomador_uf, false, ' ');
-    put(&mut chars, 705, 6, if iss_retido { &ddmmaa(&emissao) } else { "" }, false, ' ');
-    put(&mut chars, 711, 14, if iss_retido { &format_money(base_calculo) } else { "" }, true, ' ');
-    put(&mut chars, 725, 5, if iss_retido { &format_money_short(aliquota) } else { "" }, true, ' ');
+    put(
+        &mut chars,
+        705,
+        6,
+        if iss_retido { &ddmmaa(&emissao) } else { "" },
+        false,
+        ' ',
+    );
+    put(
+        &mut chars,
+        711,
+        14,
+        if iss_retido {
+            &format_money(base_calculo)
+        } else {
+            ""
+        },
+        true,
+        ' ',
+    );
+    put(
+        &mut chars,
+        725,
+        5,
+        if iss_retido {
+            &format_money_short(aliquota)
+        } else {
+            ""
+        },
+        true,
+        ' ',
+    );
     put(&mut chars, 730, 12, &code_12, false, ' ');
     put(&mut chars, 742, 5, modelo_nf, false, ' ');
     put(&mut chars, 747, 2, motivo_retencao, false, ' ');
@@ -222,16 +312,37 @@ fn build_main_line_and_observation(
     put(&mut chars, 751, 3, tipo_recolhimento, false, ' ');
     put(&mut chars, 754, 1, "0", false, ' ');
     put(&mut chars, 755, 3, &tipo_documento, false, ' ');
-    put(&mut chars, 758, 1, if valor_irrf > 0.0 { "1" } else { "0" }, false, ' ');
+    put(
+        &mut chars,
+        758,
+        1,
+        if valor_irrf > 0.0 { "1" } else { "0" },
+        false,
+        ' ',
+    );
     put(&mut chars, 759, 5, &ibge5(&municipio_codigo), false, ' ');
     put(&mut chars, 764, 10, &situacao_documento, false, ' ');
     put(&mut chars, 774, 2, "", false, ' ');
     put(&mut chars, 776, 2, &profile.cst_pis, false, ' ');
     put(&mut chars, 778, 2, &profile.cst_cofins, false, ' ');
     put(&mut chars, 780, 14, &format_money(base_calculo), true, ' ');
-    put(&mut chars, 794, 8, &format_rate_from_tax(valor_pis, base_calculo), true, ' ');
+    put(
+        &mut chars,
+        794,
+        8,
+        &format_rate_from_tax(valor_pis, base_calculo),
+        true,
+        ' ',
+    );
     put(&mut chars, 802, 14, &format_money(valor_pis), true, ' ');
-    put(&mut chars, 816, 8, &format_rate_from_tax(valor_cofins, base_calculo), true, ' ');
+    put(
+        &mut chars,
+        816,
+        8,
+        &format_rate_from_tax(valor_cofins, base_calculo),
+        true,
+        ' ',
+    );
     put(&mut chars, 824, 14, &format_money(valor_cofins), true, ' ');
     put(&mut chars, 838, 12, "", false, ' ');
     put(&mut chars, 850, 12, "", false, ' ');
@@ -254,15 +365,77 @@ fn build_main_line_and_observation(
     put(&mut chars, 987, 10, "", false, ' ');
     put(&mut chars, 997, 8, &format_money_4(aliquota), true, ' ');
     put(&mut chars, 1005, 3, &profile.cst_iss, false, ' ');
-    put(&mut chars, 1008, 8, &municipio_export_code(profile, document), false, ' ');
+    put(
+        &mut chars,
+        1008,
+        8,
+        &municipio_export_code(profile, document),
+        false,
+        ' ',
+    );
     put(&mut chars, 1016, 4, &profile.cfps, false, ' ');
     put(&mut chars, 1020, 4, &profile.cod_receita_irrf, false, ' ');
-    put(&mut chars, 1024, 1, if should_emit_obs(&observacao, &profile.obs_extended) { "1" } else { "0" }, false, ' ');
+    put(
+        &mut chars,
+        1024,
+        1,
+        if should_emit_obs(&observacao, &profile.obs_extended) {
+            "1"
+        } else {
+            "0"
+        },
+        false,
+        ' ',
+    );
     put(&mut chars, 1025, 12, "", false, ' ');
-    put(&mut chars, 1037, 12, if valor_inss > 0.0 { &format_money_small(base_calculo) } else { "" }, true, ' ');
-    put(&mut chars, 1049, 8, if valor_inss > 0.0 { &format_rate_from_tax(valor_inss, base_calculo) } else { "" }, true, ' ');
-    put(&mut chars, 1057, 12, if valor_inss > 0.0 { &format_money_small(valor_inss) } else { "" }, true, ' ');
-    put(&mut chars, 1069, 12, if valor_inss > 0.0 { &format_money_small(valor_inss) } else { "" }, true, ' ');
+    put(
+        &mut chars,
+        1037,
+        12,
+        if valor_inss > 0.0 {
+            &format_money_small(base_calculo)
+        } else {
+            ""
+        },
+        true,
+        ' ',
+    );
+    put(
+        &mut chars,
+        1049,
+        8,
+        if valor_inss > 0.0 {
+            &format_rate_from_tax(valor_inss, base_calculo)
+        } else {
+            ""
+        },
+        true,
+        ' ',
+    );
+    put(
+        &mut chars,
+        1057,
+        12,
+        if valor_inss > 0.0 {
+            &format_money_small(valor_inss)
+        } else {
+            ""
+        },
+        true,
+        ' ',
+    );
+    put(
+        &mut chars,
+        1069,
+        12,
+        if valor_inss > 0.0 {
+            &format_money_small(valor_inss)
+        } else {
+            ""
+        },
+        true,
+        ' ',
+    );
     put(&mut chars, 1081, 12, "", true, ' ');
     put(&mut chars, 1093, 12, "", true, ' ');
     put(&mut chars, 1105, 12, "", true, ' ');

@@ -38,7 +38,6 @@ pub fn export_documents_to_txt(
     Ok(lines.join("\r\n"))
 }
 
-
 fn export_sp_prestados(documents: &[NfseDocument], profile: &ConversionProfile) -> Result<String> {
     let mut ordered = documents.to_vec();
     ordered.sort_by_key(|item| {
@@ -53,7 +52,12 @@ fn export_sp_prestados(documents: &[NfseDocument], profile: &ConversionProfile) 
     for document in &ordered {
         let record = map_document_to_sp_prestados_record(document, profile)?;
         validate_main_line_size(&record.main_line, document, 1674, "sp_prestados")?;
-        validate_obs_rule(&record.main_line, record.obs_line.as_deref(), document, 1024)?;
+        validate_obs_rule(
+            &record.main_line,
+            record.obs_line.as_deref(),
+            document,
+            1024,
+        )?;
         lines.push(record.main_line);
         if let Some(obs) = record.obs_line {
             lines.push(obs);
@@ -125,7 +129,10 @@ fn validate_obs_rule(
     document: &NfseDocument,
     obs_position: usize,
 ) -> Result<()> {
-    let obs_flag = main_line.chars().nth(obs_position.saturating_sub(1)).unwrap_or('0');
+    let obs_flag = main_line
+        .chars()
+        .nth(obs_position.saturating_sub(1))
+        .unwrap_or('0');
     let has_obs = obs_line.is_some();
 
     if has_obs && obs_flag != '1' {
