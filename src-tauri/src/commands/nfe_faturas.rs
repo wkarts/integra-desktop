@@ -576,9 +576,9 @@ pub fn export_nfe_faturas_txt(
     output_path: String,
     app: AppHandle,
 ) -> Result<NfeFaturasExportResult, String> {
-    let export_rows = compute_export_rows_base(&rows, &settings);
+    let export_rows = compute_export_rows_normal(&rows, &settings);
     if export_rows.is_empty() {
-        return Err("Nada para exportar (verifique SPED / filtros).".into());
+        return Err("Nada para exportar no fluxo atual (XML/SPED).".into());
     }
     let lines = compute_export_lines(&export_rows, &settings)
         .into_iter()
@@ -603,9 +603,9 @@ pub fn export_nfe_faturas_csv(
     output_path: String,
     app: AppHandle,
 ) -> Result<NfeFaturasExportResult, String> {
-    let export_rows = compute_export_rows_base(&rows, &settings);
+    let export_rows = compute_export_rows_normal(&rows, &settings);
     if export_rows.is_empty() {
-        return Err("Nada para exportar (verifique SPED / filtros).".into());
+        return Err("Nada para exportar no fluxo atual (XML/SPED).".into());
     }
     let line_items = compute_export_lines(&export_rows, &settings);
     let mut content = String::new();
@@ -650,6 +650,33 @@ pub fn export_nfe_faturas_csv(
         lines: line_items.len(),
         records: export_rows.len(),
         message: format!("CSV exportado: {}", output_path),
+    })
+}
+
+#[tauri::command]
+pub fn export_nfe_faturas_legacy_txt(
+    rows: Vec<NfeFaturasRow>,
+    settings: NfeFaturasSettings,
+    output_path: String,
+    app: AppHandle,
+) -> Result<NfeFaturasExportResult, String> {
+    let export_rows = compute_export_rows_legacy(&rows, &settings);
+    if export_rows.is_empty() {
+        return Err("Nenhuma fatura do fluxo legado foi encontrada para exportação.".into());
+    }
+    let lines = compute_export_lines(&export_rows, &settings)
+        .into_iter()
+        .map(|item| build_txt_line(&item.row, &item.item3, &settings))
+        .collect::<Vec<_>>();
+    let content = format!("{}\r\n", lines.join("\r\n"));
+    write_text_file(Path::new(&output_path), &content)?;
+    crate::storage::logs::append_log(&app, &format!("TXT legado exportado: {}", output_path))
+        .map_err(|e| e.to_string())?;
+    Ok(NfeFaturasExportResult {
+        output_paths: vec![output_path.clone()],
+        lines: lines.len(),
+        records: export_rows.len(),
+        message: format!("TXT legado exportado: {}", output_path),
     })
 }
 
@@ -1897,18 +1924,34 @@ fn apply_consolidacao_por_terceiro(
     out
 }
 
-fn compute_export_rows_base(
+fn compute_export_rows_normal(
     rows: &[NfeFaturasRow],
     settings: &NfeFaturasSettings,
 ) -> Vec<NfeFaturasRow> {
+    let base = rows
+        .iter()
+        .filter(|row| !row.legado)
+        .cloned()
+        .collect::<Vec<_>>();
     let filtered = if settings.chk_usar_sped && settings.chk_somente_com_sped {
-        rows.iter()
-            .filter(|r| r.sped_matched)
-            .cloned()
+        base.into_iter()
+            .filter(|row| row.sped_matched)
             .collect::<Vec<_>>()
     } else {
-        rows.to_vec()
+        base
     };
+    apply_consolidacao_por_terceiro(&filtered, settings)
+}
+
+fn compute_export_rows_legacy(
+    rows: &[NfeFaturasRow],
+    settings: &NfeFaturasSettings,
+) -> Vec<NfeFaturasRow> {
+    let filtered = rows
+        .iter()
+        .filter(|row| row.legado)
+        .cloned()
+        .collect::<Vec<_>>();
     apply_consolidacao_por_terceiro(&filtered, settings)
 }
 

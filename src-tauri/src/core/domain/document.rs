@@ -71,6 +71,7 @@ pub struct ConversionProfile {
     pub output_layout: String,
     pub cod_prosoft: String,
     pub especie_documento: String,
+    pub modelo_iss: String,
     pub modelo_nf: String,
     pub tipo_documento: String,
     pub situacao_documento: String,
@@ -110,7 +111,8 @@ impl Default for ConversionProfile {
             output_layout: "ba_prestados".into(),
             cod_prosoft: "0001".into(),
             especie_documento: "NFSE".into(),
-            modelo_nf: "OU000".into(),
+            modelo_iss: "51".into(),
+            modelo_nf: String::new(),
             tipo_documento: "001".into(),
             situacao_documento: String::new(),
             cfps: String::new(),
@@ -127,7 +129,7 @@ impl Default for ConversionProfile {
             company_municipio_nome: String::new(),
             company_municipio_codigo: String::new(),
             nfse_layout: "auto".into(),
-            obs_extended: "auto".into(),
+            obs_extended: "never".into(),
             field_rules: ConversionFieldRules::default(),
         }
     }

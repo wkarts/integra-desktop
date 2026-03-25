@@ -65,8 +65,15 @@ export function ProfileForm({ value, onChange }: { value: ConversionProfile; onC
           <input value={value.especie_documento} onChange={(e) => set('especie_documento', e.target.value)} />
         </div>
         <div>
-          <label>Modelo NF</label>
-          <input value={value.modelo_nf} onChange={(e) => set('modelo_nf', e.target.value)} />
+          <label>Modelo ISS</label>
+          <select value={value.modelo_iss} onChange={(e) => set('modelo_iss', e.target.value as ConversionProfile['modelo_iss'])}>
+            <option value="51">51 - Saídas Serviços Simples</option>
+            <option value="53">53 - Saídas Serviços Fatura</option>
+          </select>
+        </div>
+        <div>
+          <label>Modelo NF (somente conjugadas)</label>
+          <input value={value.modelo_nf} onChange={(e) => set('modelo_nf', e.target.value)} placeholder="Deixe em branco para tipos 1/2" />
         </div>
         <div>
           <label>Tipo documento</label>

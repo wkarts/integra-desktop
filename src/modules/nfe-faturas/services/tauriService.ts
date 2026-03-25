@@ -59,6 +59,14 @@ export function exportNfeFaturasCsv(
   return invoke<NfeFaturasExportResult>('export_nfe_faturas_csv', { rows, settings, outputPath });
 }
 
+export function exportNfeFaturasLegacyTxt(
+  rows: NfeFaturasRow[],
+  settings: NfeFaturasSettings,
+  outputPath: string,
+): Promise<NfeFaturasExportResult> {
+  return invoke<NfeFaturasExportResult>('export_nfe_faturas_legacy_txt', { rows, settings, outputPath });
+}
+
 export function exportNfeFaturasSped(
   rows: NfeFaturasRow[],
   settings: NfeFaturasSettings,
