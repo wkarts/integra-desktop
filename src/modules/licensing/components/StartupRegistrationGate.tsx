@@ -158,11 +158,6 @@ export function StartupRegistrationGate() {
         setDeviceInfo(device);
         setSettings(hydratedSettings);
 
-        if (startup.no_ui) {
-          setRequired(false);
-          return;
-        }
-
         if (hydratedSettings.licensing_disabled) {
           setResult({
             online: false,
@@ -204,6 +199,11 @@ export function StartupRegistrationGate() {
             licensed_company: null,
             licensed_device: null,
           });
+          setRequired(false);
+          return;
+        }
+
+        if (startup.no_ui) {
           setRequired(false);
           return;
         }

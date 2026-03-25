@@ -32,7 +32,7 @@ export interface ConversionFieldRules {
   campos_complementares: FieldRule;
 }
 
-export type OutputLayout = 'ba_prestados' | 'ba_tomados' | 'prosoft_faturas';
+export type OutputLayout = 'ba_prestados' | 'ba_tomados' | 'sp_prestados' | 'prosoft_faturas';
 export type NfseLayout = 'webiss_abrasf_v2' | 'ginfes' | 'betha' | 'abrasf_v1' | 'ubaira_custom' | 'auto';
 
 export interface ConversionProfile {
@@ -368,6 +368,25 @@ export interface NfseDocument {
   tomador: NfseParty;
   taxes: NfseTaxes;
   warnings: string[];
+}
+
+
+export type StandardizedXmlTarget = 'abrasf_v2' | 'abrasf_v1' | 'salvador_like';
+
+export interface StandardizeXmlOptions {
+  target: StandardizedXmlTarget;
+  remove_iss_aliquota?: boolean;
+  remove_iss_value?: boolean;
+  keep_only_iss_retido?: boolean;
+  remove_incompatible_tags?: boolean;
+}
+
+export interface StandardizedXmlResult {
+  detected_layout: string;
+  provider: string;
+  standardized_xml: string;
+  warnings: string[];
+  document: NfseDocument;
 }
 
 export interface ProcessBatchInputItem {
