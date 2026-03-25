@@ -81,11 +81,11 @@ fn build_main_line_and_observation(
         document.discriminacao.clone(),
         document.info_adic.clone(),
     ]);
-    let observacao = apply_string_rule(
+    let observacao = sanitize_obs_line(&apply_string_rule(
         format!("{} {}", observacao_base, competencia).trim(),
         &profile.field_rules.observacao,
-    );
-    let observacao_curta = observacao.chars().take(40).collect::<String>();
+    ));
+    let observacao_curta = sanitize_obs_line(&observacao).chars().take(40).collect::<String>();
     let municipio_nome = sanitize_text(&apply_string_rule(
         &document.municipio_nome,
         &profile.field_rules.municipio,
@@ -118,8 +118,10 @@ fn build_main_line_and_observation(
         &profile.field_rules.valor_liquido,
     );
     let iss_retido = apply_bool_rule(document.taxes.iss_retido, &profile.field_rules.iss_retido);
+    let modelo_iss = if profile.modelo_iss.trim() == "53" { "53" } else { "51" };
+    let tipo_livro = if modelo_iss == "53" { "2" } else { "1" };
 
-    put(&mut chars, 1, 1, "1", false, ' ');
+    put(&mut chars, 1, 1, tipo_livro, false, ' ');
     put(&mut chars, 2, 6, &ddmmaa(&emissao), true, ' ');
     put(&mut chars, 8, 5, &serie, false, ' ');
     put(&mut chars, 31, 4, &code_4, true, ' ');
@@ -135,8 +137,23 @@ fn build_main_line_and_observation(
     put(&mut chars, 50, 5, &format_money_short(aliquota), true, ' ');
     put(&mut chars, 55, 14, &format_money(valor_iss), true, ' ');
     put(&mut chars, 69, 40, &observacao_curta, false, ' ');
-    put(&mut chars, 117, 14, &format_money(base_calculo), true, ' ');
-    put(&mut chars, 173, 14, &format_money(base_calculo), true, ' ');
+    if modelo_iss == "51" {
+        put(&mut chars, 117, 14, &format_money(base_calculo), true, ' ');
+        put(&mut chars, 131, 14, "", true, ' ');
+        put(&mut chars, 145, 14, "", true, ' ');
+        put(&mut chars, 173, 14, "", true, ' ');
+        put(&mut chars, 187, 14, "", true, ' ');
+        put(&mut chars, 201, 14, "", true, ' ');
+        put(&mut chars, 215, 14, "", true, ' ');
+    } else {
+        put(&mut chars, 117, 14, "", true, ' ');
+        put(&mut chars, 131, 14, "", true, ' ');
+        put(&mut chars, 145, 14, "", true, ' ');
+        put(&mut chars, 173, 14, &format_money(base_calculo), true, ' ');
+        put(&mut chars, 187, 14, "", true, ' ');
+        put(&mut chars, 201, 14, "", true, ' ');
+        put(&mut chars, 215, 14, "", true, ' ');
+    }
     put(&mut chars, 229, 20, &municipio_nome, false, ' ');
     put(&mut chars, 249, 14, &tomador_doc, true, '0');
     put(&mut chars, 263, 14, &format_money(valor_irrf), true, ' ');
@@ -168,7 +185,14 @@ fn build_main_line_and_observation(
     }
 
     put(&mut chars, 625, 12, &code_12, false, ' ');
-    put(&mut chars, 637, 5, &profile.modelo_nf, false, ' ');
+    put(
+        &mut chars,
+        637,
+        5,
+        if matches!(tipo_livro, "1" | "2") { "" } else { &profile.modelo_nf },
+        false,
+        ' ',
+    );
     put(&mut chars, 642, 2, &profile.motivo_retencao, false, ' ');
     let tipo_documento =
         apply_string_rule(&profile.tipo_documento, &profile.field_rules.tipo_documento);

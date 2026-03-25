@@ -45,6 +45,7 @@ export interface ConversionProfile {
   output_layout: OutputLayout;
   cod_prosoft: string;
   especie_documento: string;
+  modelo_iss: '51' | '53';
   modelo_nf: string;
   tipo_documento: string;
   situacao_documento: string;

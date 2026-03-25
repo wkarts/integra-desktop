@@ -12,7 +12,8 @@ export const defaultProfile: ConversionProfile = {
   output_layout: 'ba_prestados',
   cod_prosoft: '0001',
   especie_documento: 'NFSE',
-  modelo_nf: 'OU000',
+  modelo_iss: '51',
+  modelo_nf: '',
   tipo_documento: '001',
   situacao_documento: '',
   cfps: '',
@@ -29,7 +30,7 @@ export const defaultProfile: ConversionProfile = {
   company_municipio_nome: '',
   company_municipio_codigo: '',
   nfse_layout: 'auto',
-  obs_extended: 'auto',
+  obs_extended: 'never',
   field_rules: {
     base_calculo: source,
     iss_aliquota: source,

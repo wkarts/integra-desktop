@@ -22,6 +22,7 @@ import {
   dialogPickNfeFaturasOutputDir,
   dialogSaveNfeFaturasFile,
   exportNfeFaturasCsv,
+  exportNfeFaturasLegacyTxt,
   exportNfeFaturasSped,
   exportNfeFaturasTxt,
   guessNfeFaturasCnpjFilial,
@@ -73,6 +74,15 @@ function computeDestino(settings: NfeFaturasSettings): string {
   return `Faturas${code}.txt`;
 }
 
+function computeLegacyDestino(baseName: string): string {
+  const source = (baseName || '').trim();
+  if (!source) return 'FaturasLegado.txt';
+  if (/\.txt$/i.test(source)) {
+    return source.replace(/\.txt$/i, '_LEGADO.txt');
+  }
+  return `${source}_LEGADO.txt`;
+}
+
 function mergeLogs(current: NfeFaturasLogItem[], next: NfeFaturasLogItem[]): NfeFaturasLogItem[] {
   return [...next, ...current].slice(0, 500);
 }
@@ -122,6 +132,7 @@ export default function NfeFaturasPage() {
   }, [settings]);
 
   const destino = useMemo(() => computeDestino(settings), [settings]);
+  const destinoLegado = useMemo(() => computeLegacyDestino(destino), [destino]);
 
   const visibleRows = useMemo(() => {
     const q = gridFilter.trim().toLowerCase();
@@ -143,6 +154,20 @@ export default function NfeFaturasPage() {
       return hay.includes(q);
     });
   }, [gridFilter, rows]);
+
+  const legacyRows = useMemo(() => rows.filter((row) => row.legado), [rows]);
+  const normalRows = useMemo(() => rows.filter((row) => !row.legado), [rows]);
+  const visibleLegacyRows = useMemo(() => visibleRows.filter((row) => row.legado), [visibleRows]);
+  const visibleNormalRows = useMemo(() => visibleRows.filter((row) => !row.legado), [visibleRows]);
+  const legacyExportRows = useMemo(
+    () => (settings.chk_exportar_filtrados ? visibleLegacyRows : legacyRows),
+    [legacyRows, settings.chk_exportar_filtrados, visibleLegacyRows],
+  );
+  const normalExportRows = useMemo(
+    () => (settings.chk_exportar_filtrados ? visibleNormalRows : normalRows),
+    [normalRows, settings.chk_exportar_filtrados, visibleNormalRows],
+  );
+  const hasLegacyContext = legacyRows.length > 0;
 
   const stats = useMemo(() => {
     const list = visibleRows;
@@ -332,7 +357,7 @@ export default function NfeFaturasPage() {
     const path = await dialogSaveNfeFaturasFile(destino || 'Faturas.txt', 'Exportar TXT', ['txt']);
     if (!path) return;
     try {
-      const result = await exportNfeFaturasTxt(settings.chk_exportar_filtrados ? visibleRows : rows, settings, path);
+      const result = await exportNfeFaturasTxt(normalExportRows, settings, path);
       appendStatus(result.message);
       await dialogMessageInfo('Integra', result.message);
     } catch (error) {
@@ -344,7 +369,7 @@ export default function NfeFaturasPage() {
     const path = await dialogSaveNfeFaturasFile((destino || 'Faturas.txt').replace(/\.txt$/i, '.csv'), 'Exportar CSV', ['csv']);
     if (!path) return;
     try {
-      const result = await exportNfeFaturasCsv(settings.chk_exportar_filtrados ? visibleRows : rows, settings, path);
+      const result = await exportNfeFaturasCsv(normalExportRows, settings, path);
       appendStatus(result.message);
       await dialogMessageInfo('Integra', result.message);
     } catch (error) {
@@ -356,7 +381,19 @@ export default function NfeFaturasPage() {
     const directory = await dialogPickNfeFaturasOutputDir();
     if (!directory) return;
     try {
-      const result = await exportNfeFaturasSped(settings.chk_exportar_filtrados ? visibleRows : rows, settings, spedFiles, nfeMetas, directory);
+      const result = await exportNfeFaturasSped(normalExportRows, settings, spedFiles, nfeMetas, directory);
+      appendStatus(result.message);
+      await dialogMessageInfo('Integra', result.message);
+    } catch (error) {
+      await dialogMessageError('Integra', `${error}`);
+    }
+  }
+
+  async function handleExportLegacyTxt() {
+    const path = await dialogSaveNfeFaturasFile(destinoLegado, 'Exportar Faturas Legado', ['txt']);
+    if (!path) return;
+    try {
+      const result = await exportNfeFaturasLegacyTxt(legacyExportRows, settings, path);
       appendStatus(result.message);
       await dialogMessageInfo('Integra', result.message);
     } catch (error) {
@@ -500,16 +537,35 @@ export default function NfeFaturasPage() {
 
           <details className="nfe-box" open={!cfgCollapsed}>
             <summary>Exportação</summary>
+            <div className="nfe-summary-row">
+              <span className="badge">XML/SPED elegíveis: {normalExportRows.length}</span>
+              <span className="badge">Legado elegíveis: {legacyExportRows.length}</span>
+              {hasLegacyContext ? <span className="badge">Contexto legado detectado</span> : null}
+            </div>
+            {hasLegacyContext ? (
+              <div className="muted">
+                As faturas importadas pelo quadro legado possuem exportação própria e não são misturadas com o fluxo XML/SPED.
+              </div>
+            ) : null}
             <div className="actions-row">
-              <button className="btn primary" type="button" disabled={!rows.length || processing} onClick={() => void handleExportTxt()}>Exportar TXT</button>
-              <button className="btn" type="button" disabled={!rows.length || processing} onClick={() => void handleExportCsv()}>Exportar CSV</button>
+              <button className="btn primary" type="button" disabled={!normalExportRows.length || processing} onClick={() => void handleExportTxt()}>
+                {hasLegacyContext ? 'Exportar TXT (XML/SPED)' : 'Exportar TXT'}
+              </button>
+              <button className="btn" type="button" disabled={!normalExportRows.length || processing} onClick={() => void handleExportCsv()}>
+                {hasLegacyContext ? 'Exportar CSV (XML/SPED)' : 'Exportar CSV'}
+              </button>
+              {hasLegacyContext ? (
+                <button className="btn success" type="button" disabled={!legacyExportRows.length || processing} onClick={() => void handleExportLegacyTxt()}>
+                  Exportar Faturas Legado
+                </button>
+              ) : null}
             </div>
           </details>
 
           <details className="nfe-box" open={!cfgCollapsed}>
             <summary>Exportação SPED (C140/C141)</summary>
             <div className="actions-row">
-              <button className="btn success" type="button" disabled={!rows.length || !spedFiles.length || processing} onClick={() => void handleExportSped()}>Exportar SPED Atualizado</button>
+              <button className="btn success" type="button" disabled={!normalExportRows.length || !spedFiles.length || processing} onClick={() => void handleExportSped()}>Exportar SPED Atualizado</button>
             </div>
             <label className="nfe-check"><input type="checkbox" checked={settings.chk_incluir_faturas_sped} onChange={(e) => updateSetting('chk_incluir_faturas_sped', e.target.checked)} /> Incluir faturas no SPED</label>
             <label className="nfe-check"><input type="checkbox" checked={settings.chk_recriar_c140_c141} onChange={(e) => updateSetting('chk_recriar_c140_c141', e.target.checked)} /> Recriar C140/C141 se já existir</label>
@@ -747,7 +803,8 @@ export default function NfeFaturasPage() {
               <li>Arquivos e pastas são escolhidos pelo diálogo nativo do Tauri.</li>
               <li>O processamento roda em Rust, inclusive ZIP, XML, SPED e legado pipe.</li>
               <li>As configurações desta tela são persistidas no diretório de dados do aplicativo.</li>
-              <li>A exportação TXT/CSV grava diretamente no caminho escolhido pelo usuário.</li>
+              <li>A exportação TXT/CSV do fluxo atual considera apenas registros de XML/SPED.</li>
+              <li>Faturas importadas pelo quadro legado possuem botão específico de exportação e não são misturadas ao fluxo XML/SPED.</li>
               <li>A exportação SPED gera um ou mais arquivos em uma pasta de destino.</li>
             </ul>
           </div>
