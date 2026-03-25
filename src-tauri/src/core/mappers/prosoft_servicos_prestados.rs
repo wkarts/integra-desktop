@@ -2,10 +2,53 @@ use anyhow::Result;
 
 use crate::core::domain::document::{ConversionProfile, FieldAction, FieldRule, NfseDocument};
 
+#[derive(Debug, Clone)]
+pub struct ProsoftPrestadoRecord {
+    pub main_line: String,
+    pub obs_line: Option<String>,
+}
+
+pub fn map_document_to_ba_prestados_record(
+    document: &NfseDocument,
+    profile: &ConversionProfile,
+) -> Result<ProsoftPrestadoRecord> {
+    let (main_line, observacao) = build_main_line_and_observation(document, profile)?;
+    let emit_obs = should_emit_obs(&observacao, &profile.obs_extended);
+    let obs_line = if emit_obs {
+        Some(format!(
+            "*OBS{}",
+            sanitize_obs_line(&observacao)
+                .chars()
+                .take(7000)
+                .collect::<String>()
+        ))
+    } else {
+        None
+    };
+
+    Ok(ProsoftPrestadoRecord {
+        main_line,
+        obs_line,
+    })
+}
+
 pub fn map_document_to_ba_prestados_line(
     document: &NfseDocument,
     profile: &ConversionProfile,
 ) -> Result<String> {
+    let record = map_document_to_ba_prestados_record(document, profile)?;
+    let mut line = record.main_line;
+    if let Some(obs_line) = record.obs_line {
+        line.push_str("\r\n");
+        line.push_str(&obs_line);
+    }
+    Ok(line)
+}
+
+fn build_main_line_and_observation(
+    document: &NfseDocument,
+    profile: &ConversionProfile,
+) -> Result<(String, String)> {
     let len = 1172usize;
     let mut chars = vec![' '; len];
 
@@ -194,13 +237,7 @@ pub fn map_document_to_ba_prestados_line(
         ' ',
     );
 
-    let mut line: String = chars.into_iter().collect();
-    if should_emit_obs(&observacao, &profile.obs_extended) && !observacao.is_empty() {
-        line.push_str("\r\n*OBS");
-        line.push_str(&observacao.chars().take(7000).collect::<String>());
-    }
-
-    Ok(line)
+    Ok((chars.into_iter().collect(), observacao))
 }
 
 fn apply_number_rule(source: f64, rule: &FieldRule) -> f64 {
@@ -241,6 +278,15 @@ fn should_emit_obs(obs: &str, mode: &str) -> bool {
         "never" => false,
         _ => obs.chars().count() > 40,
     }
+}
+
+fn sanitize_obs_line(value: &str) -> String {
+    value
+        .replace("\r\n", " ")
+        .replace('\n', " ")
+        .replace('\r', " ")
+        .trim()
+        .to_string()
 }
 
 fn put(buffer: &mut [char], position: usize, size: usize, value: &str, right: bool, pad: char) {

@@ -51,6 +51,12 @@ pub fn get_registration_device_info(
     let input = build_license_input(&normalized_settings, &device, None);
     let device_key = generate_device_key(&input);
 
+    let serial_number = optional_string(&device.serial_number)
+        .or_else(|| optional_string(&device.bios_serial))
+        .or_else(|| optional_string(&device.motherboard_serial))
+        .or_else(|| optional_string(&device.machine_guid))
+        .unwrap_or_default();
+
     Ok(RegistrationDeviceInfo {
         station_name: device.station_name.clone(),
         device_display_name: full_device_name(
@@ -60,7 +66,7 @@ pub fn get_registration_device_info(
         ),
         hostname: device.hostname,
         computer_name: device.computer_name,
-        serial_number: device.serial_number,
+        serial_number,
         machine_guid: device.machine_guid,
         bios_serial: device.bios_serial,
         motherboard_serial: device.motherboard_serial,
@@ -144,11 +150,41 @@ pub async fn check_license_status(
     settings: LicenseSettings,
     app: AppHandle,
 ) -> Result<LicenseRuntimeStatus, String> {
-    let startup = parse_startup_licensing_context(std::env::args().collect());
+    let raw_args: Vec<String> = std::env::args().collect();
+    let startup = parse_startup_licensing_context(raw_args.clone());
+    let parsed_args = parse_startup_args(&raw_args);
     let next_settings = normalize_license_settings(apply_startup_overrides(settings, &startup));
 
     if next_settings.licensing_disabled {
         return Ok(build_licensing_disabled_runtime(&next_settings));
+    }
+
+    if startup.local_license_enabled {
+        let validation = validate_local_license_artifact(ValidateLocalLicenseRequest {
+            file_path: startup.local_license_file_path.clone().or_else(|| {
+                crate::core::local_license::default_local_license_path(&next_settings.app_instance)
+            }),
+            content_b64: None,
+            company_document: optional_string(&next_settings.company_document),
+            machine_key: optional_string(&next_settings.machine_key),
+            developer_token: parse_string_arg(&parsed_args, &["local-license-token"]),
+            developer_secret: parse_string_arg(&parsed_args, &["local-license-secret"]),
+            enforce_machine_match: false,
+        });
+
+        if let Ok(local_validation) = validation {
+            let device = collect_device_metadata();
+            let runtime = if local_validation.valid {
+                map_local_license_validation_to_runtime(&local_validation, &next_settings, &device)
+            } else {
+                map_local_license_validation_failure_to_runtime(&local_validation, &next_settings)
+            };
+
+            let persisted_settings =
+                hydrate_settings_from_local_validation(next_settings.clone(), &local_validation);
+            persist_license_runtime_snapshot(&app, &runtime, &persisted_settings)?;
+            return Ok(runtime);
+        }
     }
 
     let company_document = only_digits(&next_settings.company_document);
@@ -207,6 +243,28 @@ pub async fn check_license_status(
     }
 
     Ok(runtime)
+}
+
+fn persist_license_runtime_snapshot(
+    app: &AppHandle,
+    runtime: &LicenseRuntimeStatus,
+    settings: &LicenseSettings,
+) -> Result<(), String> {
+    let snapshot = LicenseSnapshot {
+        last_sync_at: Utc::now().to_rfc3339(),
+        local_license: runtime.local_license.clone(),
+        licensed_company: runtime.licensed_company.clone(),
+        licensed_devices: runtime
+            .licensed_device
+            .clone()
+            .map(|item| vec![item])
+            .unwrap_or_default(),
+        runtime_status: runtime.clone(),
+    };
+
+    crate::storage::license::save_license_snapshot(app, &snapshot).map_err(|e| e.to_string())?;
+    crate::storage::license::save_license_settings(app, settings).map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 fn build_licensing_disabled_runtime(settings: &LicenseSettings) -> LicenseRuntimeStatus {
@@ -462,12 +520,15 @@ fn parse_startup_args(args: &[String]) -> HashMap<String, Option<String>> {
 
     while index < args.len() {
         let current = args[index].trim();
-        if !current.starts_with("--") {
+        let normalized_flag = current
+            .strip_prefix("--")
+            .or_else(|| current.strip_prefix('-'))
+            .or_else(|| current.strip_prefix('/'));
+
+        let Some(raw) = normalized_flag else {
             index += 1;
             continue;
-        }
-
-        let raw = &current[2..];
+        };
         if raw.is_empty() {
             index += 1;
             continue;
@@ -876,6 +937,31 @@ fn hydrate_settings_from_decision(
     }
 
     settings.company_document = only_digits(&settings.company_document);
+    settings
+}
+
+fn hydrate_settings_from_local_validation(
+    mut settings: LicenseSettings,
+    validation: &LocalLicenseValidationResult,
+) -> LicenseSettings {
+    if let Some(payload) = validation.payload.as_ref() {
+        if settings.company_name.trim().is_empty() {
+            settings.company_name = payload.company_name.clone();
+        }
+        if settings.company_document.trim().is_empty() {
+            settings.company_document = only_digits(&payload.company_document);
+        }
+        if settings.company_email.trim().is_empty() {
+            settings.company_email = payload.company_email.clone();
+        }
+        if settings.station_name.trim().is_empty() {
+            settings.station_name = payload.station_name.clone();
+        }
+        if settings.machine_key.trim().is_empty() {
+            settings.machine_key = payload.machine_key.clone();
+        }
+    }
+
     settings
 }
 
