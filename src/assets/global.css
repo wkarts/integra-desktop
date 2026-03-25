@@ -44,7 +44,12 @@ button, input, select, textarea { font: inherit; }
 .menu { display: flex; flex-direction: column; gap: 6px; }
 .menu-link { padding: 9px 10px; border-radius: 10px; color: rgba(248, 250, 252, 0.92); font-weight: 500; font-size: 0.92rem; }
 .menu-link.active, .menu-link:hover { background: rgba(255, 255, 255, 0.13); }
-.sidebar-footer { margin-top: auto; }
+.sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .sidebar-toggle {
   display: none;
   width: 34px;
@@ -126,6 +131,36 @@ button, input, select, textarea { font: inherit; }
   min-width: 240px;
 }
 .sidebar-system-panel { border-color: rgba(255, 255, 255, 0.2); }
+.sidebar-license-panel {
+  width: 100%;
+  min-width: 0;
+}
+.sidebar-clock-panel {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+.sidebar-clock-panel .dashboard-system-meta {
+  text-align: center;
+}
+.sidebar-version-panel {
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+.sidebar-divider {
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  margin: 2px 0;
+}
+.sidebar-version-panel .dashboard-version {
+  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  text-align: center;
+}
 .dashboard-system-panel-mobile { display: none; }
 .dashboard-system-meta {
   display: grid;

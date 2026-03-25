@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import type { AppMeta } from '../types';
 import brandLogo from '../../assets/integra-logo.svg';
 import { getAppMeta } from '../../modules/nfse-servicos/services/tauriService';
+import { useLicenseRuntime } from '../../modules/licensing/context/LicenseRuntimeContext';
 
 const menu = [
   { to: '/', label: 'Dashboard' },
@@ -21,6 +22,7 @@ const defaultMeta: AppMeta = {
 };
 
 export function NavShell({ children }: PropsWithChildren) {
+  const { status, startupContext } = useLicenseRuntime();
   const [menuOpen, setMenuOpen] = useState(false);
   const [meta, setMeta] = useState<AppMeta>(defaultMeta);
   const [now, setNow] = useState(() => new Date());
@@ -82,7 +84,20 @@ export function NavShell({ children }: PropsWithChildren) {
         </nav>
 
         <footer className="sidebar-footer">
-          <section className="sidebar-system-panel" aria-label="Relógio e versão do sistema">
+          <section className="sidebar-system-panel sidebar-license-panel" aria-label="Status de licenciamento">
+            <h4 style={{ margin: '0 0 8px', fontSize: '0.78rem' }}>Licenciamento</h4>
+            <div className="muted" style={{ fontSize: '0.74rem' }}>
+              <div>Status: <b>{startupContext?.licensing_disabled ? 'Bypass ativo (--no-license)' : status ? (status.allowed ? 'Liberada' : 'Bloqueada') : 'Não verificada'}</b></div>
+              <div>Licenciado para: <b>{status?.company_name || '—'}</b></div>
+              <div>Validade: <b>{status?.expiry || '—'}</b></div>
+              <div>Serial: <b>{status?.local_license?.serial || status?.licensed_device?.serial_number || '—'}</b></div>
+              <div>Dispositivo: <b>{status?.licensed_device?.station_name || status?.machine_key?.slice(0, 12) || '—'}</b></div>
+              <div>Tipo: <b>{status?.online ? 'Online' : 'Offline/Local'}</b></div>
+              <div>Ativação: <b>{status?.machine_registered ? 'Dispositivo registrado' : 'Pendente'}</b></div>
+            </div>
+          </section>
+          <div className="sidebar-divider" />
+          <section className="sidebar-system-panel sidebar-clock-panel" aria-label="Relógio do sistema">
             <div className="dashboard-clock" role="img" aria-label={`Horário atual: ${timeLabel}`}>
               <span className="clock-hand clock-hand-hour" style={{ transform: `translateX(-50%) rotate(${hourAngle}deg)` }} />
               <span className="clock-hand clock-hand-minute" style={{ transform: `translateX(-50%) rotate(${minuteAngle}deg)` }} />
@@ -92,10 +107,13 @@ export function NavShell({ children }: PropsWithChildren) {
             <div className="dashboard-system-meta">
               <strong className="clock-time">{timeLabel}</strong>
               <span className="clock-date">{dateLabel}</span>
-              <div className="dashboard-version">
-                <span>Versão {meta.version}</span>
-                <span>ASHA {meta.build_hash.slice(0, 12)}</span>
-              </div>
+            </div>
+          </section>
+          <div className="sidebar-divider" />
+          <section className="sidebar-system-panel sidebar-version-panel" aria-label="Versão do sistema">
+            <div className="dashboard-version">
+              <span>Versão {meta.version}</span>
+              <span>ASHA {meta.build_hash.slice(0, 12)}</span>
             </div>
           </section>
         </footer>

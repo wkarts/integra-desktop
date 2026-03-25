@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import type { NfseDocument } from '../../../shared/types';
 
 interface DocsGridProps {
@@ -6,9 +7,26 @@ interface DocsGridProps {
 }
 
 export function DocsGrid({ documents, onDocumentsChange }: DocsGridProps) {
+  const pageSize = 50;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(documents.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const pagedDocuments = useMemo(
+    () => documents.slice(startIndex, startIndex + pageSize),
+    [documents, startIndex],
+  );
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
   function update(index: number, path: string, rawValue: string) {
     const next = [...documents];
-    const item = structuredClone(next[index]);
+    const targetIndex = startIndex + index;
+    const item = structuredClone(next[targetIndex]);
     const targetValue = path.startsWith('taxes.') ? Number(rawValue || 0) : rawValue;
 
     if (path === 'taxes.iss_retido') {
@@ -26,7 +44,7 @@ export function DocsGrid({ documents, onDocumentsChange }: DocsGridProps) {
       }
     }
 
-    next[index] = item;
+    next[targetIndex] = item;
     onDocumentsChange(next);
   }
 
@@ -37,6 +55,15 @@ export function DocsGrid({ documents, onDocumentsChange }: DocsGridProps) {
   return (
     <div className="card">
       <h3>Grid editável</h3>
+      <p className="muted">
+        Exibindo {pagedDocuments.length} de {documents.length} documento(s) (página {currentPage}/{totalPages}).
+      </p>
+      <div className="actions-row" style={{ justifyContent: 'flex-start', marginBottom: '8px' }}>
+        <button className="btn" onClick={() => setPage(1)} disabled={currentPage <= 1}>Primeira</button>
+        <button className="btn" onClick={() => setPage((value) => Math.max(1, value - 1))} disabled={currentPage <= 1}>Anterior</button>
+        <button className="btn" onClick={() => setPage((value) => Math.min(totalPages, value + 1))} disabled={currentPage >= totalPages}>Próxima</button>
+        <button className="btn" onClick={() => setPage(totalPages)} disabled={currentPage >= totalPages}>Última</button>
+      </div>
       <div className="table-wrap">
         <table className="grid-table">
           <thead>
@@ -66,9 +93,9 @@ export function DocsGrid({ documents, onDocumentsChange }: DocsGridProps) {
             </tr>
           </thead>
           <tbody>
-            {documents.map((document, index) => (
+            {pagedDocuments.map((document, index) => (
               <tr key={document.id}>
-                <td>{index + 1}</td>
+                <td>{startIndex + index + 1}</td>
                 <td>{document.provider_friendly}</td>
                 <td><input value={document.numero} onChange={(e) => update(index, 'numero', e.target.value)} /></td>
                 <td><input value={document.serie} onChange={(e) => update(index, 'serie', e.target.value)} /></td>
