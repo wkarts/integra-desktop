@@ -1,3 +1,10 @@
+## [1.8.5](https://github.com/wkarts/integra-desktop/compare/v1.8.4...v1.8.5) (2026-03-25)
+
+
+### Bug Fixes
+
+* **nfse:** corrige leitura e identificação de XML WebISS com caractere inválido no início ([f513f24](https://github.com/wkarts/integra-desktop/commit/f513f245d64df671930676f7cc78aee6b34f4123))
+
 ## [1.8.4](https://github.com/wkarts/integra-desktop/compare/v1.8.3...v1.8.4) (2026-03-24)
 
 
