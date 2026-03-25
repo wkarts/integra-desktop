@@ -1,3 +1,12 @@
+## [1.8.11](https://github.com/wkarts/integra-desktop/compare/v1.8.10...v1.8.11) (2026-03-25)
+
+
+### Bug Fixes
+
+* **nfse-sp:** corrige chamada de municipality_export_code no mapper de serviços prestados ([2003f9f](https://github.com/wkarts/integra-desktop/commit/2003f9fc03c6fbce33394ba68ea709d6883ac0c0))
+* **nfse-sp:** corrige temporários emprestados no mapper de serviços prestados ([75c961e](https://github.com/wkarts/integra-desktop/commit/75c961e8f774fc68089f49f252b25688992124ec))
+* **nfse:** adiciona layout SP de saída, base de conversão padrão e libera perfis em bypass ([31a867f](https://github.com/wkarts/integra-desktop/commit/31a867ffa000c0be36fbf6584199994ebf88fa8c))
+
 ## [1.8.10](https://github.com/wkarts/integra-desktop/compare/v1.8.9...v1.8.10) (2026-03-25)
 
 
