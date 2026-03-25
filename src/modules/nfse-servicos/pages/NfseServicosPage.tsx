@@ -44,6 +44,19 @@ async function filesToBatchItems(files: File[]): Promise<UploadInputItem[]> {
   return items;
 }
 
+function buildDeterministicTxtFileName(outputLayout: string): string {
+  const now = new Date();
+  const date = `${now.getFullYear()}${`${now.getMonth() + 1}`.padStart(2, '0')}${`${now.getDate()}`.padStart(2, '0')}`;
+  const time = `${`${now.getHours()}`.padStart(2, '0')}${`${now.getMinutes()}`.padStart(2, '0')}${`${now.getSeconds()}`.padStart(2, '0')}`;
+  const seq = '001';
+
+  if (outputLayout === 'ba_prestados') {
+    return `NFSE_BA_PRESTADOS_${date}_${time}_${seq}.txt`;
+  }
+
+  return `${outputLayout.toUpperCase()}_${date}_${time}_${seq}.txt`;
+}
+
 export default function NfseServicosPage() {
   const { documents, profile, logs, setDocuments, setProfile, pushLog } = useNfseStore();
   const xmlInputRef = useRef<HTMLInputElement | null>(null);
@@ -131,7 +144,7 @@ export default function NfseServicosPage() {
   async function handleExportTxt() {
     const txt = await exportTxt(documents, profile);
     setPreview(txt.slice(0, 12000));
-    downloadText(txt, `${profile.cod_prosoft}_nfse_${profile.output_layout}.txt`);
+    downloadText(txt, buildDeterministicTxtFileName(profile.output_layout));
     pushLog('Exportação TXT concluída.');
   }
 

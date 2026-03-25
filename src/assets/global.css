@@ -48,7 +48,7 @@ button, input, select, textarea { font: inherit; }
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 .sidebar-toggle {
   display: none;
@@ -132,14 +132,33 @@ button, input, select, textarea { font: inherit; }
 }
 .sidebar-system-panel { border-color: rgba(255, 255, 255, 0.2); }
 .sidebar-license-panel {
-  margin-bottom: 18px;
+  width: 100%;
+  min-width: 0;
 }
 .sidebar-clock-panel {
   justify-content: center;
   align-items: center;
-  align-self: center;
+  width: 100%;
+  min-width: 0;
 }
 .sidebar-clock-panel .dashboard-system-meta {
+  text-align: center;
+}
+.sidebar-version-panel {
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+.sidebar-divider {
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  margin: 2px 0;
+}
+.sidebar-version-panel .dashboard-version {
+  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
   text-align: center;
 }
 .dashboard-system-panel-mobile { display: none; }

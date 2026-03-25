@@ -96,7 +96,8 @@ export function NavShell({ children }: PropsWithChildren) {
               <div>Ativação: <b>{status?.machine_registered ? 'Dispositivo registrado' : 'Pendente'}</b></div>
             </div>
           </section>
-          <section className="sidebar-system-panel sidebar-clock-panel" aria-label="Relógio e versão do sistema">
+          <div className="sidebar-divider" />
+          <section className="sidebar-system-panel sidebar-clock-panel" aria-label="Relógio do sistema">
             <div className="dashboard-clock" role="img" aria-label={`Horário atual: ${timeLabel}`}>
               <span className="clock-hand clock-hand-hour" style={{ transform: `translateX(-50%) rotate(${hourAngle}deg)` }} />
               <span className="clock-hand clock-hand-minute" style={{ transform: `translateX(-50%) rotate(${minuteAngle}deg)` }} />
@@ -106,10 +107,13 @@ export function NavShell({ children }: PropsWithChildren) {
             <div className="dashboard-system-meta">
               <strong className="clock-time">{timeLabel}</strong>
               <span className="clock-date">{dateLabel}</span>
-              <div className="dashboard-version">
-                <span>Versão {meta.version}</span>
-                <span>ASHA {meta.build_hash.slice(0, 12)}</span>
-              </div>
+            </div>
+          </section>
+          <div className="sidebar-divider" />
+          <section className="sidebar-system-panel sidebar-version-panel" aria-label="Versão do sistema">
+            <div className="dashboard-version">
+              <span>Versão {meta.version}</span>
+              <span>ASHA {meta.build_hash.slice(0, 12)}</span>
             </div>
           </section>
         </footer>
