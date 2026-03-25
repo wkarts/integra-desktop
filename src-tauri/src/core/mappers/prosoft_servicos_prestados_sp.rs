@@ -171,6 +171,46 @@ fn build_main_line_and_observation(
     } else {
         profile.modelo_nf.trim()
     };
+    let situacao_documento_first = profile
+        .situacao_documento
+        .chars()
+        .take(1)
+        .collect::<String>();
+    let valor_iss_retido_fmt = if iss_retido {
+        format_money(valor_iss)
+    } else {
+        String::new()
+    };
+    let emissao_retencao_fmt = if iss_retido {
+        ddmmaa(&emissao)
+    } else {
+        String::new()
+    };
+    let base_calculo_retido_fmt = if iss_retido {
+        format_money(base_calculo)
+    } else {
+        String::new()
+    };
+    let aliquota_retido_fmt = if iss_retido {
+        format_money_short(aliquota)
+    } else {
+        String::new()
+    };
+    let base_calculo_inss_small_fmt = if valor_inss > 0.0 {
+        format_money_small(base_calculo)
+    } else {
+        String::new()
+    };
+    let aliquota_inss_fmt = if valor_inss > 0.0 {
+        format_rate_from_tax(valor_inss, base_calculo)
+    } else {
+        String::new()
+    };
+    let valor_inss_small_fmt = if valor_inss > 0.0 {
+        format_money_small(valor_inss)
+    } else {
+        String::new()
+    };
 
     put(&mut chars, 1, 1, tipo_livro, false, ' ');
     put(&mut chars, 2, 6, &ddmmaa(&emissao), true, ' ');
@@ -229,11 +269,7 @@ fn build_main_line_and_observation(
         &mut chars,
         297,
         14,
-        if iss_retido {
-            &format_money(valor_iss)
-        } else {
-            ""
-        },
+        &valor_iss_retido_fmt,
         true,
         ' ',
     );
@@ -242,11 +278,7 @@ fn build_main_line_and_observation(
         &mut chars,
         316,
         1,
-        &profile
-            .situacao_documento
-            .chars()
-            .take(1)
-            .collect::<String>(),
+        &situacao_documento_first,
         false,
         ' ',
     );
@@ -277,7 +309,7 @@ fn build_main_line_and_observation(
         &mut chars,
         705,
         6,
-        if iss_retido { &ddmmaa(&emissao) } else { "" },
+        &emissao_retencao_fmt,
         false,
         ' ',
     );
@@ -285,11 +317,7 @@ fn build_main_line_and_observation(
         &mut chars,
         711,
         14,
-        if iss_retido {
-            &format_money(base_calculo)
-        } else {
-            ""
-        },
+        &base_calculo_retido_fmt,
         true,
         ' ',
     );
@@ -297,11 +325,7 @@ fn build_main_line_and_observation(
         &mut chars,
         725,
         5,
-        if iss_retido {
-            &format_money_short(aliquota)
-        } else {
-            ""
-        },
+        &aliquota_retido_fmt,
         true,
         ' ',
     );
@@ -392,11 +416,7 @@ fn build_main_line_and_observation(
         &mut chars,
         1037,
         12,
-        if valor_inss > 0.0 {
-            &format_money_small(base_calculo)
-        } else {
-            ""
-        },
+        &base_calculo_inss_small_fmt,
         true,
         ' ',
     );
@@ -404,11 +424,7 @@ fn build_main_line_and_observation(
         &mut chars,
         1049,
         8,
-        if valor_inss > 0.0 {
-            &format_rate_from_tax(valor_inss, base_calculo)
-        } else {
-            ""
-        },
+        &aliquota_inss_fmt,
         true,
         ' ',
     );
@@ -416,11 +432,7 @@ fn build_main_line_and_observation(
         &mut chars,
         1057,
         12,
-        if valor_inss > 0.0 {
-            &format_money_small(valor_inss)
-        } else {
-            ""
-        },
+        &valor_inss_small_fmt,
         true,
         ' ',
     );
@@ -428,11 +440,7 @@ fn build_main_line_and_observation(
         &mut chars,
         1069,
         12,
-        if valor_inss > 0.0 {
-            &format_money_small(valor_inss)
-        } else {
-            ""
-        },
+        &valor_inss_small_fmt,
         true,
         ' ',
     );
