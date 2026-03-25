@@ -1,3 +1,11 @@
+## [1.8.10](https://github.com/wkarts/integra-desktop/compare/v1.8.9...v1.8.10) (2026-03-25)
+
+
+### Bug Fixes
+
+* **exportacao:** corrige layout BA de serviços prestados e exportação de faturas legado ([15a0ab9](https://github.com/wkarts/integra-desktop/commit/15a0ab9cd36385aab20c575d9dd75b2f5b70bbae))
+* **exportacao:** corrige layout BA, prefixo LFSSERBA. e exportação de faturas legado ([9c8f3df](https://github.com/wkarts/integra-desktop/commit/9c8f3df59dc1c6f1026449f4e1b388ac53cc9850))
+
 ## [1.8.9](https://github.com/wkarts/integra-desktop/compare/v1.8.8...v1.8.9) (2026-03-25)
 
 
