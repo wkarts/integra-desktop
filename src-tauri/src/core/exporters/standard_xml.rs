@@ -101,19 +101,22 @@ pub fn export_document_to_standard_xml(
     options: &StandardizeXmlOptions,
 ) -> String {
     let mut xml = String::new();
-    xml.push_str("<?xml version="1.0" encoding="UTF-8"?>\n");
+    xml.push_str(r#"<?xml version="1.0" encoding="UTF-8"?>
+"#);
     match options.target.as_str() {
-        "abrasf_v1" => xml.push_str("<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">\n"),
+        "abrasf_v1" => xml.push_str(r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+"#),
         "salvador_like" => xml.push_str(
-            "<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="salvador-like">\n",
+            r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="salvador-like">
+"#,
         ),
-        _ => {
-            xml.push_str("<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="2.04">\n")
-        }
+        _ => xml.push_str(r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="2.04">
+"#),
     }
     xml.push_str("  <Nfse>\n");
     xml.push_str(&format!(
-        "    <InfNfse Id="{}">\n",
+        r#"    <InfNfse Id="{}">
+"#,
         escape_attr(&document.id)
     ));
     write_tag(&mut xml, 6, "Numero", &document.numero);
@@ -298,7 +301,7 @@ fn escape_xml(value: &str) -> String {
         .replace('<', "&lt;")
         .replace('>', "&gt;")
         .replace('"', "&quot;")
-        .replace(''', "&apos;")
+        .replace('\'', "&apos;")
 }
 
 fn escape_attr(value: &str) -> String {
