@@ -1,3 +1,12 @@
+# [1.9.0](https://github.com/wkarts/integra-desktop/compare/v1.8.12...v1.9.0) (2026-03-26)
+
+
+### Features
+
+* **nfse:** adiciona portabilidade XML em lote com regras de perfil ([1a514f4](https://github.com/wkarts/integra-desktop/commit/1a514f4e7fb36b07b1b81f2f8f8bf190aa19b6fd))
+* **nfse:** adiciona portabilidade XML em lote com regras de perfil da empresa ([f5edc78](https://github.com/wkarts/integra-desktop/commit/f5edc78a91798105daca8c569317384476be58d5))
+* **nfse:** ajusta rustfmt da portabilidade XML em lote ([519c721](https://github.com/wkarts/integra-desktop/commit/519c721b99b79f41d0cf7beb0fdb2daffe31bccc))
+
 ## [1.8.12](https://github.com/wkarts/integra-desktop/compare/v1.8.11...v1.8.12) (2026-03-25)
 
 
