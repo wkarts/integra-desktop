@@ -5,8 +5,11 @@ pub mod core;
 pub mod storage;
 
 use commands::{
-    append_runtime_log, check_license_status, clipboard_write_text, convert_nfse_xml_to_standard,
-    dialog_confirm, dialog_message_error, dialog_message_info, dialog_message_warning,
+    append_runtime_log, check_license_status, clipboard_write_text,
+    convert_nfse_mixed_batch_to_standard, convert_nfse_path_batch_to_standard,
+    convert_nfse_upload_batch_to_standard,
+    convert_nfse_xml_to_standard, dialog_confirm, dialog_message_error, dialog_message_info,
+    dialog_message_warning, dialog_pick_nfse_converter_directory, dialog_pick_nfse_converter_files,
     dialog_pick_nfe_faturas_directory, dialog_pick_nfe_faturas_files,
     dialog_pick_nfe_faturas_legacy_file, dialog_pick_nfe_faturas_output_dir,
     dialog_save_nfe_faturas_file, export_nfe_faturas_csv, export_nfe_faturas_legacy_txt,
@@ -43,6 +46,11 @@ pub fn run() {
             export_nfse_txt,
             export_nfse_csv,
             convert_nfse_xml_to_standard,
+            convert_nfse_upload_batch_to_standard,
+            convert_nfse_mixed_batch_to_standard,
+            convert_nfse_path_batch_to_standard,
+            dialog_pick_nfse_converter_files,
+            dialog_pick_nfse_converter_directory,
             export_nfe_faturas_txt,
             export_nfe_faturas_csv,
             export_nfe_faturas_legacy_txt,

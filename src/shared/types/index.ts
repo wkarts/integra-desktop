@@ -371,7 +371,7 @@ export interface NfseDocument {
 }
 
 
-export type StandardizedXmlTarget = 'abrasf_v2' | 'abrasf_v1' | 'salvador_like';
+export type StandardizedXmlTarget = 'abrasf_v2' | 'abrasf_v1' | 'salvador_like' | 'same_layout';
 
 export interface StandardizeXmlOptions {
   target: StandardizedXmlTarget;
@@ -379,6 +379,14 @@ export interface StandardizeXmlOptions {
   remove_iss_value?: boolean;
   keep_only_iss_retido?: boolean;
   remove_incompatible_tags?: boolean;
+  apply_profile_rules?: boolean;
+  remove_codigo_verificacao?: boolean;
+  remove_tomador_endereco?: boolean;
+  remove_prestador_im?: boolean;
+  remove_tomador_im?: boolean;
+  remove_cnae?: boolean;
+  remove_discriminacao?: boolean;
+  remove_info_adicional?: boolean;
 }
 
 export interface StandardizedXmlResult {
@@ -387,6 +395,25 @@ export interface StandardizedXmlResult {
   standardized_xml: string;
   warnings: string[];
   document: NfseDocument;
+}
+
+
+export interface StandardizedXmlBatchEntry {
+  source_name: string;
+  output_file_name: string;
+  detected_layout: string;
+  provider: string;
+  standardized_xml: string;
+  warnings: string[];
+  document: NfseDocument;
+}
+
+export interface StandardizedXmlBatchResult {
+  entries: StandardizedXmlBatchEntry[];
+  warnings: string[];
+  errors: string[];
+  zip_file_name: string;
+  zip_base64: string;
 }
 
 export interface ProcessBatchInputItem {
