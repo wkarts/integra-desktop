@@ -224,7 +224,11 @@ pub fn dialog_pick_nfse_converter_files(app: AppHandle) -> Result<Vec<String>, S
 
 #[tauri::command]
 pub fn dialog_pick_nfse_converter_directory(app: AppHandle) -> Result<Option<String>, String> {
-    Ok(app.dialog().file().blocking_pick_folder().and_then(file_path_to_string))
+    Ok(app
+        .dialog()
+        .file()
+        .blocking_pick_folder()
+        .and_then(file_path_to_string))
 }
 
 fn finalize_batch_result(
@@ -266,7 +270,11 @@ fn process_path(
         let read_dir = match fs::read_dir(path) {
             Ok(read_dir) => read_dir,
             Err(error) => {
-                errors.push(format!("{}: falha ao ler diretório ({})", path.display(), error));
+                errors.push(format!(
+                    "{}: falha ao ler diretório ({})",
+                    path.display(),
+                    error
+                ));
                 return;
             }
         };
@@ -294,11 +302,7 @@ fn process_path(
                 warnings,
                 errors,
             ),
-            Err(error) => errors.push(format!(
-                "{}: falha ao ler XML ({})",
-                path.display(),
-                error
-            )),
+            Err(error) => errors.push(format!("{}: falha ao ler XML ({})", path.display(), error)),
         },
         "zip" => match fs::read(path) {
             Ok(bytes) => process_zip_bytes(
@@ -310,11 +314,7 @@ fn process_path(
                 warnings,
                 errors,
             ),
-            Err(error) => errors.push(format!(
-                "{}: falha ao ler ZIP ({})",
-                path.display(),
-                error
-            )),
+            Err(error) => errors.push(format!("{}: falha ao ler ZIP ({})", path.display(), error)),
         },
         _ => {}
     }
@@ -393,7 +393,11 @@ fn process_single_xml(
             );
             entries.push(StandardizedXmlBatchEntry {
                 source_name: file_name.to_string(),
-                output_file_name: build_output_file_name(file_name, &options.target, &result.detected_layout),
+                output_file_name: build_output_file_name(
+                    file_name,
+                    &options.target,
+                    &result.detected_layout,
+                ),
                 detected_layout: result.detected_layout,
                 provider: result.provider,
                 standardized_xml: result.standardized_xml,
@@ -412,7 +416,8 @@ fn build_standardized_result(
     options: &StandardizeXmlOptions,
 ) -> Result<StandardizedXmlResult, String> {
     let configured_layout = profile.as_ref().map(|item| item.nfse_layout.as_str());
-    let parsed = parse_nfse_xml_with_layout(xml, file_name, configured_layout).map_err(|e| e.to_string())?;
+    let parsed =
+        parse_nfse_xml_with_layout(xml, file_name, configured_layout).map_err(|e| e.to_string())?;
     let mut document = normalize_nfse_document(parsed);
     document.warnings = collect_document_warnings(&document);
     let target = resolve_target_layout(options, &document.layout);
@@ -472,7 +477,9 @@ fn build_zip_bytes(entries: &[StandardizedXmlBatchEntry]) -> anyhow::Result<Vec<
 
 fn file_path_to_string(path: tauri_plugin_dialog::FilePath) -> Option<String> {
     match path {
-        tauri_plugin_dialog::FilePath::Path(path_buf) => Some(path_buf.to_string_lossy().to_string()),
+        tauri_plugin_dialog::FilePath::Path(path_buf) => {
+            Some(path_buf.to_string_lossy().to_string())
+        }
         #[cfg(target_os = "android")]
         tauri_plugin_dialog::FilePath::Uri(uri) => Some(uri.to_string()),
         #[cfg(not(target_os = "android"))]

@@ -1,6 +1,4 @@
-use crate::core::domain::document::{
-    ConversionProfile, FieldAction, FieldRule, NfseDocument,
-};
+use crate::core::domain::document::{ConversionProfile, FieldAction, FieldRule, NfseDocument};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StandardizeXmlOptions {
@@ -28,28 +26,38 @@ pub fn standardize_document_for_xml(
 
     if options.apply_profile_rules.unwrap_or(true) {
         if let Some(profile) = profile {
-            normalized.taxes.base_calculo =
-                apply_number_rule(normalized.taxes.base_calculo, &profile.field_rules.base_calculo);
-            normalized.taxes.aliquota_iss =
-                apply_number_rule(normalized.taxes.aliquota_iss, &profile.field_rules.iss_aliquota);
+            normalized.taxes.base_calculo = apply_number_rule(
+                normalized.taxes.base_calculo,
+                &profile.field_rules.base_calculo,
+            );
+            normalized.taxes.aliquota_iss = apply_number_rule(
+                normalized.taxes.aliquota_iss,
+                &profile.field_rules.iss_aliquota,
+            );
             normalized.taxes.valor_iss =
                 apply_number_rule(normalized.taxes.valor_iss, &profile.field_rules.valor_iss);
-            normalized.taxes.valor_liquido =
-                apply_number_rule(normalized.taxes.valor_liquido, &profile.field_rules.valor_liquido);
+            normalized.taxes.valor_liquido = apply_number_rule(
+                normalized.taxes.valor_liquido,
+                &profile.field_rules.valor_liquido,
+            );
             normalized.taxes.valor_irrf =
                 apply_number_rule(normalized.taxes.valor_irrf, &profile.field_rules.valor_irrf);
             normalized.taxes.valor_inss =
                 apply_number_rule(normalized.taxes.valor_inss, &profile.field_rules.valor_inss);
             normalized.taxes.valor_pis =
                 apply_number_rule(normalized.taxes.valor_pis, &profile.field_rules.valor_pis);
-            normalized.taxes.valor_cofins =
-                apply_number_rule(normalized.taxes.valor_cofins, &profile.field_rules.valor_cofins);
+            normalized.taxes.valor_cofins = apply_number_rule(
+                normalized.taxes.valor_cofins,
+                &profile.field_rules.valor_cofins,
+            );
             normalized.taxes.valor_csll =
                 apply_number_rule(normalized.taxes.valor_csll, &profile.field_rules.valor_csll);
             normalized.taxes.iss_retido =
                 apply_bool_rule(normalized.taxes.iss_retido, &profile.field_rules.iss_retido);
-            normalized.item_lista_servico =
-                apply_string_rule(&normalized.item_lista_servico, &profile.field_rules.codigo_servico);
+            normalized.item_lista_servico = apply_string_rule(
+                &normalized.item_lista_servico,
+                &profile.field_rules.codigo_servico,
+            );
             normalized.municipio_codigo =
                 apply_string_rule(&normalized.municipio_codigo, &profile.field_rules.municipio);
             normalized.municipio_nome =
@@ -58,10 +66,14 @@ pub fn standardize_document_for_xml(
             normalized.numero = apply_string_rule(&normalized.numero, &profile.field_rules.numero);
             normalized.emissao =
                 apply_string_rule(&normalized.emissao, &profile.field_rules.data_emissao);
-            normalized.competencia =
-                apply_string_rule(&normalized.competencia, &profile.field_rules.data_competencia);
-            normalized.info_adic =
-                apply_string_rule(&normalized.info_adic, &profile.field_rules.campos_complementares);
+            normalized.competencia = apply_string_rule(
+                &normalized.competencia,
+                &profile.field_rules.data_competencia,
+            );
+            normalized.info_adic = apply_string_rule(
+                &normalized.info_adic,
+                &profile.field_rules.campos_complementares,
+            );
             normalized.discriminacao =
                 apply_string_rule(&normalized.discriminacao, &profile.field_rules.observacao);
         }
@@ -101,17 +113,23 @@ pub fn export_document_to_standard_xml(
     options: &StandardizeXmlOptions,
 ) -> String {
     let mut xml = String::new();
-    xml.push_str(r#"<?xml version="1.0" encoding="UTF-8"?>
-"#);
+    xml.push_str(
+        r#"<?xml version="1.0" encoding="UTF-8"?>
+"#,
+    );
     match options.target.as_str() {
-        "abrasf_v1" => xml.push_str(r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
-"#),
+        "abrasf_v1" => xml.push_str(
+            r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+"#,
+        ),
         "salvador_like" => xml.push_str(
             r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="salvador-like">
 "#,
         ),
-        _ => xml.push_str(r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="2.04">
-"#),
+        _ => xml.push_str(
+            r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="2.04">
+"#,
+        ),
     }
     xml.push_str("  <Nfse>\n");
     xml.push_str(&format!(
@@ -254,7 +272,12 @@ fn apply_bool_rule(source: bool, rule: &FieldRule) -> bool {
         FieldAction::Source => source,
         FieldAction::Zero | FieldAction::Empty | FieldAction::Ignore => false,
         FieldAction::Constant => matches!(
-            rule.value.as_deref().unwrap_or("").trim().to_ascii_lowercase().as_str(),
+            rule.value
+                .as_deref()
+                .unwrap_or("")
+                .trim()
+                .to_ascii_lowercase()
+                .as_str(),
             "1" | "s" | "sim" | "true" | "y" | "yes"
         ),
     }
@@ -270,7 +293,11 @@ fn apply_string_rule(source: &str, rule: &FieldRule) -> String {
 }
 
 fn parse_decimal(value: &str) -> f64 {
-    value.replace('.', "").replace(',', ".").parse::<f64>().unwrap_or(0.0)
+    value
+        .replace('.', "")
+        .replace(',', ".")
+        .parse::<f64>()
+        .unwrap_or(0.0)
 }
 
 fn write_tag(xml: &mut String, indent: usize, tag: &str, value: &str) {
