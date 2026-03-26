@@ -16,6 +16,7 @@ import type {
   UploadInputItem,
   ValidateLocalLicenseRequest,
   StandardizeXmlOptions,
+  StandardizedXmlBatchResult,
   StandardizedXmlResult,
 } from '../../../shared/types';
 
@@ -108,6 +109,40 @@ export async function validateLocalLicense(
   return invoke<LocalLicenseValidationResult>('validate_local_license', { request });
 }
 
+
+
+export async function convertNfseMixedBatchToStandard(
+  items: UploadInputItem[],
+  paths: string[],
+  profile: ConversionProfile | null,
+  options: StandardizeXmlOptions,
+): Promise<StandardizedXmlBatchResult> {
+  return invoke<StandardizedXmlBatchResult>('convert_nfse_mixed_batch_to_standard', { items, paths, profile, options });
+}
+
+export async function convertNfseUploadBatchToStandard(
+  items: UploadInputItem[],
+  profile: ConversionProfile | null,
+  options: StandardizeXmlOptions,
+): Promise<StandardizedXmlBatchResult> {
+  return invoke<StandardizedXmlBatchResult>('convert_nfse_upload_batch_to_standard', { items, profile, options });
+}
+
+export async function convertNfsePathBatchToStandard(
+  paths: string[],
+  profile: ConversionProfile | null,
+  options: StandardizeXmlOptions,
+): Promise<StandardizedXmlBatchResult> {
+  return invoke<StandardizedXmlBatchResult>('convert_nfse_path_batch_to_standard', { paths, profile, options });
+}
+
+export async function dialogPickNfseConverterFiles(): Promise<string[]> {
+  return invoke<string[]>('dialog_pick_nfse_converter_files');
+}
+
+export async function dialogPickNfseConverterDirectory(): Promise<string | null> {
+  return invoke<string | null>('dialog_pick_nfse_converter_directory');
+}
 
 export async function convertNfseXmlToStandard(
   xml: string,

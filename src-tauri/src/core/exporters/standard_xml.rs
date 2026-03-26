@@ -1,4 +1,4 @@
-use crate::core::domain::document::NfseDocument;
+use crate::core::domain::document::{ConversionProfile, FieldAction, FieldRule, NfseDocument};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StandardizeXmlOptions {
@@ -7,6 +7,105 @@ pub struct StandardizeXmlOptions {
     pub remove_iss_value: Option<bool>,
     pub keep_only_iss_retido: Option<bool>,
     pub remove_incompatible_tags: Option<bool>,
+    pub apply_profile_rules: Option<bool>,
+    pub remove_codigo_verificacao: Option<bool>,
+    pub remove_tomador_endereco: Option<bool>,
+    pub remove_prestador_im: Option<bool>,
+    pub remove_tomador_im: Option<bool>,
+    pub remove_cnae: Option<bool>,
+    pub remove_discriminacao: Option<bool>,
+    pub remove_info_adicional: Option<bool>,
+}
+
+pub fn standardize_document_for_xml(
+    document: &NfseDocument,
+    profile: Option<&ConversionProfile>,
+    options: &StandardizeXmlOptions,
+) -> NfseDocument {
+    let mut normalized = document.clone();
+
+    if options.apply_profile_rules.unwrap_or(true) {
+        if let Some(profile) = profile {
+            normalized.taxes.base_calculo = apply_number_rule(
+                normalized.taxes.base_calculo,
+                &profile.field_rules.base_calculo,
+            );
+            normalized.taxes.aliquota_iss = apply_number_rule(
+                normalized.taxes.aliquota_iss,
+                &profile.field_rules.iss_aliquota,
+            );
+            normalized.taxes.valor_iss =
+                apply_number_rule(normalized.taxes.valor_iss, &profile.field_rules.valor_iss);
+            normalized.taxes.valor_liquido = apply_number_rule(
+                normalized.taxes.valor_liquido,
+                &profile.field_rules.valor_liquido,
+            );
+            normalized.taxes.valor_irrf =
+                apply_number_rule(normalized.taxes.valor_irrf, &profile.field_rules.valor_irrf);
+            normalized.taxes.valor_inss =
+                apply_number_rule(normalized.taxes.valor_inss, &profile.field_rules.valor_inss);
+            normalized.taxes.valor_pis =
+                apply_number_rule(normalized.taxes.valor_pis, &profile.field_rules.valor_pis);
+            normalized.taxes.valor_cofins = apply_number_rule(
+                normalized.taxes.valor_cofins,
+                &profile.field_rules.valor_cofins,
+            );
+            normalized.taxes.valor_csll =
+                apply_number_rule(normalized.taxes.valor_csll, &profile.field_rules.valor_csll);
+            normalized.taxes.iss_retido =
+                apply_bool_rule(normalized.taxes.iss_retido, &profile.field_rules.iss_retido);
+            normalized.item_lista_servico = apply_string_rule(
+                &normalized.item_lista_servico,
+                &profile.field_rules.codigo_servico,
+            );
+            normalized.municipio_codigo =
+                apply_string_rule(&normalized.municipio_codigo, &profile.field_rules.municipio);
+            normalized.municipio_nome =
+                apply_string_rule(&normalized.municipio_nome, &profile.field_rules.municipio);
+            normalized.serie = apply_string_rule(&normalized.serie, &profile.field_rules.serie);
+            normalized.numero = apply_string_rule(&normalized.numero, &profile.field_rules.numero);
+            normalized.emissao =
+                apply_string_rule(&normalized.emissao, &profile.field_rules.data_emissao);
+            normalized.competencia = apply_string_rule(
+                &normalized.competencia,
+                &profile.field_rules.data_competencia,
+            );
+            normalized.info_adic = apply_string_rule(
+                &normalized.info_adic,
+                &profile.field_rules.campos_complementares,
+            );
+            normalized.discriminacao =
+                apply_string_rule(&normalized.discriminacao, &profile.field_rules.observacao);
+        }
+    }
+
+    if options.remove_codigo_verificacao.unwrap_or(false) {
+        normalized.chave.clear();
+    }
+    if options.remove_tomador_endereco.unwrap_or(false) {
+        normalized.tomador.endereco = None;
+        normalized.tomador.cep = None;
+        normalized.tomador.uf = None;
+        normalized.tomador.municipio_codigo = None;
+        normalized.tomador.municipio_nome = None;
+    }
+    if options.remove_prestador_im.unwrap_or(false) {
+        normalized.prestador.inscricao_municipal = None;
+    }
+    if options.remove_tomador_im.unwrap_or(false) {
+        normalized.tomador.inscricao_municipal = None;
+    }
+    if options.remove_cnae.unwrap_or(false) {
+        normalized.codigo_cnae = None;
+    }
+    if options.remove_discriminacao.unwrap_or(false) {
+        normalized.discriminacao.clear();
+    }
+    if options.remove_info_adicional.unwrap_or(false) {
+        normalized.info_adic.clear();
+    }
+
+    normalized
 }
 
 pub fn export_document_to_standard_xml(
@@ -14,19 +113,28 @@ pub fn export_document_to_standard_xml(
     options: &StandardizeXmlOptions,
 ) -> String {
     let mut xml = String::new();
-    xml.push_str("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    xml.push_str(
+        r#"<?xml version="1.0" encoding="UTF-8"?>
+"#,
+    );
     match options.target.as_str() {
-        "abrasf_v1" => xml.push_str("<CompNfse xmlns=\"http://www.abrasf.org.br/nfse.xsd\">\n"),
-        "salvador_like" => xml.push_str(
-            "<CompNfse xmlns=\"http://www.abrasf.org.br/nfse.xsd\" versao=\"salvador-like\">\n",
+        "abrasf_v1" => xml.push_str(
+            r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd">
+"#,
         ),
-        _ => {
-            xml.push_str("<CompNfse xmlns=\"http://www.abrasf.org.br/nfse.xsd\" versao=\"2.04\">\n")
-        }
+        "salvador_like" => xml.push_str(
+            r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="salvador-like">
+"#,
+        ),
+        _ => xml.push_str(
+            r#"<CompNfse xmlns="http://www.abrasf.org.br/nfse.xsd" versao="2.04">
+"#,
+        ),
     }
     xml.push_str("  <Nfse>\n");
     xml.push_str(&format!(
-        "    <InfNfse Id=\"{}\">\n",
+        r#"    <InfNfse Id="{}">
+"#,
         escape_attr(&document.id)
     ));
     write_tag(&mut xml, 6, "Numero", &document.numero);
@@ -149,6 +257,47 @@ pub fn export_document_to_standard_xml(
     xml.push_str("  </Nfse>\n");
     xml.push_str("</CompNfse>\n");
     xml
+}
+
+fn apply_number_rule(source: f64, rule: &FieldRule) -> f64 {
+    match rule.action {
+        FieldAction::Source => source,
+        FieldAction::Zero | FieldAction::Empty | FieldAction::Ignore => 0.0,
+        FieldAction::Constant => rule.value.as_deref().map(parse_decimal).unwrap_or(0.0),
+    }
+}
+
+fn apply_bool_rule(source: bool, rule: &FieldRule) -> bool {
+    match rule.action {
+        FieldAction::Source => source,
+        FieldAction::Zero | FieldAction::Empty | FieldAction::Ignore => false,
+        FieldAction::Constant => matches!(
+            rule.value
+                .as_deref()
+                .unwrap_or("")
+                .trim()
+                .to_ascii_lowercase()
+                .as_str(),
+            "1" | "s" | "sim" | "true" | "y" | "yes"
+        ),
+    }
+}
+
+fn apply_string_rule(source: &str, rule: &FieldRule) -> String {
+    match rule.action {
+        FieldAction::Source => source.to_string(),
+        FieldAction::Zero => "0".to_string(),
+        FieldAction::Empty | FieldAction::Ignore => String::new(),
+        FieldAction::Constant => rule.value.clone().unwrap_or_default(),
+    }
+}
+
+fn parse_decimal(value: &str) -> f64 {
+    value
+        .replace('.', "")
+        .replace(',', ".")
+        .parse::<f64>()
+        .unwrap_or(0.0)
 }
 
 fn write_tag(xml: &mut String, indent: usize, tag: &str, value: &str) {

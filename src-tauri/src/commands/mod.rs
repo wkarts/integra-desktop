@@ -6,7 +6,12 @@ pub mod nfe_faturas;
 pub mod process;
 pub mod settings;
 
-pub use export::{convert_nfse_xml_to_standard, export_nfse_csv, export_nfse_txt};
+pub use export::{
+    convert_nfse_mixed_batch_to_standard, convert_nfse_path_batch_to_standard,
+    convert_nfse_upload_batch_to_standard, convert_nfse_xml_to_standard,
+    dialog_pick_nfse_converter_directory, dialog_pick_nfse_converter_files, export_nfse_csv,
+    export_nfse_txt,
+};
 pub use licensing::{
     check_license_status, generate_local_license, get_app_meta, get_default_station_name,
     get_machine_fingerprint, get_registration_device_info, get_startup_licensing_context,
